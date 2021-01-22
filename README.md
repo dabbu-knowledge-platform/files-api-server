@@ -28,6 +28,14 @@ $ npm start
 ```
 - Your server is now running! To check, go to http://localhost:8080/. You will see the text `Dabbu Server running on port 8080` on the page. If not, try running the server again or check if you have missed a step. If the problem persists, post a message on [Github discussions](https://github.com/gamemaker1/dabbu-server/discussions/categories/q-a) asking for help. We'll only be glad to help you :)
 
+## Updating the server
+
+To update the server, simply run the following commands from the terminal/command prompt:
+
+```sh
+$ git pull origin main
+```
+
 ## Installing clients to call the Dabbu API
 
 Here is a list of clients that have been made to interact with the Dabbu API:
