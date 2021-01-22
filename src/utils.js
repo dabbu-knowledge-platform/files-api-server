@@ -26,7 +26,7 @@ function info(message) {
   const date = new Date().toISOString()
   console.log(` INFO  | ${date} | ${message}`)
   var stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
-  stream.write(` INFO  | ${date} | ${message}\n`)
+  stream.write(`INFO  | ${date} | ${message}\n`)
   stream.end()
 }
 
@@ -38,7 +38,7 @@ function debug(message) {
   if (debugMode === true) {
     console.log(` DEBUG | ${date} | ${message}`)
     var stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
-    stream.write(` DEBUG | ${date} | ${message}\n`)
+    stream.write(`DEBUG | ${date} | ${message}\n`)
     stream.end()
   }
 }
@@ -48,7 +48,7 @@ function error(err) {
   const date = new Date().toISOString()
   console.log(` ERROR | ${date} | ${json(err)}`)
   var stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
-  stream.write(` ERROR | ${date} | ${json(err)}\n`)
+  stream.write(`ERROR | ${date} | ${json(err)}\n`)
   stream.write("\n")
   stream.end()
 }
