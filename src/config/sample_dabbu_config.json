@@ -1,0 +1,10 @@
+{
+  "providers": [
+    "hard_drive",
+    "google_drive"
+  ],
+  "runtime": {
+    "port": 8080,
+    "debug": true
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "dabbu-server",
+  "version": "1.0.0",
+  "description": "A unified API interface to access all your data online",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gamemaker1/dabbu-server.git"
+  },
+  "author": "gamemaker1",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/gamemaker1/dabbu-server/issues"
+  },
+  "homepage": "https://github.com/gamemaker1/dabbu-server#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "multer": "^1.4.2"
+  },
+  "devDependencies": {
+    "axios": "^0.21.1",
+    "fs-extra": "^9.0.1",
+    "mmmagic": "^0.5.3"
+  }
+}
