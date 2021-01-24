@@ -228,7 +228,7 @@ class GoogleDriveDataProvider extends Provider {
     const listResult = await instance.get(`/drive/v2/files`, {
       params: {
         q: `'${folderId}' in parents and trashed = false`,
-        fields: `items(title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`
+        fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`
       }
     })
 
@@ -275,6 +275,10 @@ class GoogleDriveDataProvider extends Provider {
     const folderPath = diskPath(params["folderPath"])
     // Get the file path from the URL
     const fileName = params["fileName"]
+    // Get the export type from the query parameters
+    const exportType = queries["exportType"]
+    // TODO: Support params like order and compare by
+    var {compareWith, operator, value, orderBy, direction} = queries
 
     // Don't allow relative paths, let clients do that
     if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
@@ -305,7 +309,27 @@ class GoogleDriveDataProvider extends Provider {
         const createdAtTime = fileObj.createdDate // When it was created
         const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
         const exportMimeType = getExportTypeForDoc(mimeType)
-        const contentURI = exportMimeType === "auto" ? fileObj.webContentLink : fileObj.exportLinks[exportMimeType] // Content URI
+        let contentURI = null
+        // If the export type is media, then return a googleapis.com link
+        if (exportType === "media") {
+          contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
+        } else {
+          // Else:
+          // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+          if (exportMimeType === "auto") {
+            // If not, then give the web content link (only downloadable by browser)
+            contentURI = fileObj.webContentLink
+          } else {
+            // Else it is a Doc/Sheet/Slide/Drawing/App Script
+            // If the requested export type is in the exportLinks field, return that link
+            if (fileObj.exportLinks[exportType]) {
+              contentURI = fileObj.exportLinks[exportType]
+            } else {
+              // Else return the MS format of it
+              contentURI = fileObj.exportLinks[exportMimeType]
+            }
+          }
+        }
 
         // Return the file metadata and content
         return {
