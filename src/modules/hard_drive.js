@@ -149,7 +149,7 @@ class HardDriveDataProvider extends Provider {
     }
 
     // Check if the folder exists
-    if (await fs.pathExists(diskPath(basePath, folderPath))) {
+    if (!(await fs.pathExists(diskPath(basePath, folderPath)))) {
       throw new NotFoundError(`Folder ${diskPath(basePath, folderPath)} was not found`)
     }
 
@@ -159,7 +159,7 @@ class HardDriveDataProvider extends Provider {
     }
 
     // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
-    // uplooaded. Move the file from that path to the specified one.
+    // uploaded. Move the file from that path to the specified one.
     return await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName))
   }
 
