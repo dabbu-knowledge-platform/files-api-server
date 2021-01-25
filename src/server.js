@@ -21,6 +21,8 @@
 const express = require("express")
 // Multer, the library used to handle file upload for POST and PUT requests
 const multer = require("multer")
+// Path library
+const path = require("path")
 
 // Custom error handler used to send back user and computer friendly messages to clients.
 const { ProviderNotEnabledError, errorHandler } = require("./errors.js")
@@ -39,7 +41,7 @@ const rootURL = "/dabbu/v1/api"
 // Create an express server
 const app = express()
 // Define where multer should store the uploaded files
-const upload = multer({ dest: 'uploads/' })
+const upload = multer({ dest: path.normalize(`${__dirname}/../uploads/`) })
 
 // A dictionary of all the provider code, can be accessed using the provider's ID
 const providerClasses = {}

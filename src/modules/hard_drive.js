@@ -148,10 +148,8 @@ class HardDriveDataProvider extends Provider {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
-    // Check if the folder exists
-    if (!(await fs.pathExists(diskPath(basePath, folderPath)))) {
-      throw new NotFoundError(`Folder ${diskPath(basePath, folderPath)} was not found`)
-    }
+    // If the folder doesn't exist, create one
+    //await fs.ensureDir(diskPath(basePath, folderPath))
 
     // Check if the file exists
     if (await fs.pathExists(diskPath(basePath, folderPath, fileName))) {
@@ -183,7 +181,7 @@ class HardDriveDataProvider extends Provider {
     }
 
     // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
-    // uplooaded. Move the file from that path to the specified one and overwrite it.
+    // uploaded. Move the file from that path to the specified one and overwrite it.
     return await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName), { overwrite: true })
   }
 
@@ -223,7 +221,7 @@ class HardDriveDataProvider extends Provider {
       }
   
       // Recursively delete the folder and its contents
-      return await fs.rmdir(diskPath(basePath, folderPath), { recursive: true })
+      return await fs.remove(diskPath(basePath, folderPath), { recursive: true })
     } else {
       // Else error out
       throw new BadRequestError(`Must provide either folder path or file path to delete`)
