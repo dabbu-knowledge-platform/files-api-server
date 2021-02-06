@@ -85,7 +85,7 @@ class HardDriveDataProvider extends Provider {
       const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
       const createdAtTime = statistics["birthTime"] // When it was created
       const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
-      const contentURI = "file://" + diskPath(basePath, folderPath, fileName) // Content URI, allows the file to be downloaded
+      const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
       // Append to a final array that will be returned
       fileObjs.push({
@@ -130,7 +130,7 @@ class HardDriveDataProvider extends Provider {
     const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
     const createdAtTime = statistics["birthTime"] // When it was created
     const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
-    const contentURI = "file://" + diskPath(basePath, folderPath, fileName) // Content URI, allows the file to be downloaded
+    const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
     return {name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
 

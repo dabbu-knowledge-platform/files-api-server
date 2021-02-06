@@ -40,7 +40,7 @@ const mimeLib = new mmmagic.Magic(mmmagic.MAGIC_MIME_TYPE)
 // MARK: Functions
 
 // Get the folder ID based on its name
-async function getFolderId(instance, folderName, parentId = "root", insertIfNotFound = false) {
+async function getFolderId(instance, folderName, parentId = "root", isShared = false, insertIfNotFound = false) {
   // If it's the root folder, return `root` as the ID
   if (folderName === "/") {
     return "root"
@@ -49,9 +49,10 @@ async function getFolderId(instance, folderName, parentId = "root", insertIfNotF
   // Query the Drive API
   const result = await instance.get("/drive/v2/files", {
     params: {
-      q: (`'${parentId === "root" ? "root" : parentId}' in parents and title='${folderName}' and mimeType='application/vnd.google-apps.folder'`),
-      spaces: (`drive`),
-      fields: (`items(id, title)`)
+      q: isShared 
+          ? `title='${folderName}' and mimeType='application/vnd.google-apps.folder' and sharedWithMe = true`
+          : `'${parentId}' in parents and title='${folderName}' and mimeType='application/vnd.google-apps.folder'`,
+      fields: `items(id, title)`
     }
   })
   
@@ -76,7 +77,7 @@ async function getFolderId(instance, folderName, parentId = "root", insertIfNotF
 }
 
 // Get the folder ID of the last folder in the path
-async function getFolderWithParents(instance, folderPath, insertIfNotFound = false) {
+async function getFolderWithParents(instance, folderPath, isShared = false, insertIfNotFound = false) {
   // If it's the root folder, return `root` as the ID
   if (folderPath === "/") {
     return "root"
@@ -97,23 +98,24 @@ async function getFolderWithParents(instance, folderPath, insertIfNotFound = fal
     // then get the next folder ID with it as a parent
     var prevFolderId = "root"
     for (var j = 0, length = folderNames.length; j < length; j++) {
-      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId)
+      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared)
     }
     // Return the ID of the last folder
     return prevFolderId
   } else {
     // Return the last and only folder's ID
-    return await getFolderId(instance, folderNames[folderNames.length - 1], "root", insertIfNotFound)
+    return await getFolderId(instance, folderNames[folderNames.length - 1], "root", isShared, insertIfNotFound)
   }
 }
 
 // Get the ID of a file based on its name
-async function getFileId(instance, fileName, parentId = "root", errorOutIfExists = false) {
+async function getFileId(instance, fileName, parentId = "root", isShared = false, errorOutIfExists = false) {
   // Query the Drive API
   const result = await instance.get("/drive/v2/files", {
     params: {
-      q: `'${parentId}' in parents and title='${fileName}'`,
-      spaces: `drive`,
+      q: isShared 
+        ? `title='${fileName}' and sharedWithMe = true`
+        : `'${parentId}' in parents and title = '${fileName}'`,
       fields: `items(id, title)`
     }
   })
@@ -138,7 +140,7 @@ async function getFileId(instance, fileName, parentId = "root", errorOutIfExists
 }
 
 // Get the file ID of a file with a folder path before it
-async function getFileWithParents(instance, filePath) {
+async function getFileWithParents(instance, filePath, isShared = false) {
   // Parse the path
   var folderNames = filePath.split("/")
   // Get the file name and remove it from the folder path
@@ -158,13 +160,13 @@ async function getFileWithParents(instance, filePath) {
     // then get the next folder ID with it as a parent
     var prevFolderId = "root"
     for (var j = 0, length = folderNames.length; j < length; j++) {
-      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId)
+      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared)
     }
     // Return the file ID with the parent ID being the last folder's ID
-    return await getFileId(instance, fileName, prevFolderId)
+    return await getFileId(instance, fileName, prevFolderId, isShared)
   } else {
     // Get the file ID
-    return await getFileId(instance, fileName, "root")
+    return await getFileId(instance, fileName, "root", isShared)
   }
 }
 
@@ -214,20 +216,25 @@ class GoogleDriveDataProvider extends Provider {
     })
 
     // Get the folder path from the URL
-    const folderPath = diskPath(params["folderPath"])
+    const folderPath = diskPath(params["folderPath"].replace("Shared", ""))
+    // Get the export type from the query parameters
+    const exportType = queries["exportType"]
+    // Should we search among shared files?
+    const isShared = diskPath(params["folderPath"]) === "/Shared"
 
     // Don't allow relative paths, let clients do th
     if (diskPath(folderPath).indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
-    // Get the folder ID
-    const folderId = await getFolderWithParents(instance, folderPath)
+    // Get the folder ID (exception is if the folder name is Shared)
+    const folderId = await getFolderWithParents(instance, folderPath, isShared)
 
     // Query the Drive API
     const listResult = await instance.get(`/drive/v2/files`, {
       params: {
-        q: `'${folderId}' in parents and trashed = false`,
+        // If the folder path is /Shared, return all the files in the Shared Folder
+        q: isShared ? `trashed = false and sharedWithMe = true` : `'${folderId}' in parents and trashed = false`,
         fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`
       }
     })
@@ -245,7 +252,29 @@ class GoogleDriveDataProvider extends Provider {
         const createdAtTime = fileObj.createdDate // When it was created
         const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
         const exportMimeType = getExportTypeForDoc(mimeType)
-        const contentURI = exportMimeType === "auto" ? fileObj.webContentLink : fileObj.exportLinks[exportMimeType] // Content URI
+        let contentURI = null
+        // If the export type is media, then return a googleapis.com link
+        if (exportType === "media") {
+          contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
+        } else if (exportType === "view") {
+          contentURI = `https://drive.google.com/open?id=${fileObj.id}`
+        } else {
+          // Else:
+          // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+          if (exportMimeType === "auto") {
+            // If not, then give the web content link (only downloadable by browser)
+            contentURI = fileObj.webContentLink
+          } else {
+            // Else it is a Doc/Sheet/Slide/Drawing/App Script
+            // If the requested export type is in the exportLinks field, return that link
+            if (fileObj.exportLinks[exportType]) {
+              contentURI = fileObj.exportLinks[exportType]
+            } else {
+              // Else return the MS format of it
+              contentURI = fileObj.exportLinks[exportMimeType]
+            }
+          }
+        }
 
         // Append to a final array that will be returned
         fileObjs.push({
@@ -293,7 +322,7 @@ class GoogleDriveDataProvider extends Provider {
     const listResult = await instance.get(`/drive/v2/files`, {
       params: {
         q: `title='${fileName}' and '${folderId}' in parents and trashed = false`,
-        fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`
+        fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)`
       }
     })
 
@@ -313,6 +342,8 @@ class GoogleDriveDataProvider extends Provider {
         // If the export type is media, then return a googleapis.com link
         if (exportType === "media") {
           contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
+        } else if (exportType === "view") {
+          contentURI = `https://drive.google.com/open?id=${fileObj.id}`
         } else {
           // Else:
           // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script

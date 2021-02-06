@@ -22,7 +22,7 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not enabled - (Sends only HTTP code, no response body)
 
 ### **List files in a folder**
-#### **GET**: `/data/:providerId/:folderPath?compareWith=$compareWith&operator=$operator&value=$value&orderBy=$orderBy&direction=$direction`
+#### **GET**: `/data/:providerId/:folderPath?compareWith=$compareWith&operator=$operator&value=$value&orderBy=$orderBy&direction=$direction&exportType=$uriType`
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
@@ -32,6 +32,7 @@ Please URL encode all params, especially file and folder paths while sending req
   - `value`: The value of the field the item must be equal to, less than or greater than - `string`
   - `orderBy`: Order by a field (specify field name) - `string`
   - `direction`: The order in which to sort the items - `enum<string> - asc, desc`
+  - `exportType`: Type of URI that the content should be returned in, providers are free to set their own accepted values - `string`
 - Request body: [Optional]
   - `providerOptions`: Provider specific options - `obj {}`
 - Response:

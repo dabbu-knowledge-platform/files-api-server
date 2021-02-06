@@ -81,6 +81,7 @@ function errorHandler(err, req, res, next) {
   } else {
     if (err.code && typeof err.code === "number") {
       // If there is a valid numerical code to the error, return it with the code, message and "unknownReason"
+      console.error(err)
       return res.status(err.code).json({
         code: err.code,
         error: {
@@ -89,6 +90,7 @@ function errorHandler(err, req, res, next) {
         }
       })
     } else {
+      console.error(err)
       // Else return an internalServerError
       return res.status(500).json({
         code: 500,
