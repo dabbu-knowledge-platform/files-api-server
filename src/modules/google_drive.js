@@ -301,13 +301,15 @@ class GoogleDriveDataProvider extends Provider {
     })
 
     // Get the folder path from the URL
-    const folderPath = diskPath(params["folderPath"])
+    const folderPath = diskPath(params["folderPath"].replace("Shared", ""))
     // Get the file path from the URL
     const fileName = params["fileName"]
     // Get the export type from the query parameters
     const exportType = queries["exportType"]
     // TODO: Support params like order and compare by
     var {compareWith, operator, value, orderBy, direction} = queries
+    // Should we search among shared files?
+    const isShared = diskPath(params["folderPath"]) === "/Shared"
 
     // Don't allow relative paths, let clients do that
     if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
@@ -315,13 +317,14 @@ class GoogleDriveDataProvider extends Provider {
     }
     
     // Get the folder and file ID
-    const folderId = await getFolderWithParents(instance, folderPath)
-    const fileId = await getFileId(instance, fileName, folderId)
+    const folderId = await getFolderWithParents(instance, folderPath, isShared)
     
     // Query the Drive API
     const listResult = await instance.get(`/drive/v2/files`, {
       params: {
-        q: `title='${fileName}' and '${folderId}' in parents and trashed = false`,
+        q: isShared 
+            ? `title='${fileName}' and trashed = false and sharedWithMe = true`
+            : `title='${fileName}' and '${folderId}' in parents and trashed = false`,
         fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)`
       }
     })
@@ -329,46 +332,41 @@ class GoogleDriveDataProvider extends Provider {
     if (listResult.data.items.length > 0) {
       // If we get a valid result
       const fileObj = listResult.data.items[0]
-      if (fileObj.id === fileId) {
-        const name = fileObj.title // Name of the file
-        const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
-        const filePath = diskPath(folderPath, name) // Absolute path to the file
-        const mimeType = fileObj.mimeType // Mime type
-        const size = fileObj.fileSize // Size in bytes, let clients convert to whatever unit they want
-        const createdAtTime = fileObj.createdDate // When it was created
-        const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
-        const exportMimeType = getExportTypeForDoc(mimeType)
-        let contentURI = null
-        // If the export type is media, then return a googleapis.com link
-        if (exportType === "media") {
-          contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
-        } else if (exportType === "view") {
-          contentURI = `https://drive.google.com/open?id=${fileObj.id}`
+      const name = fileObj.title // Name of the file
+      const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
+      const filePath = diskPath(folderPath, name) // Absolute path to the file
+      const mimeType = fileObj.mimeType // Mime type
+      const size = fileObj.fileSize // Size in bytes, let clients convert to whatever unit they want
+      const createdAtTime = fileObj.createdDate // When it was created
+      const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
+      const exportMimeType = getExportTypeForDoc(mimeType)
+      let contentURI = null
+      // If the export type is media and it is not a Google Doc/Sheet/Slide/Drawing/App Script, then return a googleapis.com link
+      if (exportType === "media" && exportMimeType === "auto") {
+        contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
+      } else if (exportType === "view") {
+        contentURI = `https://drive.google.com/open?id=${fileObj.id}`
+      } else {
+        // Else:
+        // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+        if (exportMimeType === "auto") {
+          // If not, then give the web content link (only downloadable by browser)
+          contentURI = fileObj.webContentLink
         } else {
-          // Else:
-          // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
-          if (exportMimeType === "auto") {
-            // If not, then give the web content link (only downloadable by browser)
-            contentURI = fileObj.webContentLink
+          // Else it is a Doc/Sheet/Slide/Drawing/App Script
+          // If the requested export type is in the exportLinks field, return that link
+          if (fileObj.exportLinks[exportType]) {
+            contentURI = fileObj.exportLinks[exportType]
           } else {
-            // Else it is a Doc/Sheet/Slide/Drawing/App Script
-            // If the requested export type is in the exportLinks field, return that link
-            if (fileObj.exportLinks[exportType]) {
-              contentURI = fileObj.exportLinks[exportType]
-            } else {
-              // Else return the MS format of it
-              contentURI = fileObj.exportLinks[exportMimeType]
-            }
+            // Else return the MS format of it
+            contentURI = fileObj.exportLinks[exportMimeType]
           }
         }
+      }
 
-        // Return the file metadata and content
-        return {
-          name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI
-        }
-      } else {
-        // We have a different file with the same name
-        throw new NotFoundError(`Invalid file ID returned: There seems to be a different file with the same name here.`)
+      // Return the file metadata and content
+      return {
+        name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI
       }
     } else {
       // Not found
@@ -398,10 +396,10 @@ class GoogleDriveDataProvider extends Provider {
     }
 
     // Get the folder ID
-    const folderId = await getFolderWithParents(instance, folderPath, true)
+    const folderId = await getFolderWithParents(instance, folderPath, false, true)
     
     // Check if the file already exists
-    await getFileId(instance, fileName, folderId, true)
+    await getFileId(instance, fileName, folderId, false, true)
 
     // Detect the file's mime type
     const fileMimeType = await new Promise((resolve, reject) => {
@@ -450,8 +448,8 @@ class GoogleDriveDataProvider extends Provider {
     }
 
     // Get the folder and file ID
-    const folderId = await getFolderWithParents(instance, folderPath, false)
-    const fileId = await getFileId(instance, fileName, folderId, false)
+    const folderId = await getFolderWithParents(instance, folderPath, false, false)
+    const fileId = await getFileId(instance, fileName, folderId, false, false)
 
     // Get the new mime type of the file
     const fileMimeType = await new Promise((resolve, reject) => {
