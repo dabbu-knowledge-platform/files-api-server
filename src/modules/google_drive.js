@@ -64,7 +64,7 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
     // There is no such folder
     if (insertIfNotFound) {
       // Insert a folder if the `insertIfNotFound` option is true
-      await instance.post(`/drive/v2/files`, {
+      await instance.post("/drive/v2/files", {
         "title": folderName,
         parents: [{id: parentId}],
         mimeType: "application/vnd.google-apps.folder"
@@ -219,22 +219,29 @@ class GoogleDriveDataProvider extends Provider {
     const folderPath = diskPath(params["folderPath"].replace("Shared", ""))
     // Get the export type from the query parameters
     const exportType = queries["exportType"]
-    // Should we search among shared files?
-    const isShared = diskPath(params["folderPath"]) === "/Shared"
 
     // Don't allow relative paths, let clients do th
     if (diskPath(folderPath).indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
-    // Get the folder ID (exception is if the folder name is Shared)
-    const folderId = await getFolderWithParents(instance, folderPath, isShared)
+    // Get the folder ID (exception is if the folder is shared)
+    const folderId = await getFolderWithParents(instance, folderPath, diskPath(params["folderPath"]).startsWith("/Shared"))
+
+    // Construct the query
+    let q
+    if (diskPath(params["folderPath"]) === "/Shared") {
+      // If the folder path is /Shared, return all the files in the Shared Folder.
+      q = `trashed = false and sharedWithMe = true`
+    } else {
+      // Else just do a normal list
+      q = `'${folderId}' in parents and trashed = false`
+    }
 
     // Query the Drive API
-    const listResult = await instance.get(`/drive/v2/files`, {
+    const listResult = await instance.get("/drive/v2/files", {
       params: {
-        // If the folder path is /Shared, return all the files in the Shared Folder
-        q: isShared ? `trashed = false and sharedWithMe = true` : `'${folderId}' in parents and trashed = false`,
+        q: q,
         fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`
       }
     })
@@ -306,25 +313,29 @@ class GoogleDriveDataProvider extends Provider {
     const fileName = params["fileName"]
     // Get the export type from the query parameters
     const exportType = queries["exportType"]
-    // TODO: Support params like order and compare by
-    var {compareWith, operator, value, orderBy, direction} = queries
-    // Should we search among shared files?
-    const isShared = diskPath(params["folderPath"]) === "/Shared"
 
     // Don't allow relative paths, let clients do that
     if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
     
-    // Get the folder and file ID
-    const folderId = await getFolderWithParents(instance, folderPath, isShared)
+    // Get the parent folder ID
+    const folderId = await getFolderWithParents(instance, folderPath, diskPath(params["folderPath"]).startsWith("/Shared"))
+
+    // Construct the query
+    let q
+    if (diskPath(params["folderPath"]) === "/Shared") {
+      // If the folder path is /Shared, the file has been shared individually.
+      q = `title='${fileName}' and trashed = false and sharedWithMe = true`
+    } else {
+      // Else just do a normal get
+      q = `title='${fileName}' and '${folderId}' in parents and trashed = false`
+    }
     
     // Query the Drive API
-    const listResult = await instance.get(`/drive/v2/files`, {
+    const listResult = await instance.get("/drive/v2/files", {
       params: {
-        q: isShared 
-            ? `title='${fileName}' and trashed = false and sharedWithMe = true`
-            : `title='${fileName}' and '${folderId}' in parents and trashed = false`,
+        q: q,
         fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)`
       }
     })
@@ -410,7 +421,7 @@ class GoogleDriveDataProvider extends Provider {
     })
 
     // First, post the file meta data to let Google Drive know we are posting the file's contents too
-    const driveMeta = await instance.post(`/drive/v2/files`, {
+    const driveMeta = await instance.post("/drive/v2/files", {
       "title": fileName,
       parents: [{id: folderId}],
       mimeType: fileMimeType
