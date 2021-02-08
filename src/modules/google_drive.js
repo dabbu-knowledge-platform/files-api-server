@@ -49,7 +49,7 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
   // Query the Drive API
   const result = await instance.get("/drive/v2/files", {
     params: {
-      q: isShared 
+      q: isShared
           ? `title='${folderName}' and mimeType='application/vnd.google-apps.folder' and sharedWithMe = true`
           : `'${parentId}' in parents and title='${folderName}' and mimeType='application/vnd.google-apps.folder'`,
       fields: `items(id, title)`
@@ -98,12 +98,16 @@ async function getFolderWithParents(instance, folderPath, isShared = false, inse
     // then get the next folder ID with it as a parent
     var prevFolderId = "root"
     for (var j = 0, length = folderNames.length; j < length; j++) {
-      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared)
+      // Don't set sharedWithMe here to true if this is not the first folder, 
+      // because then the folder is implicitly shared as part of the first folder
+      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0)
     }
     // Return the ID of the last folder
     return prevFolderId
   } else {
     // Return the last and only folder's ID
+    // Set sharedWithMe here to true (if passed on as true) as the 
+    // folder will have been explicitly shared
     return await getFolderId(instance, folderNames[folderNames.length - 1], "root", isShared, insertIfNotFound)
   }
 }
@@ -160,12 +164,18 @@ async function getFileWithParents(instance, filePath, isShared = false) {
     // then get the next folder ID with it as a parent
     var prevFolderId = "root"
     for (var j = 0, length = folderNames.length; j < length; j++) {
-      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared)
+      // Don't set sharedWithMe here to true if this is not the first folder, 
+      // because then the folder is implicitly shared as part of the first folder
+      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0)
     }
     // Return the file ID with the parent ID being the last folder's ID
-    return await getFileId(instance, fileName, prevFolderId, isShared)
+    // Don't set sharedWithMe here to true, because the file is implicitly
+    // shared as part of a main folder
+    return await getFileId(instance, fileName, prevFolderId)
   } else {
     // Get the file ID
+    // Set sharedWithMe here to true (if passed on as true) as the 
+    // file will have been explicitly shared
     return await getFileId(instance, fileName, "root", isShared)
   }
 }
@@ -219,6 +229,8 @@ class GoogleDriveDataProvider extends Provider {
     const folderPath = diskPath(params["folderPath"].replace("Shared", ""))
     // Get the export type from the query parameters
     const exportType = queries["exportType"]
+    // Is the file shared (explicitly or implicitly)
+    const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
     // Don't allow relative paths, let clients do th
     if (diskPath(folderPath).indexOf("..") !== -1) {
@@ -226,7 +238,7 @@ class GoogleDriveDataProvider extends Provider {
     }
 
     // Get the folder ID (exception is if the folder is shared)
-    const folderId = await getFolderWithParents(instance, folderPath, diskPath(params["folderPath"]).startsWith("/Shared"))
+    const folderId = await getFolderWithParents(instance, folderPath, isShared)
 
     // Construct the query
     let q
@@ -253,7 +265,7 @@ class GoogleDriveDataProvider extends Provider {
         const fileObj = listResult.data.items[i]
         const name = fileObj.title // Name of the file
         const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
-        const filePath = diskPath(folderPath, name) // Absolute path to the file
+        const path = isShared ? diskPath("/Shared", folderPath, name) : diskPath(folderPath, name) // Absolute path to the file
         const mimeType = fileObj.mimeType // Mime type
         const size = fileObj.fileSize // Size in bytes, let clients convert to whatever unit they want
         const createdAtTime = fileObj.createdDate // When it was created
@@ -285,7 +297,7 @@ class GoogleDriveDataProvider extends Provider {
 
         // Append to a final array that will be returned
         fileObjs.push({
-          name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI
+          name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
         })
       }
       // Return all the files as a final array
@@ -313,6 +325,8 @@ class GoogleDriveDataProvider extends Provider {
     const fileName = params["fileName"]
     // Get the export type from the query parameters
     const exportType = queries["exportType"]
+    // Is the file shared (explicitly or implicitly)
+    const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
     // Don't allow relative paths, let clients do that
     if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
@@ -320,7 +334,7 @@ class GoogleDriveDataProvider extends Provider {
     }
     
     // Get the parent folder ID
-    const folderId = await getFolderWithParents(instance, folderPath, diskPath(params["folderPath"]).startsWith("/Shared"))
+    const folderId = await getFolderWithParents(instance, folderPath, isShared)
 
     // Construct the query
     let q
@@ -345,7 +359,7 @@ class GoogleDriveDataProvider extends Provider {
       const fileObj = listResult.data.items[0]
       const name = fileObj.title // Name of the file
       const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
-      const filePath = diskPath(folderPath, name) // Absolute path to the file
+      const path = isShared ? diskPath("/Shared", folderPath, name) : diskPath(folderPath, name) // Absolute path to the file
       const mimeType = fileObj.mimeType // Mime type
       const size = fileObj.fileSize // Size in bytes, let clients convert to whatever unit they want
       const createdAtTime = fileObj.createdDate // When it was created
@@ -377,7 +391,7 @@ class GoogleDriveDataProvider extends Provider {
 
       // Return the file metadata and content
       return {
-        name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI
+        name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
       }
     } else {
       // Not found

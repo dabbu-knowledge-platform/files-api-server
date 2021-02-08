@@ -1,4 +1,4 @@
 node_modules/
-uploads/
 creds/
+.cache/
 dabbu_server_log.txt

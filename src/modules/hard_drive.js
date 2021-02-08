@@ -75,7 +75,7 @@ class HardDriveDataProvider extends Provider {
 
       const name = fileName // Name of the file
       const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
-      const filePath = diskPath(basePath, folderPath, fileName) // Path to that file locally
+      const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
       const mimeType = await new Promise((resolve, reject) => {
         mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
           if (err) reject(err)
@@ -89,7 +89,7 @@ class HardDriveDataProvider extends Provider {
 
       // Append to a final array that will be returned
       fileObjs.push({
-        name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI
+        name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
       })
     }
     // Return all the files as a final array
@@ -120,7 +120,7 @@ class HardDriveDataProvider extends Provider {
 
     const name = fileName // Name of the file
     const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
-    const filePath = diskPath(basePath, folderPath, fileName) // Path to that file locally
+    const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
     const mimeType = await new Promise((resolve, reject) => {
       mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
         if (err) reject(err)
@@ -131,7 +131,7 @@ class HardDriveDataProvider extends Provider {
     const createdAtTime = statistics["birthTime"] // When it was created
     const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
-    return {name, kind, filePath, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
+    return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
 
   // Create a file at a specified location
