@@ -50,8 +50,8 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
   const result = await instance.get("/drive/v2/files", {
     params: {
       q: isShared
-          ? `title='${folderName}' and mimeType='application/vnd.google-apps.folder' and sharedWithMe = true`
-          : `'${parentId}' in parents and title='${folderName}' and mimeType='application/vnd.google-apps.folder'`,
+          ? `title='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true`
+          : `'${parentId}' in parents and title='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed = false`,
       fields: `items(id, title)`
     }
   })
@@ -64,11 +64,17 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
     // There is no such folder
     if (insertIfNotFound) {
       // Insert a folder if the `insertIfNotFound` option is true
-      await instance.post("/drive/v2/files", {
+      const newFolderResult = await instance.post("/drive/v2/files", {
         "title": folderName,
         parents: [{id: parentId}],
         mimeType: "application/vnd.google-apps.folder"
       })
+
+      if (newFolderResult.data.id) {
+        return newFolderResult.data.id
+      } else {
+        throw new Error("Couldn't create folder")
+      }
     } else {
       // Else error out
       throw new NotFoundError(`Folder ${folderName} does not exist`)
@@ -100,7 +106,7 @@ async function getFolderWithParents(instance, folderPath, isShared = false, inse
     for (var j = 0, length = folderNames.length; j < length; j++) {
       // Don't set sharedWithMe here to true if this is not the first folder, 
       // because then the folder is implicitly shared as part of the first folder
-      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0)
+      prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0, insertIfNotFound)
     }
     // Return the ID of the last folder
     return prevFolderId
@@ -118,8 +124,8 @@ async function getFileId(instance, fileName, parentId = "root", isShared = false
   const result = await instance.get("/drive/v2/files", {
     params: {
       q: isShared 
-        ? `title='${fileName}' and sharedWithMe = true`
-        : `'${parentId}' in parents and title = '${fileName}'`,
+        ? `title='${fileName}' and sharedWithMe = true and trashed = false`
+        : `'${parentId}' in parents and title = '${fileName}' and trashed = false`,
       fields: `items(id, title)`
     }
   })
