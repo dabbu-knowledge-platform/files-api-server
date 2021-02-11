@@ -25,27 +25,27 @@ const { NotImplementedError } = require("../errors.js");
 // Default Provider class to be extended by all custom providers
 class Provider {
   // Default list function, throws a NotImplementedError
-  async list(providerData, headers, params, queries) {
+  async list(body, headers, params, queries) {
     throw new NotImplementedError(`The provider ${params["providerId"]} does not support LIST requests`)
   }
 
   // Default read function, throws a NotImplementedError
-  async read(providerData, headers, params, queries) {
+  async read(body, headers, params, queries) {
     throw new NotImplementedError(`The provider ${params["providerId"]} does not support GET requests`)
   }
 
   // Default create function, throws a NotImplementedError
-  async create(providerData, headers, params, queries, fileMeta) {
+  async create(body, headers, params, queries, fileMeta) {
     throw new NotImplementedError(`The provider ${params["providerId"]} does not support CREATE requests`)
   }
 
   // Default update function, throws a NotImplementedError
-  async update(providerData, headers, params, queries, fileMeta) {
+  async update(body, headers, params, queries, fileMeta) {
     throw new NotImplementedError(`The provider ${params["providerId"]} does not support UPDATE requests`)
   }
 
   // Default delete function, throws a NotImplementedError
-  async delete(providerData, headers, params, queries) {
+  async delete(body, headers, params, queries) {
     throw new NotImplementedError(`The provider ${params["providerId"]} does not support DELETE requests`)
   }
 }

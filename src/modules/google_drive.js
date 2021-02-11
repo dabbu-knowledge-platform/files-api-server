@@ -221,7 +221,7 @@ class GoogleDriveDataProvider extends Provider {
   }
 
   // List files and folders at a particular location
-  async list(providerData, headers, params, queries) {
+  async list(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers["Authorization"] || headers["authorization"]
     // Create an axios instance with the header. All requests will be made with this 
@@ -233,8 +233,8 @@ class GoogleDriveDataProvider extends Provider {
 
     // Get the folder path from the URL
     const folderPath = diskPath(params["folderPath"].replace("Shared", ""))
-    // Get the export type from the query parameters
-    const exportType = queries["exportType"]
+    // Get the export type and compare/sort params from the query parameters
+    let {compareWith, operator, value, orderBy, direction, exportType} = queries
     // Is the file shared (explicitly or implicitly)
     const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
@@ -329,7 +329,7 @@ class GoogleDriveDataProvider extends Provider {
   }
 
   // Return a file obj at a specified location
-  async read(providerData, headers, params, queries) {
+  async read(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers["Authorization"] || headers["authorization"]
     // Create an axios instance with the header. All requests will be made with this 
@@ -422,7 +422,7 @@ class GoogleDriveDataProvider extends Provider {
   }
 
   // Create a file at a specified location
-  async create(providerData, headers, params, queries, fileMeta) {
+  async create(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
     const accessToken = headers["Authorization"] || headers["authorization"]
     // Create an axios instance with the header. All requests will be made with this 
@@ -474,7 +474,7 @@ class GoogleDriveDataProvider extends Provider {
   }
 
   // Update the file at the specified location with the file provided
-  async update(providerData, headers, params, queries, fileMeta) {
+  async update(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
     const accessToken = headers["Authorization"] || headers["authorization"]
     // Create an axios instance with the header. All requests will be made with this 
@@ -511,7 +511,7 @@ class GoogleDriveDataProvider extends Provider {
   }
 
   // Delete the file or folder at the specified location
-  async delete(providerData, headers, params, queries) {
+  async delete(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers["Authorization"] || headers["authorization"]
     // Create an axios instance with the header. All requests will be made with this 

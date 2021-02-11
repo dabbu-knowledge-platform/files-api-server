@@ -43,9 +43,9 @@ class HardDriveDataProvider extends Provider {
   }
 
   // List files and folders at a location
-  async list(providerData, headers, params, queries) {
+  async list(body, headers, params, queries) {
     // Get the base path provided in the request body
-    const basePath = providerData["base_path"]
+    const basePath = body["base_path"]
     if (!basePath) {
       // If it doesn't exist, error out
       throw new MissingParamError("Expected base path to be part of request body")
@@ -97,9 +97,9 @@ class HardDriveDataProvider extends Provider {
   }
 
   // Return a file obj at a specified location
-  async read(providerData, headers, params, queries) {
+  async read(body, headers, params, queries) {
     // Get the base path provided in the request body
-    const basePath = providerData["base_path"]
+    const basePath = body["base_path"]
     // Get the folder path in the URL
     const folderPath = params["folderPath"]
     // Get the file name in the URL
@@ -135,9 +135,9 @@ class HardDriveDataProvider extends Provider {
   }
 
   // Create a file at a specified location
-  async create(providerData, headers, params, queries, fileMeta) {
+  async create(body, headers, params, queries, fileMeta) {
     // Get the base path provided in the request body
-    const basePath = providerData["base_path"]
+    const basePath = body["base_path"]
     // Get the folder path in the URL
     const folderPath = params["folderPath"]
     // Get the file name in the URL
@@ -162,9 +162,9 @@ class HardDriveDataProvider extends Provider {
   }
 
   // Update the file at the specified location with the file provided
-  async update(providerData, headers, params, queries, fileMeta) {
+  async update(body, headers, params, queries, fileMeta) {
     // Get the base path provided in the request body
-    const basePath = providerData["base_path"]
+    const basePath = body["base_path"]
     // Get the folder path in the URL
     const folderPath = params["folderPath"]
     // Get the file name in the URL
@@ -186,9 +186,9 @@ class HardDriveDataProvider extends Provider {
   }
 
   // Delete the file or folder at the specified location
-  async delete(providerData, headers, params, queries) {
+  async delete(body, headers, params, queries) {
     // Get the base path provided in the request body
-    const basePath = providerData["base_path"]
+    const basePath = body["base_path"]
     // Get the folder path in the URL
     const folderPath = params["folderPath"]
     // Get the file name in the URL
