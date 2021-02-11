@@ -65,9 +65,32 @@ class HardDriveDataProvider extends Provider {
     }
 
     // List the files and folders at that location
-    const files = await fs.readdir(diskPath(basePath, folderPath))
-    const fileObjs = []
-    // Loop through the list of files
+    let files = await fs.readdir(diskPath(basePath, folderPath))
+    let fileObjs = []
+
+    // Check if the values provided are valid
+    // All possible valid values for each field
+    let possibleFields = ["name", "kind", "path", "mimeType", "size", "createdAtTime", "lastModifiedTime", "contentURI"]
+    let possibleOps = ["<", ">", "="]
+    let possibleDirs = ["asc", "desc"]
+
+    if (compareWith && possibleFields.indexOf(compareWith) === -1) {
+      throw new BadRequestError(`Field ${compareWith} is not a valid field to compare`)
+    }
+
+    if (operator && possibleOps.indexOf(operator) === -1) {
+      throw new BadRequestError(`Operator ${operator} is not a valid operator`)
+    }
+
+    if (orderBy && possibleFields.indexOf(orderBy) === -1) {
+      throw new BadRequestError(`Field ${orderBy} is not a valid field to order by`)
+    }
+    
+    if (direction && possibleDirs.indexOf(direction) === -1) {
+      throw new BadRequestError(`Direction ${direction} is not a valid direction`)
+    }
+
+    // Then loop through the list of files
     for (let i = 0, length = files.length; i < length; i++) {
       const fileName = files[i]
       // Get the statistics related to that file, `fs.readdir` only gives the name
@@ -83,7 +106,7 @@ class HardDriveDataProvider extends Provider {
         })
       }) // The mime type of the file
       const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
-      const createdAtTime = statistics["birthTime"] // When it was created
+      const createdAtTime = statistics["birthtime"] // When it was created
       const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
       const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
@@ -92,6 +115,34 @@ class HardDriveDataProvider extends Provider {
         name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
       })
     }
+
+    // Sort the array now
+    fileObjs = fileObjs.filter(file => {
+      // Cast the value to a date if it is being compared with
+      // createdAtTime or lastModifiedTime
+      let autoCastValue = value
+      if (compareWith.endsWith("Time")) {
+        autoCastValue = new Date(value)
+      }
+
+      // Compare the corresponding field's value with the now
+      // automatically cast value based on the operator
+      if (operator === "<") {
+        return file[compareWith] < autoCastValue
+      }
+      if (operator === ">") {
+        return file[compareWith] > autoCastValue
+      }
+      if (operator === "=") {
+        return file[compareWith] == autoCastValue
+      }
+    })
+
+    // Sort it
+    fileObjs = fileObjs.sort((file1, file2) => {
+      return file1[compareWith] - file2[compareWith]
+    })
+
     // Return all the files as a final array
     return fileObjs
   }
