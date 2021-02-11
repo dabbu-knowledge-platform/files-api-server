@@ -21,6 +21,9 @@
 const express = require("express")
 // Multer, the library used to handle file upload for POST and PUT requests
 const multer = require("multer")
+
+// Extended file system library
+const fs = require("fs-extra")
 // Path library
 const path = require("path")
 
@@ -230,8 +233,8 @@ app.delete(`${rootURL}/data/:providerId/:folderPath/:fileName?`, (req, res, next
 app.use(errorHandler)
 
 // When the user presses CTRL+C, gracefully exit
-process.on('SIGTERM', () => {
-  debug('SIGTERM signal received: closing Dabbu server')
+process.on('SIGINT', () => {
+  debug("SIGINT signal received: closing Dabbu server")
   // Delete the .cache directory
   fs.remove(`${__dirname}/../.cache/`) // Delete the .cache directory
     .then(() => info("Removed cache. Exiting.."))
