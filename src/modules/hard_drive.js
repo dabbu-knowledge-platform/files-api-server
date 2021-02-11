@@ -52,7 +52,7 @@ class HardDriveDataProvider extends Provider {
     }
     // Get the folder path in the URL
     const folderPath = params["folderPath"]
-    var {compareWith, operator, value, orderBy, direction} = queries
+    let {compareWith, operator, value, orderBy, direction} = queries
 
     // Don't allow relative paths, let clients do that
     if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
@@ -68,7 +68,7 @@ class HardDriveDataProvider extends Provider {
     const files = await fs.readdir(diskPath(basePath, folderPath))
     const fileObjs = []
     // Loop through the list of files
-    for (var i = 0, length = files.length; i < length; i++) {
+    for (let i = 0, length = files.length; i < length; i++) {
       const fileName = files[i]
       // Get the statistics related to that file, `fs.readdir` only gives the name
       const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links

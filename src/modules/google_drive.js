@@ -70,10 +70,10 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
         mimeType: "application/vnd.google-apps.folder"
       })
 
-      if (newFolderResult.data.id) {
+      if (newFolderResult.data && newFolderResult.data.id) {
         return newFolderResult.data.id
       } else {
-        throw new Error("Couldn't create folder")
+        throw new GeneralError(500, "No response from Google Drive. Could not create folder.", "invalidResponse")
       }
     } else {
       // Else error out
@@ -91,7 +91,7 @@ async function getFolderWithParents(instance, folderPath, isShared = false, inse
 
   // Else sanitise the folder path by removing empty names
   const folderNames = folderPath.split("/")
-  var i = 0
+  let i = 0
   while (i < folderNames.length) {
     if (folderNames[i] === "") {
       folderNames.splice(i, 1)
@@ -102,8 +102,8 @@ async function getFolderWithParents(instance, folderPath, isShared = false, inse
   if (folderNames.length > 1) {
     // If the path has multiple folders, loop through them, get their IDs and 
     // then get the next folder ID with it as a parent
-    var prevFolderId = "root"
-    for (var j = 0, length = folderNames.length; j < length; j++) {
+    let prevFolderId = "root"
+    for (let j = 0, length = folderNames.length; j < length; j++) {
       // Don't set sharedWithMe here to true if this is not the first folder, 
       // because then the folder is implicitly shared as part of the first folder
       prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0, insertIfNotFound)
@@ -152,12 +152,12 @@ async function getFileId(instance, fileName, parentId = "root", isShared = false
 // Get the file ID of a file with a folder path before it
 async function getFileWithParents(instance, filePath, isShared = false) {
   // Parse the path
-  var folderNames = filePath.split("/")
+  let folderNames = filePath.split("/")
   // Get the file name and remove it from the folder path
   const fileName = folderNames.pop()
 
   // Sanitize the folder names by removing empty folder namess
-  var i = 0
+  let i = 0
   while (i < folderNames.length) {
     if (folderNames[i] === "") {
       folderNames.splice(i, 1)
@@ -168,8 +168,8 @@ async function getFileWithParents(instance, filePath, isShared = false) {
   if (folderNames.length > 0) {
     // If the path has multiple folders, loop through them, get their IDs and 
     // then get the next folder ID with it as a parent
-    var prevFolderId = "root"
-    for (var j = 0, length = folderNames.length; j < length; j++) {
+    let prevFolderId = "root"
+    for (let j = 0, length = folderNames.length; j < length; j++) {
       // Don't set sharedWithMe here to true if this is not the first folder, 
       // because then the folder is implicitly shared as part of the first folder
       prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0)
@@ -257,18 +257,31 @@ class GoogleDriveDataProvider extends Provider {
     }
 
     // Query the Drive API
-    const listResult = await instance.get("/drive/v2/files", {
-      params: {
-        q: q,
-        fields: `items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`
-      }
-    })
+    let allFiles = []
+    let nextPageToken = null
+    do {
+      // List all files that match the given query
+      const listResult = await instance.get("/drive/v2/files", {
+        params: {
+          q: q,
+          fields: `nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)`,
+          pageSize: 100, // Get a max of 100 files at a time
+          pageToken: nextPageToken // Add the page token if there is any
+        }
+      })
+      
+      // Get the next page token (incase Google Drive returned incomplete results)
+      nextPageToken = listResult.data.nextPageToken
+      // Add the files we got right now to the main list
+      allFiles = allFiles.concat(listResult.data.items)
+    } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
-    if (listResult.data.items.length > 0) {
+    // Once we get everything, parse and print the files
+    if (allFiles.length > 0) {
       // If a valid result is returned, loop through all the files and folders there
-      var fileObjs = []
-      for (var i = 0, length = listResult.data.items.length; i < length; i++) {
-        const fileObj = listResult.data.items[i]
+      let fileObjs = []
+      for (let i = 0, length = allFiles.length; i < length; i++) {
+        const fileObj = allFiles[i]
         const name = fileObj.title // Name of the file
         const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
         const path = isShared ? diskPath("/Shared", folderPath, name) : diskPath(folderPath, name) // Absolute path to the file
@@ -282,6 +295,7 @@ class GoogleDriveDataProvider extends Provider {
         if (exportType === "media") {
           contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
         } else if (exportType === "view") {
+          // If the export type is view, return an "Open in Google Editor" link
           contentURI = `https://drive.google.com/open?id=${fileObj.id}`
         } else {
           // Else:
@@ -353,6 +367,7 @@ class GoogleDriveDataProvider extends Provider {
     }
     
     // Query the Drive API
+    // No need to do the pagination thing here, our query is specifically searching for a file
     const listResult = await instance.get("/drive/v2/files", {
       params: {
         q: q,
@@ -376,6 +391,7 @@ class GoogleDriveDataProvider extends Provider {
       if (exportType === "media" && exportMimeType === "auto") {
         contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
       } else if (exportType === "view") {
+        // If the export type is view, return an "Open in Google Editor" link
         contentURI = `https://drive.google.com/open?id=${fileObj.id}`
       } else {
         // Else:
