@@ -231,12 +231,12 @@ class GoogleDriveDataProvider extends Provider {
       headers: {"Authorization": accessToken}
     })
 
-    // Get the folder path from the URL
-    const folderPath = diskPath(params["folderPath"].replace("Shared", ""))
-    // Get the export type and compare/sort params from the query parameters
-    let {compareWith, operator, value, orderBy, direction, exportType} = queries
     // Is the file shared (explicitly or implicitly)
     const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
+    // Get the folder path from the URL and replace the /Shared part if it is in the beginning
+    const folderPath = diskPath(isShared ? params["folderPath"].replace("Shared", "") : params["folderPath"])
+    // Get the export type and compare/sort params from the query parameters
+    let {compareWith, operator, value, orderBy, direction, exportType} = queries
 
     // Don't allow relative paths, let clients do th
     if (diskPath(folderPath).indexOf("..") !== -1) {
