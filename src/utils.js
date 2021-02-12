@@ -17,12 +17,16 @@
 
 // MARK: Imports for all functions
 
+// Files library, used to do all file operations across platforms
 const fs = require("fs-extra")
+
+// Custom errors we throw
+const { BadRequestError } = require("./errors.js")
 
 // MARK: Functions
 
 // Print out an informational message
-function info(message) {
+exports.info = (message) => {
   const date = new Date().toISOString()
   console.log(` INFO  | ${date} | ${message}`)
   let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
@@ -33,7 +37,7 @@ function info(message) {
 // Print out a debug message if debug mode is enabled
 const config = require("./config/dabbu_config.json")
 const debugMode = config.runtime.debug
-function debug(message) {
+exports.debug = (message) => {
   const date = new Date().toISOString()
   if (debugMode === true) {
     console.log(` DEBUG | ${date} | ${message}`)
@@ -44,33 +48,135 @@ function debug(message) {
 }
 
 // Print out an error
-function error(err) {
+exports.error = (err) => {
   const date = new Date().toISOString()
-  console.log(` ERROR | ${date} | ${json(err)}`)
+  console.log(` ERROR | ${date} | ${this.json(err)}`)
   let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
-  stream.write(`ERROR | ${date} | ${json(err)}\n`)
+  stream.write(`ERROR | ${date} | ${this.json(err)}\n`)
   stream.write("\n")
   stream.end()
 }
 
 // Format JSON
-function json(string) {
+exports.json = (string) => {
   return JSON.stringify(string)
 }
 
 // Get a platform-independent path
 const path = require("path")
-function diskPath(...folders) {
+exports.diskPath = (...folders) => {
   return path.normalize(folders.join("/"))
 }
 
-// MARK: Exports
+// Sort out an array of files returned by the API
+exports.sortFiles = (compareWith, operator, value, orderBy, direction, files) => {
+  // Check if the values provided are valid
+  // All possible valid values for each field
+  let possibleFields = ["name", "kind", "path", "mimeType", "size", "createdAtTime", "lastModifiedTime", "contentURI"]
+  let possibleOps = ["<", ">", "="]
+  let possibleDirs = ["asc", "desc"]
 
-// Export everything
-module.exports = {
-  info,
-  debug,
-  error,
-  json,
-  diskPath
+  if (compareWith && possibleFields.indexOf(compareWith) === -1) {
+    throw new BadRequestError(`Field ${compareWith} is not a valid field to compare`)
+  }
+
+  if (operator && possibleOps.indexOf(operator) === -1) {
+    throw new BadRequestError(`Operator ${operator} is not a valid operator`)
+  }
+
+  if (orderBy && possibleFields.indexOf(orderBy) === -1) {
+    throw new BadRequestError(`Field ${orderBy} is not a valid field to order by`)
+  }
+  
+  if (direction && possibleDirs.indexOf(direction) === -1) {
+    throw new BadRequestError(`Direction ${direction} is not a valid direction`)
+  }
+
+  // Create a new array in which to store the filtered and sorted array
+  let sortedFiles = files
+
+  // Check if we have to compare something
+  if (compareWith) {
+    if (value && operator) {
+      sortedFiles = sortedFiles.filter(file => {
+        // Cast the value and field appropriately
+        let autoCastField = file[compareWith]
+        let autoCastValue = value
+
+        // If it is a name or kind, let it compare lexographically if the operator 
+        // is < or >
+        // For path, convert it to length of the path
+        if (compareWith === "path") {
+          autoCastField = this.diskPath(file[compareWith].split("/")).split("/").length
+          autoCastValue = this.diskPath(value.split("/")).split("/").length
+        }
+        // For mime type, ideally should check only for equality, but leaving it
+        // to lexographically sorted if the operator is > or <
+        // For size, make both numbers
+        if (compareWith === "size") {
+          // Using parseInt as file size will ideally return integers and not floats
+          autoCastField = parseInt(file[compareWith])
+          autoCastValue = parseInt(value)
+        }
+        // Cast to date if it is createdAtTime or lastModifiedTime
+        if (compareWith.endsWith("Time")) {
+          autoCastField = new Date(file[compareWith])
+          autoCastValue = new Date(value)
+        }
+        // For contentURI, ideally it should never be compared, but leaving it to
+        // nodejs sorting (lexographic)
+    
+        // Compare the corresponding field's value with the now
+        // automatically cast value based on the operator
+        if (operator === "<") {
+          return autoCastField < autoCastValue
+        }
+        if (operator === ">") {
+          return autoCastField > autoCastValue
+        }
+        if (operator === "=") {
+          return autoCastField == autoCastValue
+        }
+      })
+    } else {
+      throw new BadRequestError(`Found field ${compareWith} to compare, but did not receive operator or value`)
+    }
+  }
+
+  // Sort it
+  if (orderBy && direction) {
+    sortedFiles = sortedFiles.sort((file1, file2) => {
+      // Sort it differently for different fields  
+      // If it is a name or kind, compare it lexographically
+      // Use the same for mimeType and contentURI, even 
+      // though they are fields that shouldn't be used to order
+      if (orderBy === "name" || orderBy === "kind" || orderBy === "mimeType") {
+        return direction === "desc"
+                  ? file1[orderBy].localeCompare(file2[orderBy])
+                  : file2[orderBy].localeCompare(file1[orderBy])
+      }
+      // For path, convert it to length of the path
+      if (orderBy === "path") {
+        return direction === "desc"
+                  ? this.diskPath(file1[orderBy].split("/")).split("/").length > this.diskPath(file2[orderBy].split("/")).split("/").length ? -1 : 1
+                  : this.diskPath(file2[orderBy].split("/")).split("/").length > this.diskPath(file1[orderBy].split("/")).split("/").length ? -1 : 1
+      }
+      // For size, make both numbers
+      if (orderBy === "size") {
+        // Using parseInt as file size will ideally return integers and not floats
+        return direction === "desc"
+                  ? parseInt(file1[orderBy]) > parseInt(file2[orderBy]) ? -1 : 1
+                  : parseInt(file2[orderBy]) > parseInt(file1[orderBy]) ? -1 : 1
+      }
+      // Cast to date if it is createdAtTime or lastModifiedTime
+      if (orderBy.endsWith("Time")) {
+        return direction === "desc"
+                  ? new Date(file1[orderBy]) > new Date(file2[orderBy]) ? -1 : 1
+                  : new Date(file2[orderBy]) > new Date(file1[orderBy]) ? -1 : 1
+      }
+    })
+  }
+
+  // Return the filtered and sorted files
+  return sortedFiles
 }

@@ -25,7 +25,7 @@ const mmmagic = require("mmmagic")
 // Custom errors we throw
 const { NotFoundError, BadRequestError, FileExistsError, MissingParamError } = require("../errors.js")
 // Used to generate platform-independent file/folder paths
-const { diskPath } = require("../utils.js")
+const { diskPath, sortFiles } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
@@ -68,28 +68,6 @@ class HardDriveDataProvider extends Provider {
     let files = await fs.readdir(diskPath(basePath, folderPath))
     let fileObjs = []
 
-    // Check if the values provided are valid
-    // All possible valid values for each field
-    let possibleFields = ["name", "kind", "path", "mimeType", "size", "createdAtTime", "lastModifiedTime", "contentURI"]
-    let possibleOps = ["<", ">", "="]
-    let possibleDirs = ["asc", "desc"]
-
-    if (compareWith && possibleFields.indexOf(compareWith) === -1) {
-      throw new BadRequestError(`Field ${compareWith} is not a valid field to compare`)
-    }
-
-    if (operator && possibleOps.indexOf(operator) === -1) {
-      throw new BadRequestError(`Operator ${operator} is not a valid operator`)
-    }
-
-    if (orderBy && possibleFields.indexOf(orderBy) === -1) {
-      throw new BadRequestError(`Field ${orderBy} is not a valid field to order by`)
-    }
-    
-    if (direction && possibleDirs.indexOf(direction) === -1) {
-      throw new BadRequestError(`Direction ${direction} is not a valid direction`)
-    }
-
     // Then loop through the list of files
     for (let i = 0, length = files.length; i < length; i++) {
       const fileName = files[i]
@@ -117,31 +95,7 @@ class HardDriveDataProvider extends Provider {
     }
 
     // Sort the array now
-    fileObjs = fileObjs.filter(file => {
-      // Cast the value to a date if it is being compared with
-      // createdAtTime or lastModifiedTime
-      let autoCastValue = value
-      if (compareWith.endsWith("Time")) {
-        autoCastValue = new Date(value)
-      }
-
-      // Compare the corresponding field's value with the now
-      // automatically cast value based on the operator
-      if (operator === "<") {
-        return file[compareWith] < autoCastValue
-      }
-      if (operator === ">") {
-        return file[compareWith] > autoCastValue
-      }
-      if (operator === "=") {
-        return file[compareWith] == autoCastValue
-      }
-    })
-
-    // Sort it
-    fileObjs = fileObjs.sort((file1, file2) => {
-      return file1[compareWith] - file2[compareWith]
-    })
+    fileObjs = sortFiles(compareWith, operator, value, orderBy, direction, fileObjs)
 
     // Return all the files as a final array
     return fileObjs

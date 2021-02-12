@@ -27,7 +27,7 @@ const axios = require("axios")
 // Custom errors we throw
 const { NotFoundError, BadRequestError, FileExistsError, GeneralError } = require("../errors.js")
 // Used to generate platform-independent file/folder paths
-const { diskPath } = require("../utils.js")
+const { diskPath, sortFiles } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
@@ -320,6 +320,10 @@ class GoogleDriveDataProvider extends Provider {
           name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
         })
       }
+
+      // Sort the array now
+      fileObjs = sortFiles(compareWith, operator, value, orderBy, direction, fileObjs)
+
       // Return all the files as a final array
       return fileObjs
     } else {
