@@ -208,8 +208,26 @@ function getExportTypeForDoc(fileMimeType) {
   if (fileMimeType === "application/vnd.google-apps.script+json") {
     return "application/json"
   }
-  // Google Maps and other types are not yet supported, don't know what they would 
-  // return if a get request was tried on them
+  // Google Maps and other types are not yet supported, as they can't
+  // be converted to something else yet
+  return "auto"
+}
+
+// Get a valid mime type to import the file to for certain MS Office files
+function getImportTypeForDoc(fileMimeType) {
+  // Microsoft Word (docx) ---> Google Docs
+  if (fileMimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+    return "application/vnd.google-apps.document"
+  }
+  // Microsoft Excel (xlsx) ---> Google Sheets
+  if (fileMimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+    return "application/vnd.google-apps.spreadsheet"
+  }
+  // Microsoft Power Point (pptx) ---> Google Slides
+  if (fileMimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation") {
+    return "application/vnd.google-apps.presentation"
+  }
+  // Else return auto
   return "auto"
 }
 
@@ -464,13 +482,30 @@ class GoogleDriveDataProvider extends Provider {
     const driveMeta = await instance.post("/drive/v2/files", {
       "title": fileName,
       parents: [{id: folderId}],
-      mimeType: fileMimeType
+      // Temporarily disabling this, Google Drive can automatically detect the mime type once we upload
+      // Reason is mmmagic detects docx, pptx, xslx, etc. as a zip
+      //mimeType: fileMimeType
     })
 
     if (driveMeta.data) {
       // If drive acknowledges the request, then upload the file as well
       const file = driveMeta.data
-      return await instance.put(`/upload/drive/v2/files/${file.id}?uploadType=media`, fs.createReadStream(fileMeta.path))
+      const putResult = await instance.put(`/upload/drive/v2/files/${file.id}?convert=true&uploadType=media`, fs.createReadStream(fileMeta.path))
+      if (putResult.data) {
+        // If the uploaded file is an MS Office file, convert it to a Google Doc/Sheet/Slide
+        const importType = getImportTypeForDoc(putResult.data.mimeType)
+        if (importType === "auto") {
+          return
+        } else {
+          // Copy the file in a converted format
+          const convertResult = await instance.post(`/drive/v2/files/${file.id}/copy?convert=true`)
+          // Delete the original one
+          const deleteResult = await instance.delete(`/drive/v2/files/${file.id}`)
+          return deleteResult
+        }
+      } else {
+        throw new GeneralError(500, "Error while uploading file bytes to Google Drive.", "invalidResponse")
+      }
     } else {
       // Else throw an error
       throw new GeneralError(500, "No response from Google Drive. Cancelling file upload.", "invalidResponse")
