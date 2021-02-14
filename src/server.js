@@ -171,7 +171,11 @@ app.post(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("con
     .create(req.body, req.headers, req.params, req.query, req.file)
     .then(result => {
       res
-        .sendStatus(200) // Send back a 200 response code
+      .status(200)
+      .json({
+        code: 200,
+        content: result // Send it back with a 200 response code
+      })
     })
     .catch(err => {
       error(err)
@@ -196,7 +200,11 @@ app.put(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("cont
     .update(req.body, req.headers, req.params, req.query, req.file)
     .then(result => {
       res
-        .sendStatus(200) // Send back a 200 response code
+      .status(200)
+      .json({
+        code: 200,
+        content: result // Send it back with a 200 response code
+      })
     })
     .catch(err => {
       error(err)

@@ -34,7 +34,7 @@ Please URL encode all params, especially file and folder paths while sending req
   - `direction`: The order in which to sort the items - `enum<string> - asc, desc`
   - `exportType`: Type of URI that the content should be returned in, providers are free to set their own accepted values - `string`
 - Request body: [Optional]
-  - `providerOptions`: Provider specific options - `obj {}`
+  - The request body may contain any fields that the provider requires to execute the request
 - Response:
   - `res`: The response body - `obj { code: int32, error: obj { message: string, reason: string }, content: array<files>(obj { name: string, kind: enum<string>(file, folder), path: string, mimeType: string, size: int32, createdAtTime: timestamp, lastModifiedTime: timestamp, content: URI }) }`
 - Errors:
@@ -52,7 +52,7 @@ Please URL encode all params, especially file and folder paths while sending req
 - Query parameters: [Optional]
   - `exportType`: Type of URI that the content should be returned in, providers are free to set their own accepted values - `string`
 - Request body: [Optional]
-  - `providerOptions`: Provider specific options - `obj {}`
+  - The request body may contain any fields that the provider requires to execute the request
 - Response:
   - `res`: The response body - `obj { code: int32, error: obj { message: string, reason: string }, content: obj { name: string, kind: enum<string>(file, folder), path: string, mimeType: string, size: int32, createdAtTime: timestamp, lastModifiedTime: timestamp, content: URI } }`
 - Errors:
@@ -67,10 +67,10 @@ Please URL encode all params, especially file and folder paths while sending req
   - `folderPath`: Path to folder - `string`
   - `fileName`: Name of the file - `string`
 - Request body: [Compulsory] [Posted as form data]
-  - `providerOptions`: Provider specific options - `obj {}`
+  - The request body may contain any fields that the provider requires to execute the request
   - `content`: The file content - `file-data`
 - Response:
-  - `res`: The response body - `obj { code: int32 }`
+  - `res`: The response body - `obj { code: int32, error: obj { message: string, reason: string }, content: obj { name: string, kind: enum<string>(file, folder), path: string, mimeType: string, size: int32, createdAtTime: timestamp, lastModifiedTime: timestamp, content: URI } }`
 - Errors:
   - `409`: The file already exists - `fileExists`
   - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
@@ -83,10 +83,10 @@ Please URL encode all params, especially file and folder paths while sending req
   - `folderPath`: Path to folder - `string`
   - `fileName`: Name of the file - `string`
 - Request body: [Compulsory] [Posted as form data]
-  - `providerOptions`: Provider specific options - `obj {}`
+  - The request body may contain any fields that the provider requires to execute the request
   - `content`: The file content - `file-data`
 - Response:
-  - `res`: The response body - `obj { code: int32 }`
+  - `res`: The response body - `obj { code: int32, error: obj { message: string, reason: string }, content: obj { name: string, kind: enum<string>(file, folder), path: string, mimeType: string, size: int32, createdAtTime: timestamp, lastModifiedTime: timestamp, content: URI } }`
 - Errors:
   - `404`: The file was not found - `notFound`
   - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
@@ -99,7 +99,7 @@ Please URL encode all params, especially file and folder paths while sending req
   - `folderPath`: Path to folder (If only folder path is given, then the entire folder with its contents will be deleted) - `string`
   - `fileName`: Name of the file - `string` [Optional]
 - Request body: [Optional]
-  - `providerOptions`: Provider specific options - `obj {}`
+  - The request body may contain any fields that the provider requires to execute the request
 - Response:
   - `res`: The response body - `obj { code: int32 }`
 - Errors:

@@ -163,7 +163,26 @@ class HardDriveDataProvider extends Provider {
 
     // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
     // uploaded. Move the file from that path to the specified one.
-    return await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName))
+    await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName))
+
+    // Now return a file object for the newly created file
+    const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links
+
+    const name = fileName // Name of the file
+    const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
+    const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
+    const mimeType = await new Promise((resolve, reject) => {
+      mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
+        if (err) reject(err)
+        resolve(result)
+      })
+    }) // The mime type of the file
+    const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
+    const createdAtTime = statistics["birthTime"] // When it was created
+    const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
+    const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
+
+    return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
 
   // Update the file at the specified location with the file provided
@@ -187,7 +206,26 @@ class HardDriveDataProvider extends Provider {
 
     // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
     // uploaded. Move the file from that path to the specified one and overwrite it.
-    return await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName), { overwrite: true })
+    await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName), { overwrite: true })
+
+    // Now return a file object for the updated file
+    const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links
+
+    const name = fileName // Name of the file
+    const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
+    const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
+    const mimeType = await new Promise((resolve, reject) => {
+      mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
+        if (err) reject(err)
+        resolve(result)
+      })
+    }) // The mime type of the file
+    const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
+    const createdAtTime = statistics["birthTime"] // When it was created
+    const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
+    const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
+
+    return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
 
   // Delete the file or folder at the specified location

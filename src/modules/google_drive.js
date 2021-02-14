@@ -458,6 +458,10 @@ class GoogleDriveDataProvider extends Provider {
     const folderPath = diskPath(params["folderPath"])
     // Get the file path from the URL
     const fileName = params["fileName"]
+    // If they have specified the type of contentURI they want in the returned
+    // file object, give them that
+    // This must be mentioned in the body as it is a provider-specific variable
+    const exportType = body["exportType"]
 
     // Don't allow relative paths, let clients do that
     if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
@@ -469,14 +473,6 @@ class GoogleDriveDataProvider extends Provider {
     
     // Check if the file already exists
     await getFileId(instance, fileName, folderId, false, true)
-
-    // Detect the file's mime type
-    const fileMimeType = await new Promise((resolve, reject) => {
-      mimeLib.detectFile(fileMeta.path, function(err, result) {
-        if (err) reject(err)
-        resolve(result)
-      })
-    })
 
     // First, post the file meta data to let Google Drive know we are posting the file's contents too
     const driveMeta = await instance.post("/drive/v2/files", {
@@ -490,18 +486,58 @@ class GoogleDriveDataProvider extends Provider {
     if (driveMeta.data) {
       // If drive acknowledges the request, then upload the file as well
       const file = driveMeta.data
-      const putResult = await instance.put(`/upload/drive/v2/files/${file.id}?convert=true&uploadType=media`, fs.createReadStream(fileMeta.path))
-      if (putResult.data) {
+      let result = await instance.put(`/upload/drive/v2/files/${file.id}?convert=true&uploadType=media`, fs.createReadStream(fileMeta.path))
+      if (result.data) {
         // If the uploaded file is an MS Office file, convert it to a Google Doc/Sheet/Slide
-        const importType = getImportTypeForDoc(putResult.data.mimeType)
-        if (importType === "auto") {
-          return
-        } else {
+        const importType = getImportTypeForDoc(result.data.mimeType)
+        if (importType !== "auto") {
           // Copy the file in a converted format
-          const convertResult = await instance.post(`/drive/v2/files/${file.id}/copy?convert=true`)
+          result = await instance.post(`/drive/v2/files/${file.id}/copy?convert=true`)
           // Delete the original one
-          const deleteResult = await instance.delete(`/drive/v2/files/${file.id}`)
-          return deleteResult
+          await instance.delete(`/drive/v2/files/${file.id}`)
+        }
+
+        // If the creation was successful, return a file object
+        if (result.response && result.response.data) {
+          const fileObj = result.response.data
+
+          const name = fileObj.title // Name of the file
+          const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
+          const path = isShared ? diskPath("/Shared", folderPath, name) : diskPath(folderPath, name) // Absolute path to the file
+          const mimeType = fileObj.mimeType // Mime type
+          const size = fileObj.fileSize // Size in bytes, let clients convert to whatever unit they want
+          const createdAtTime = fileObj.createdDate // When it was created
+          const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
+          const exportMimeType = getExportTypeForDoc(mimeType)
+          let contentURI = null
+          // If the export type is media and it is not a Google Doc/Sheet/Slide/Drawing/App Script, then return a googleapis.com link
+          if (exportType === "media" && exportMimeType === "auto") {
+            contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
+          } else if (exportType === "view") {
+            // If the export type is view, return an "Open in Google Editor" link
+            contentURI = `https://drive.google.com/open?id=${fileObj.id}`
+          } else {
+            // Else:
+            // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+            if (exportMimeType === "auto") {
+              // If not, then give the web content link (only downloadable by browser)
+              contentURI = fileObj.webContentLink
+            } else {
+              // Else it is a Doc/Sheet/Slide/Drawing/App Script
+              // If the requested export type is in the exportLinks field, return that link
+              if (fileObj.exportLinks[exportType]) {
+                contentURI = fileObj.exportLinks[exportType]
+              } else {
+                // Else return the MS format of it
+                contentURI = fileObj.exportLinks[exportMimeType]
+              }
+            }
+          }
+
+          // Return the file metadata and content
+          return {
+            name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
+          }
         }
       } else {
         throw new GeneralError(500, "Error while uploading file bytes to Google Drive.", "invalidResponse")
@@ -537,16 +573,50 @@ class GoogleDriveDataProvider extends Provider {
     const folderId = await getFolderWithParents(instance, folderPath, false, false)
     const fileId = await getFileId(instance, fileName, folderId, false, false)
 
-    // Get the new mime type of the file
-    const fileMimeType = await new Promise((resolve, reject) => {
-      mimeLib.detectFile(fileMeta.path, function(err, result) {
-        if (err) reject(err)
-        resolve(result)
-      })
-    })
-
     // Upload the new file
-    return await instance.put(`/upload/drive/v2/files/${fileId}?uploadType=media`, fs.createReadStream(fileMeta.path))
+    const result = await instance.put(`/upload/drive/v2/files/${fileId}?uploadType=media`, fs.createReadStream(fileMeta.path))
+
+    if (result.response && result.response.data) {
+      const fileObj = result.response.data
+      // If the creation was successful, return a file object
+      const name = fileObj.title // Name of the file
+      const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
+      const path = isShared ? diskPath("/Shared", folderPath, name) : diskPath(folderPath, name) // Absolute path to the file
+      const mimeType = fileObj.mimeType // Mime type
+      const size = fileObj.fileSize // Size in bytes, let clients convert to whatever unit they want
+      const createdAtTime = fileObj.createdDate // When it was created
+      const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
+      const exportMimeType = getExportTypeForDoc(mimeType)
+      let contentURI = null
+      // If the export type is media and it is not a Google Doc/Sheet/Slide/Drawing/App Script, then return a googleapis.com link
+      if (exportType === "media" && exportMimeType === "auto") {
+        contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
+      } else if (exportType === "view") {
+        // If the export type is view, return an "Open in Google Editor" link
+        contentURI = `https://drive.google.com/open?id=${fileObj.id}`
+      } else {
+        // Else:
+        // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+        if (exportMimeType === "auto") {
+          // If not, then give the web content link (only downloadable by browser)
+          contentURI = fileObj.webContentLink
+        } else {
+          // Else it is a Doc/Sheet/Slide/Drawing/App Script
+          // If the requested export type is in the exportLinks field, return that link
+          if (fileObj.exportLinks[exportType]) {
+            contentURI = fileObj.exportLinks[exportType]
+          } else {
+            // Else return the MS format of it
+            contentURI = fileObj.exportLinks[exportMimeType]
+          }
+        }
+      }
+
+      // Return the file metadata and content
+      return {
+        name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
+      }
+    }
   }
 
   // Delete the file or folder at the specified location
