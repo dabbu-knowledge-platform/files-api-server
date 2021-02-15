@@ -21,7 +21,7 @@
 const axios = require("axios")
 
 // Custom errors we throw
-const { NotFoundError, NotImplementedError } = require("../errors.js")
+const { NotFoundError, NotImplementedError, MissingParamError } = require("../errors.js")
 // Used sort the files retrieved based on query parameters
 const { sortFiles } = require("../utils.js")
 
@@ -210,7 +210,6 @@ class GmailProvider extends Provider {
   }
 
   async read(body, headers, params, queries) {
-    // TODO: Folder paths for read is thread ID
     // Get the access token from the header
     const accessToken = headers["Authorization"] || headers["authorization"]
     // Create an axios instance with the header. All requests will be made with this 
@@ -300,7 +299,28 @@ class GmailProvider extends Provider {
   }
 
   async delete(body, headers, params, queries) {
-    return
+    // Get the access token from the header
+    const accessToken = headers["Authorization"] || headers["authorization"]
+    // Create an axios instance with the header. All requests will be made with this 
+    // instance so the headers will be present everywhere
+    const instance = axios.create({
+      baseURL: "https://gmail.googleapis.com/",
+      headers: {"Authorization": accessToken}
+    })
+
+    // Folder paths for threads is labels
+    const labelID = params["folderPath"] || "INBOX"
+    // File name is the thread ID
+    const threadId = params["fileName"]
+
+    // Check if there is a thread ID (in delete, file name is optional,
+    // but in Gmail, we can't delete a label)
+    if (!threadId) {
+      throw new MissingParamError("Missing thread ID")
+    }
+
+    // Trash the thread, don't delete it permanently
+    return await instance.post(`/gmail/v1/users/me/threads/${threadId}/trash`)
   }
 }
 
