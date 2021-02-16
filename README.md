@@ -44,6 +44,7 @@ Here is a list of clients that have been made to interact with the Dabbu API:
 ## Supported Providers
 - [**Hard drive**](./docs/modules/hard_drive.md)
 - [**Google drive**](./docs/modules/google_drive.md)
+- [**Gmail**](./docs/modules/gmail.md)
 
 *And more to come...!*
 
