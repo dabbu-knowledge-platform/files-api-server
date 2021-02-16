@@ -20,7 +20,7 @@
 // Files library, used to do all file operations across platforms
 const fs = require("fs-extra")
 // Used to detect mime types based on file content
-const mmmagic = require("mmmagic")
+const fileTypes = require("file-type")
 // Used to make HTTP request to the Google Drive API endpoints
 const axios = require("axios")
 
@@ -31,11 +31,6 @@ const { diskPath, sortFiles } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
-
-// MARK: Variables
-
-// Instantiate the mime library
-const mimeLib = new mmmagic.Magic(mmmagic.MAGIC_MIME_TYPE)
 
 // MARK: Functions
 
@@ -257,7 +252,7 @@ class GoogleDriveDataProvider extends Provider {
     let {compareWith, operator, value, orderBy, direction, exportType} = queries
 
     // Don't allow relative paths, let clients do th
-    if (diskPath(folderPath).indexOf("..") !== -1) {
+    if (folderPath.indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -371,7 +366,7 @@ class GoogleDriveDataProvider extends Provider {
     const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
+    if ([folderPath, fileName].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
     
@@ -464,8 +459,14 @@ class GoogleDriveDataProvider extends Provider {
     const exportType = body["exportType"]
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
+    if ([folderPath, fileName].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
+    }
+
+    // Check if there is a file uploaded
+    if (!fileMeta) {
+      // If not, error out
+      throw new MissingParamError(`Missing file data under content param in request body`)
     }
 
     // Get the folder ID
@@ -473,19 +474,25 @@ class GoogleDriveDataProvider extends Provider {
     
     // Check if the file already exists
     await getFileId(instance, fileName, folderId, false, true)
-
-    // First, post the file meta data to let Google Drive know we are posting the file's contents too
-    const driveMeta = await instance.post("/drive/v2/files", {
+    
+    // Construct the metadata of the file
+    let meta = {
       "title": fileName,
       parents: [{id: folderId}],
-      // Temporarily disabling this, Google Drive can automatically detect the mime type once we upload
-      // Reason is mmmagic detects docx, pptx, xslx, etc. as a zip
-      //mimeType: fileMimeType
-    })
+      mimeType: await fileTypes.fromFile(fileMeta.path)
+    }
 
-    if (driveMeta.data) {
+    // If there is a lastModifiedTime present, set the file's lastModifiedTime to that
+    if (body["lastModifiedTime"]) {
+      meta["modifiedDate"] = new Date(body["lastModifiedTime"]).toISOString()
+    }
+
+    // First, post the file meta data to let Google Drive know we are posting the file's contents too
+    const driveMetaResult = await instance.post("/drive/v2/files", meta)
+
+    if (driveMetaResult.data) {
       // If drive acknowledges the request, then upload the file as well
-      const file = driveMeta.data
+      const file = driveMetaResult.data
       let result = await instance.put(`/upload/drive/v2/files/${file.id}?convert=true&uploadType=media`, fs.createReadStream(fileMeta.path))
       if (result.data) {
         // If the uploaded file is an MS Office file, convert it to a Google Doc/Sheet/Slide
@@ -560,12 +567,12 @@ class GoogleDriveDataProvider extends Provider {
     })
 
     // Get the folder path from the URL
-    const folderPath = diskPath(params["folderPath"])
+    let folderPath = diskPath(params["folderPath"])
     // Get the file path from the URL
-    const fileName = params["fileName"]
+    let fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(folderPath, fileName).indexOf("..") !== -1) {
+    if ([folderPath, fileName].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -573,9 +580,45 @@ class GoogleDriveDataProvider extends Provider {
     const folderId = await getFolderWithParents(instance, folderPath, false, false)
     const fileId = await getFileId(instance, fileName, folderId, false, false)
 
-    // Upload the new file
-    const result = await instance.put(`/upload/drive/v2/files/${fileId}?uploadType=media`, fs.createReadStream(fileMeta.path))
+    // The result of the operation
+    let result
 
+    // Upload the new file data if provided
+    if (fileMeta) {
+      result = await instance.put(`/upload/drive/v2/files/${fileId}?uploadType=media`, fs.createReadStream(fileMeta.path))
+    }
+
+    // Check if the user passed fields to set values in
+    // We can only set name, path, and lastModifiedTime, not createdAtTime
+    if (body["name"]) {
+      // Rename the file by sending a patch request
+      result = await instance.patch(`/drive/v2/files/${fileId}`, {
+        "title": body["name"]
+      })
+      fileName = body["name"]
+    }
+    if (body["path"]) {
+      // Don't allow relative paths, let clients do that
+      if (body["path"].indexOf("..") !== -1) {
+        throw new BadRequestError(`Folder paths must not contain relative paths`)
+      }
+      // Get the new folder ID
+      const newFolderId = await getFolderWithParents(instance, body["path"], false, true)
+      // Move the file by sending a patch request
+      result = await instance.patch(`/drive/v2/files/${fileId}`, {
+        parents: [{id: newFolderId}],
+      })
+      folderPath = body["path"]
+    }
+    if (body["lastModifiedTime"]) {
+      const modifiedDate = new Date(body["lastModifiedTime"]).toISOString()
+      // Set the lastModifiedTime by sending a patch request
+      result = await instance.patch(`/drive/v2/files/${fileId}?modifiedDateBehavior=fromBody`, {
+        "modifiedDate": modifiedDate
+      })
+    }
+
+    // Now send back the updated file object
     if (result.response && result.response.data) {
       const fileObj = result.response.data
       // If the creation was successful, return a file object
@@ -636,7 +679,7 @@ class GoogleDriveDataProvider extends Provider {
     const fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(folderPath).indexOf("..") !== -1) {
+    if (folderPath.indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 

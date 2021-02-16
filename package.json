@@ -26,6 +26,6 @@
   },
   "devDependencies": {
     "axios": "^0.21.1",
-    "mmmagic": "^0.5.3"
+    "file-type": "16.2.0"
   }
 }

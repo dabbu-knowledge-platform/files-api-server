@@ -66,9 +66,11 @@ Please URL encode all params, especially file and folder paths while sending req
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
   - `fileName`: Name of the file - `string`
-- Request body: [Compulsory] [Posted as form data]
+- Request body: [Posted as multipart form data]
   - The request body may contain any fields that the provider requires to execute the request
-  - `content`: The file content - `file-data`
+  - `content`: The file content - `file-data` [Compulsory]
+  - `createdAtTime`: Time the file was created (may not be supported by all providers) - `timestamp` [Optional]
+  - `lastModifiedTime`: Last time the file's content or metadata (varies from provider to provider) was changed (may not be supported by all providers) - `timestamp` [Optional]
 - Response:
   - `res`: The response body - `obj { code: int32, error: obj { message: string, reason: string }, content: obj { name: string, kind: enum<string>(file, folder), path: string, mimeType: string, size: int32, createdAtTime: timestamp, lastModifiedTime: timestamp, content: URI } }`
 - Errors:
@@ -82,9 +84,13 @@ Please URL encode all params, especially file and folder paths while sending req
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
   - `fileName`: Name of the file - `string`
-- Request body: [Compulsory] [Posted as form data]
+- Request body: [Posted as multipart form data]
   - The request body may contain any fields that the provider requires to execute the request
-  - `content`: The file content - `file-data`
+  - `content`: The file content - `file-data` [Compulsory]
+  - `name`: The name of the file - `string` [Optional]
+  - `path`: The path to the folder in which the file resides - `string` [Optional]
+  - `createdAtTime`: Time the file was created (may not be supported by all providers) - `timestamp` [Optional]
+  - `lastModifiedTime`: Last time the file's content or metadata (varies from provider to provider) was changed (may not be supported by all providers) - `timestamp` [Optional]
 - Response:
   - `res`: The response body - `obj { code: int32, error: obj { message: string, reason: string }, content: obj { name: string, kind: enum<string>(file, folder), path: string, mimeType: string, size: int32, createdAtTime: timestamp, lastModifiedTime: timestamp, content: URI } }`
 - Errors:

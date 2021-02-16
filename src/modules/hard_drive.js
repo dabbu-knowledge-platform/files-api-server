@@ -20,7 +20,7 @@
 // Files library, used to do all file operations across platforms
 const fs = require("fs-extra")
 // Used to detect mime types based on file content
-const mmmagic = require("mmmagic")
+const fileTypes = require("file-type")
 
 // Custom errors we throw
 const { NotFoundError, BadRequestError, FileExistsError, MissingParamError } = require("../errors.js")
@@ -29,11 +29,6 @@ const { diskPath, sortFiles } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
-
-// MARK: Variables
-
-// Instantiate the mime library
-const mimeLib = new mmmagic.Magic(mmmagic.MAGIC_MIME_TYPE)
 
 // MARK: HardDriveDataProvider
 
@@ -55,7 +50,7 @@ class HardDriveDataProvider extends Provider {
     let {compareWith, operator, value, orderBy, direction} = queries
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -77,15 +72,15 @@ class HardDriveDataProvider extends Provider {
       const name = fileName // Name of the file
       const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
       const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
-      const mimeType = await new Promise((resolve, reject) => {
-        mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
-          if (err) reject(err)
-          resolve(result)
-        })
-      }) // The mime type of the file
+      let mimeType 
+      if (statistics.isDirectory()) {
+        mimeType = "inode/directory"
+      } else {
+        mimeType = (await fileTypes.fromFile(diskPath(basePath, folderPath, fileName)) || {}).mime // The mime type of the file
+      }
       const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
       const createdAtTime = statistics["birthtime"] // When it was created
-      const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
+      const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
       const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
       // Append to a final array that will be returned
@@ -111,7 +106,7 @@ class HardDriveDataProvider extends Provider {
     const fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -126,15 +121,15 @@ class HardDriveDataProvider extends Provider {
     const name = fileName // Name of the file
     const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
     const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
-    const mimeType = await new Promise((resolve, reject) => {
-      mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
-        if (err) reject(err)
-        resolve(result)
-      })
-    }) // The mime type of the file
+    let mimeType 
+    if (statistics.isDirectory()) {
+      mimeType = "inode/directory"
+    } else {
+      mimeType = (await fileTypes.fromFile(diskPath(basePath, folderPath, fileName)) || {}).mime // The mime type of the file
+    }
     const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
     const createdAtTime = statistics["birthTime"] // When it was created
-    const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
+    const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
     return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
@@ -149,12 +144,15 @@ class HardDriveDataProvider extends Provider {
     const fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
-    // If the folder doesn't exist, create one
-    //await fs.ensureDir(diskPath(basePath, folderPath))
+    // Check if there is a file uploaded
+    if (!fileMeta) {
+      // If not, error out
+      throw new MissingParamError(`Missing file data under content param in request body`)
+    }
 
     // Check if the file exists
     if (await fs.pathExists(diskPath(basePath, folderPath, fileName))) {
@@ -165,21 +163,29 @@ class HardDriveDataProvider extends Provider {
     // uploaded. Move the file from that path to the specified one.
     await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName))
 
+    // Check if the user passed fields to set values in
+    // We can only set lastModifiedTime (mtime), not createAtTime
+    if (body["lastModifiedTime"]) {
+      const mtime = new Date(body["lastModifiedTime"])
+      // Set the lastModifiedTime
+      await fs.utimes(fileMeta.path, mtime, mtime)
+    }
+
     // Now return a file object for the newly created file
     const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links
 
     const name = fileName // Name of the file
     const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
     const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
-    const mimeType = await new Promise((resolve, reject) => {
-      mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
-        if (err) reject(err)
-        resolve(result)
-      })
-    }) // The mime type of the file
+    let mimeType 
+    if (statistics.isDirectory()) {
+      mimeType = "inode/directory"
+    } else {
+      mimeType = (await fileTypes.fromFile(diskPath(basePath, folderPath, fileName)) || {}).mime // The mime type of the file
+    }
     const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
     const createdAtTime = statistics["birthTime"] // When it was created
-    const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
+    const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
     return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
@@ -190,23 +196,46 @@ class HardDriveDataProvider extends Provider {
     // Get the base path provided in the request body
     const basePath = body["base_path"]
     // Get the folder path in the URL
-    const folderPath = params["folderPath"]
+    let folderPath = params["folderPath"]
     // Get the file name in the URL
-    const fileName = params["fileName"]
+    let fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
     // Check if the file exists
-    if (await fs.pathExists(diskPath(basePath, folderPath, fileName))) {
+    if (!(await fs.pathExists(diskPath(basePath, folderPath, fileName)))) {
       throw new NotFoundError(`File ${diskPath(basePath, folderPath, fileName)} was not found`)
     }
 
-    // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
-    // uploaded. Move the file from that path to the specified one and overwrite it.
-    await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName), { overwrite: true })
+    // If there is some file data specified, update the file with it
+    if (fileMeta) {
+      // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
+      // uploaded. Move the file from that path to the specified one and overwrite it.
+      await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName), { overwrite: true })
+    }
+
+    // Check if the user passed fields to set values in
+    // We can only set name, path, and lastModifiedTime (mtime), not createdAtTime (birthTime)
+    if (body["name"]) {
+      await fs.rename(diskPath(basePath, folderPath, fileName), diskPath(basePath, folderPath, body["name"]))
+      fileName = body["name"]
+    }
+    if (body["path"]) {
+      // Don't allow relative paths, let clients do that
+      if (body["path"].indexOf("..") !== -1) {
+        throw new BadRequestError(`Folder paths must not contain relative paths`)
+      }
+      await fs.move(diskPath(basePath, folderPath, fileName), diskPath(basePath, body["path"], fileName), { overwrite: true })
+      folderPath = body["path"]
+    }
+    if (body["lastModifiedTime"]) {
+      const mtime = new Date(body["lastModifiedTime"])
+      // Set the lastModifiedTime
+      await fs.utimes(diskPath(basePath, folderPath, fileName), mtime, mtime)
+    }
 
     // Now return a file object for the updated file
     const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links
@@ -214,15 +243,15 @@ class HardDriveDataProvider extends Provider {
     const name = fileName // Name of the file
     const kind = statistics.isFile() ? "file" : statistics.isDirectory() ? "folder" : "other" // Whether it's a file or folder
     const path = diskPath(basePath, folderPath, fileName) // Path to that file locally
-    const mimeType = await new Promise((resolve, reject) => {
-      mimeLib.detectFile(diskPath(basePath, folderPath, fileName), function(err, result) {
-        if (err) reject(err)
-        resolve(result)
-      })
-    }) // The mime type of the file
+    let mimeType 
+    if (statistics.isDirectory()) {
+      mimeType = "inode/directory"
+    } else {
+      mimeType = (await fileTypes.fromFile(diskPath(basePath, folderPath, fileName)) || {}).mime // The mime type of the file
+    }
     const size = statistics["size"] // Size in bytes, let clients convert to whatever unit they want
     const createdAtTime = statistics["birthTime"] // When it was created
-    const lastModifiedTime = statistics["ctime"] // Last time the file or its metadata was changed
+    const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
     return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
@@ -240,7 +269,7 @@ class HardDriveDataProvider extends Provider {
     if (folderPath && fileName) {
       // If there is a file name provided, delete the file      
       // Don't allow relative paths, let clients do that
-      if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
+      if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
 
@@ -254,7 +283,7 @@ class HardDriveDataProvider extends Provider {
     } else if (folderPath && !fileName) {
       // If there is only a folder name provided, delete the folder and its contents
       // Don't allow relative paths, let clients do that
-      if (diskPath(basePath, folderPath).indexOf("..") !== -1) {
+      if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
 
