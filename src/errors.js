@@ -89,6 +89,18 @@ function errorHandler(err, req, res, next) {
           reason: "unknownReason"
         }
       })
+    } else if (err.isAxiosError) {
+      // If it's an axios error, return the status code and the error
+      const errorMessage = err.response.data && err.response.data.error && err.response.data.error.message ? err.response.data.error.message : "unknown error"
+      const errorReason = err.response.data && err.response.data.error && err.response.data.error.reason ? err.response.data.error.reason : "unknownReason"
+      console.error(`${err.response.status} (${err.response.statusText}): ${errorMessage}`)
+      return res.status(err.response.status).json({
+        code: err.response.status,
+        error: {
+          message: errorMessage,
+          reason: errorReason
+        }
+      })
     } else {
       console.error(err)
       // Else return an internalServerError

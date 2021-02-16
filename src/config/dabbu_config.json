@@ -1,7 +1,8 @@
 {
   "providers": [
     "hard_drive",
-    "google_drive"
+    "google_drive",
+    "gmail"
   ],
   "runtime": {
     "port": 8080,
