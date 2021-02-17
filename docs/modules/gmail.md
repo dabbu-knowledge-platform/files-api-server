@@ -2,7 +2,7 @@
 
 To install its dependencies, run: 
 
-`npm install axios`
+`npm install axios turndown`
 
 # Provider specific variables
 

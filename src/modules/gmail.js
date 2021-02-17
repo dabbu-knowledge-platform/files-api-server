@@ -20,10 +20,14 @@
 // Used to make HTTP request to the Google Drive API endpoints
 const axios = require("axios")
 
+// To convert html to markdown
+const TurndownService = require("turndown")
+const turndownService = new TurndownService()
+
 // Custom errors we throw
 const { NotFoundError, NotImplementedError, MissingParamError } = require("../errors.js")
 // Used sort the files retrieved based on query parameters
-const { sortFiles } = require("../utils.js")
+const { sortFiles, diskPath } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
@@ -38,11 +42,23 @@ function getThreadIDFromName(name) {
 }
 
 // Get a label from a folder path
-function getLabelsFromName(name) {
+async function getLabelFromName(instance, name) {
   if (name.toLowerCase() == "null" || name.toLowerCase() == "/") {
     return null
   } else {
-    return name.replace(/\//g, "")
+    const labelName = name.replace(/\//g, "")
+
+    const labelsResult = await instance.get(`/gmail/v1/users/me/labels`)
+
+    // If there is a result, parse it
+    if (labelsResult.data && labelsResult.data.labels) {
+      // Loop through the labels
+      for (const label of labelsResult.data.labels) {
+        if (label.name === labelName) {
+          return label.id
+        }
+      }
+    }
   }
 }
 
@@ -69,53 +85,68 @@ async function createMailDataURI(instance, threadData) {
       ""
     ].join("\n")
 
-    // Gmail separates the message into parts, loop through them
-    for (const part of message.payload.parts) {
-      // First check if it is quoted text from a previous message
-      const transferEncodingHeader = part.headers.filter((header) => header.name.toLowerCase() === "content-transfer-encoding")
-      if (transferEncodingHeader.length > 0 && transferEncodingHeader[0].value === "quoted-printable" && part.mimeType === "text/html") {
-        // If so, simply add a "..."
-        messagesData += "..."
-      } else {
-        // Else if it is text, print it out
-        if (part.mimeType === "text/plain" || part.mimeType === "text/html") {
-          messagesData += Buffer.from(part.body.data, 'base64').toString('ascii')
+    // Gmail either separates the message into parts or puts everything into
+    // the body
+    // Check if there are parts (usually this is the way messages are sent)
+    if (message.payload.parts) {
+      for (const part of message.payload.parts) {
+        // First check if it is quoted text from a previous message
+        const transferEncodingHeader = part.headers.filter((header) => header.name.toLowerCase() === "content-transfer-encoding")
+        if (transferEncodingHeader.length > 0 && transferEncodingHeader[0].value === "quoted-printable" && part.mimeType === "text/html") {
+          // If so, simply add a "..."
+          messagesData += "..."
         } else {
-          // Else it is an attachment
-          // Check if this part is announcing the attachment or is the attachment
-          if (part.mimeType !== "multipart/alternative") {
-            // If it is an attachment, fetch it and store it
-            messagesData += [
-              "Attachment found:",
-              `- name: ${part.filename}`,
-              `- size: ${part.body.size} bytes`,
-              `- type: ${part.mimeType}`
-            ].join("\n")
-
-            const attachmentId = part.body.attachmentId
-            // Surround in try-catch block as we don't want one failed result to kill
-            // the entire operation
-            try {
-              // Get the attachment as a base64 encoded string
-              const attachmentResult = await instance.get(`/gmail/v1/users/me/messages/${message.id}/attachments/${attachmentId}`)
-              if (attachmentResult.data && attachmentResult.data.data) {
-                // Add it to the attachments array as is, let the clients decode it
-                attachments.push({
-                  fileName: part.filename,
-                  data: attachmentResult.data.data
-                })
-              } else {
-                // No data
-                messagesData += "Failed to fetch attachment"
+          // Else if it is text, print it out
+          if (part.mimeType === "text/plain") {
+            messagesData += Buffer.from(part.body.data, 'base64').toString('ascii')
+          } else if (part.mimeType === "text/html") {
+            // Convert html to markdown
+            let html = Buffer.from(part.body.data, 'base64').toString('ascii')
+            messagesData += turndownService.turndown(html)
+          } else {
+            // Else it is an attachment
+            // Check if this part is announcing the attachment or is the attachment
+            if (part.mimeType !== "multipart/alternative") {
+              // If it is an attachment, fetch it and store it
+              messagesData += [
+                "Attachment found:",
+                `- name: ${part.filename}`,
+                `- size: ${part.body.size} bytes`,
+                `- type: ${part.mimeType}`
+              ].join("\n")
+  
+              const attachmentId = part.body.attachmentId
+              // Surround in try-catch block as we don't want one failed result to kill
+              // the entire operation
+              try {
+                // Get the attachment as a base64 encoded string
+                const attachmentResult = await instance.get(`/gmail/v1/users/me/messages/${message.id}/attachments/${attachmentId}`)
+                if (attachmentResult.data && attachmentResult.data.data) {
+                  // Add it to the attachments array as is, let the clients decode it
+                  attachments.push({
+                    fileName: part.filename,
+                    data: attachmentResult.data.data
+                  })
+                } else {
+                  // No data
+                  messagesData += "Failed to fetch attachment"
+                }
+              } catch (err) {
+                // Some weird error occurred, tell the user
+                messagesData += `Failed to fetch attachment: ${err.message}`
               }
-            } catch (err) {
-              // Some weird error occurred, tell the user
-              messagesData += `Failed to fetch attachment: ${err.message}`
             }
+            // Else we are announcing, skip it
           }
-          // Else we are announcing, skip it
         }
       }
+    } else if (message.payload.body) {
+      // If there is a body, attach that instead
+      // Convert the html to markdown
+      const html = Buffer.from(message.payload.body.data, 'base64').toString('ascii')
+      messagesData += turndownService.turndown(html)
+    } else {
+      messagesData += "Error: couldn't parse the email body"
     }
     
     // Line break between two messages
@@ -149,7 +180,7 @@ class GmailProvider extends Provider {
     })
 
     // Folder path for threads are treated as space separated labels
-    const labelIds = getLabelsFromName(params["folderPath"])
+    const labelId = await getLabelFromName(instance, params["folderPath"])
 
     // Get the export type and compare/sort params from the query parameters
     let {compareWith, operator, value, orderBy, direction, exportType} = queries
@@ -157,9 +188,9 @@ class GmailProvider extends Provider {
     // If the request is for / (the root folder), then return a list
     // of all labels. Else return the list of threads with that label
     let results = []
-    if (labelIds) {
+    if (labelId) {
       // List out all the threads labelled with that particular label
-      const threadsResult = await instance.get(`/gmail/v1/users/me/threads?labelIds=${labelIds}`)
+      const threadsResult = await instance.get(`/gmail/v1/users/me/threads?labelIds=${labelId}`)
 
       // Loop through the threads
       for (let thread of threadsResult.data.threads) {
@@ -213,7 +244,7 @@ class GmailProvider extends Provider {
             // Add this to the results
             results.push({
               name: `${subject} - ${threadResult.data.id}`,
-              path: `/${labelIds}/${threadResult.data.id}`,
+              path: diskPath(params["folderPath"], threadResult.data.id),
               kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
               mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
               size: NaN, // We have size of messages+attachments, not threads
@@ -264,8 +295,6 @@ class GmailProvider extends Provider {
       headers: {"Authorization": accessToken}
     })
 
-    // Folder paths for threads is labels
-    const labelIds = getLabelsFromName(params["folderPath"])
     // File name is the thread ID
     const threadId = getThreadIDFromName(params["fileName"])
 
@@ -322,7 +351,7 @@ class GmailProvider extends Provider {
         // Add this to the results
         return {
           name: `${subject} - ${threadId}`,
-          path: `/${labelIds || ""}/${threadId}`,
+          path: `${diskPath(params["folderPath"])}/${threadId}`,
           kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
           mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
           size: NaN, // We have size of messages+attachments, not threads
