@@ -90,9 +90,10 @@ function errorHandler(err, req, res, next) {
         }
       })
     } else if (err.isAxiosError) {
+      console.error(err.response.data)
       // If it's an axios error, return the status code and the error
       const errorMessage = err.response.data && err.response.data.error && err.response.data.error.message ? err.response.data.error.message : "unknown error"
-      const errorReason = err.response.data && err.response.data.error && err.response.data.error.reason ? err.response.data.error.reason : "unknownReason"
+      const errorReason = err.response.data && err.response.data.error && err.response.data.error.reason ? err.response.data.error.reason : err.response.data.error.code || "unknownReason"
       console.error(`${err.response.status} (${err.response.statusText}): ${errorMessage}`)
       return res.status(err.response.status).json({
         code: err.response.status,
