@@ -207,10 +207,26 @@ class GmailProvider extends Provider {
     let results = []
     if (labelId) {
       // List out all the threads labelled with that particular label
-      const threadsResult = await instance.get(`/gmail/v1/users/me/threads?labelIds=${labelId}`)
+      let allThreads = []
+      let nextPageToken = null
+      do {
+        // List all files that match the given query
+        const listResult = await instance.get("/gmail/v1/users/me/threads", {
+          params: {
+            labelIds: labelId,
+            pageSize: 100, // Get a max of 100 files at a time
+            pageToken: nextPageToken // Add the page token if there is any
+          }
+        })
+        
+        // Get the next page token (incase Google Drive returned incomplete results)
+        nextPageToken = listResult.data.nextPageToken
+        // Add the files we got right now to the main list
+        allThreads = allThreads.concat(listResult.data.threads)
+      } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
       // Loop through the threads
-      for (let thread of threadsResult.data.threads) {
+      for (let thread of allThreads) {
         // If the export type is view, get only the metadata, else get everything
         const threadResult = await instance.get(`/gmail/v1/users/me/threads/${thread.id}`, {
           params: {
