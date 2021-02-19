@@ -1,12 +1,15 @@
 {
   "name": "dabbu-server",
-  "version": "1.0.0",
+  "version": "1.4.4",
   "description": "A unified API interface to access all your data online",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "start": "clear && node src/server.js",
+    "start": "node src/server.js start",
+    "clean": "rm -r dist && mkdir dist",
+    "prebuild": "npm run clean",
+    "build": "pkg --output dist/dabbu-server .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -28,5 +31,17 @@
     "axios": "^0.21.1",
     "file-type": "16.2.0",
     "turndown": "^7.0.0"
+  },
+  "bin": "src/server.js",
+  "pkg": {
+    "assets": [
+      "node_modules/**/*",
+      "src/**/*"
+    ],
+    "targets": [
+      "node14-linux-x64",
+      "node14-macos-x64",
+      "node14-win-x64"
+    ]
   }
 }

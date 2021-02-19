@@ -16,25 +16,13 @@ What you just saw there was Dabbu CLI in action - a simple program in javascript
 
 The installation can be done manually on Linux, MacOS, Android (Requires Termux) and Windows.
 
-A detailed installation guide can be found [here](./docs/Installation.md).
+- First, download the proper executable for your platform from the [Releases page](https://github.com/gamemaker1/dabbu-server/releases). (Caution: releases may not work on certain versions of Android, depending on the manafacturer and version.)
 
-Here is a brief install guide:
-- Install [git](https://github.com/git-guides/install-git) and [nodejs](https://nodejs.org/en/download/package-manager/).
-- Then run the following commands in terminal/command prompt:
-```sh
-$ git clone https://github.com/gamemaker1/dabbu-server . [Notice the full stop at the end]
-$ npm install
-$ npm start
-```
 - Your server is now running! To check, go to http://localhost:8080/. You will see the text `Dabbu Server running on port 8080` on the page. If not, try running the server again or check if you have missed a step. If the problem persists, post a message on [Github discussions](https://github.com/gamemaker1/dabbu-server/discussions/categories/q-a) asking for help. We'll only be glad to help you :)
 
 ## Updating the server
 
-To update the server, simply run the following commands from the terminal/command prompt:
-
-```sh
-$ git pull origin main
-```
+To update the server, simply download the new version from the [Releases page](https://github.com/gamemaker1/dabbu-server/releases).
 
 ## Installing clients to call the Dabbu API
 

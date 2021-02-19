@@ -34,17 +34,50 @@ const { info, debug, error, json } = require("./utils.js")
 
 // MARK - Config and Globals
 
-// Import the configuration from the dabbu_config file in src/config
-const config = require("./config/dabbu_config.json")
-// The port to run the server on
-const port = config.runtime.port
 // The prefix to all requests
 const rootURL = "/dabbu/v1/api"
 
 // Create an express server
 const app = express()
 // Define where multer should store the uploaded files
-const upload = multer({ dest: path.normalize(`${__dirname}/../.cache/`) })
+const upload = multer({ dest: path.normalize(`./.cache/`) })
+
+// MARK: Input processing
+
+// Parse the command line arguments and run the server
+// The port to run the server on
+let port = 8080
+// The providers enabled by default (all)
+let enabledProviders = [
+  "hard_drive",
+  "one_drive",
+  "google_drive",
+  "gmail"
+]
+
+// Get the command line args
+const args = process.argv.slice(2)
+// Check what command the user has given
+switch (args[0]) {
+  case "start":
+    // Check if the port has been mentioned
+    if (args[1]) port = parseInt(args[1])
+    // If there are any more, take them as providers
+    if (args.length > 2) enabledProviders = args.slice(2)
+    break
+  default:
+    console.log([
+      "Usage: dabbu-server <command> [options]",
+      "",
+      "Commands:",
+      "  dabbu-server start [port] [providers]  Run the server on the given port",
+      "",
+      "Default values:",
+      "  port: 8080",
+      "  providers: hard_drive, google_drive, gmail, one_drive"
+    ].join("\n"))
+    process.exit(0)
+}
 
 // MARK: Server
 
@@ -56,8 +89,9 @@ const server = app.listen(port, () => {
   //info(`Dabbu  Copyright (C) 2021  gamemaker1\n      This program comes with ABSOLUTELY NO WARRANTY.\n      This is free software, and you are welcome to\n      redistribute it under certain conditions; look\n      at the LICENSE file for more details.`)
   // Print out the server version and the port it's running on
   info(`===============================`)
-  info(`Dabbu Server v1.0.0`)
+  info(`Dabbu Server v${require("../package.json").version}`)
   info(`Server listening on port ${port}`)
+  info(`Enabled providers include ${enabledProviders.join(", ")}`)
 })
 
 // HTTP GET request to `/` will return text
@@ -76,7 +110,7 @@ app.get(`${rootURL}/providers`, (req, res, next) => {
   res.status(200).json({
     code: 200,
     content: {
-      providers: config.providers // Can be accessed using `response.data.content.providers` if using axios.
+      providers: enabledProviders // Can be accessed using `response.data.content.providers` if using axios.
     }
   })
 })
@@ -87,7 +121,7 @@ app.get(`${rootURL}/providers/:providerId`, (req, res, next) => {
   
   // Return the response accordingly
   // Throw an error if the provider isn't enabled
-  if (config.providers.indexOf(req.params.providerId) === -1) {
+  if (enabledProviders.indexOf(req.params.providerId) === -1) {
     res
       .sendStatus(503) // Not enabled
   } else {
@@ -101,7 +135,7 @@ app.get(`${rootURL}/data/:providerId/:folderPath`, (req, res, next) => {
   debug(`(List) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
 
   // Throw an error if the provider isn't enabled
-  if (config.providers.indexOf(req.params.providerId) === -1) {
+  if (enabledProviders.indexOf(req.params.providerId) === -1) {
     throw new ProviderNotEnabledError(`The provider ${req.params.providerId} has not been enabled.`)
   }
 
@@ -130,7 +164,7 @@ app.get(`${rootURL}/data/:providerId/:folderPath/:fileName`, (req, res, next) =>
   debug(`(Read) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
 
   // Throw an error if the provider isn't enabled
-  if (config.providers.indexOf(req.params.providerId) === -1) {
+  if (enabledProviders.indexOf(req.params.providerId) === -1) {
     throw new ProviderNotEnabledError(`The provider ${req.params.providerId} has not been enabled.`)
   }
 
@@ -159,7 +193,7 @@ app.post(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("con
   debug(`(Create) Post request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Throw an error if the provider isn't enabled
-  if (config.providers.indexOf(req.params.providerId) === -1) {
+  if (enabledProviders.indexOf(req.params.providerId) === -1) {
     throw new ProviderNotEnabledError(`The provider ${req.params.providerId} has not been enabled.`)
   }
 
@@ -188,7 +222,7 @@ app.put(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("cont
   debug(`(Update) Put request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Throw an error if the provider isn't enabled
-  if (config.providers.indexOf(req.params.providerId) === -1) {
+  if (enabledProviders.indexOf(req.params.providerId) === -1) {
     throw new ProviderNotEnabledError(`The provider ${req.params.providerId} has not been enabled.`)
   }
 
@@ -217,7 +251,7 @@ app.delete(`${rootURL}/data/:providerId/:folderPath/:fileName?`, (req, res, next
   debug(`(Delete) Delete request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Throw an error if the provider isn't enabled
-  if (config.providers.indexOf(req.params.providerId) === -1) {
+  if (enabledProviders.indexOf(req.params.providerId) === -1) {
     throw new ProviderNotEnabledError(`The provider ${req.params.providerId} has not been enabled.`)
   }
 
@@ -244,7 +278,7 @@ app.use(errorHandler)
 process.on('SIGINT', () => {
   debug("SIGINT signal received: closing Dabbu server")
   // Delete the .cache directory
-  fs.remove(`${__dirname}/../.cache/`) // Delete the .cache directory
+  fs.remove(`./.cache/`) // Delete the .cache directory
     .then(() => info("Removed cache. Exiting.."))
     .then(() => server.close()) // Call close on the server created when we called app.listen
     .then(() => info("Server closed"))

@@ -18,7 +18,7 @@
 // MARK: Errors
 
 // The superclass for custom errors that Dabbu Server can throw
-class GeneralError extends Error {
+exports.GeneralError = class GeneralError extends Error {
   // It must have an HTTP response code, a user-friendly message and a computer-friendly reason
   constructor(code, message, reason) {
     super();
@@ -29,37 +29,37 @@ class GeneralError extends Error {
 }
 
 // Bad request; returned if the URL has any typos or mistakes
-class BadRequestError extends GeneralError {
+exports.BadRequestError = class BadRequestError extends this.GeneralError {
   constructor(message) {
     super(400, message, "malformedURL")
   }
 }
 // Missing provider specific variable in the request body; but returns a 400 Malformed URL code
-class MissingParamError extends GeneralError {
+exports.MissingParamError = class MissingParamError extends this.GeneralError {
   constructor(message) {
     super(400, message, "missingParam")
   }
 }
 // 404 not found
-class NotFoundError extends GeneralError {
+exports.NotFoundError = class NotFoundError extends this.GeneralError {
   constructor(message) {
     super(404, message, "notFound")
   }
 }
 // Not implemented; used when a certain request verb like PUT (update) is not supported by a provider
-class NotImplementedError extends GeneralError {
+exports.NotImplementedError = class NotImplementedError extends this.GeneralError {
   constructor(message) {
     super(405, message, "notImplemented")
   }
 }
 // Conflict; used when a file already exists and you try to create it instead of update it
-class FileExistsError extends GeneralError {
+exports.FileExistsError = class FileExistsError extends this.GeneralError {
   constructor(message) {
     super(409, message, "conflict")
   }
 }
 // Service unavailable; used when the provider is not enabled in the config file
-class ProviderNotEnabledError extends GeneralError {
+exports.ProviderNotEnabledError = class ProviderNotEnabledError extends this.GeneralError {
   constructor(message) {
     super(503, message, "providerNotEnabled")
   }
@@ -68,7 +68,7 @@ class ProviderNotEnabledError extends GeneralError {
 // MARK: Error handler
 
 // The custom error handler we use on the server
-function errorHandler(err, req, res, next) {
+exports.errorHandler = (err, req, res, next) => {
   if (err instanceof GeneralError) {
     // If it is a custom error, return the code, message and reason accordingly
     return res.status(err.code).json({
@@ -114,18 +114,4 @@ function errorHandler(err, req, res, next) {
       })
     }
   }
-}
-
-// MARK: Exports
-
-// Export everything
-module.exports = {
-  errorHandler,
-  GeneralError,
-  BadRequestError,
-  MissingParamError,
-  NotFoundError,
-  NotImplementedError,
-  FileExistsError,
-  ProviderNotEnabledError
 }

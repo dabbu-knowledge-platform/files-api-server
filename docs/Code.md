@@ -4,36 +4,20 @@
 
 Note on dependencies: All the dependencies required by Dabbu (and *NOT* the modules that are provided) are listed as production dependencies, while the dependecies/pacakges for all the provider-specific modules are listed as dev dependencies. We request module developers to adhere to this format. To install only the dependencies required for dabbu, run `npm install --production`, and then to install dependencies for each provider separately refer to their documentation. To install a dependency as a dev dependency, use `npm install --save-dev <package-name>`
 
-## **src/config/dabbu_config.json**
-
-It will contain a list of all enabled providers and the port to run on. It is of the following format:
-
-```JSON
-{
-  "providers": [
-    "hard_drive",
-    "google_drive"
-  ],
-  "runtime": {
-    "port": 8080,
-    "debug": true
-  }
-}
-```
-
 ## **src/server.js**
 
 This will contain most of the server side request handling code. Here is what will happen there:
-- Read the config file
-- Initialise an express server on port given in the config file
-- Import all the provider code and store each of it in a dictionary against the provider alias
+- Accept and parse input from the user
+- Initialise an express server on port given by the user (default: 8080)
+- Store a list of enabled providers given by the user (default: all enabled)
 - Define listeners for GET, POST, PUT and DELETE requests (there will be two GET requests, one to return a file and one to list files)
-- The listeners will pass all the parameters to the respective function of that provider (refer to the provider modules section below)
+- The listeners will load the required module and pass the request headers, body, URL parameters and queries to the respective function of that provider (refer to the provider modules section below)
 - The returned promise will be executed and then the result (or error) will be sent back.
 
 ## **src/errors.js**
 
 This file contains all custom errors that can be thrown by modules and the middleware. It also contains the custom error handler that the server uses. Each custom error must extend the superclass `GeneralError` and call the super method with a http code, the message parameter passed to it in the constructor and a reason string that describes the http code (reason must be in camel case)
+
 ```Javascript
 // The General Error class that all custom errors must extend
 class GeneralError extends Error {
@@ -46,7 +30,7 @@ class GeneralError extends Error {
 }
 
 // Our custom error
-class BadRequestError extends GeneralError {
+exports.BadRequestError = class BadRequestError extends this.GeneralError {
   constructor(message) {
     super(
       400, // The HTTP error code to send back
@@ -54,11 +38,6 @@ class BadRequestError extends GeneralError {
       "malformedURL" // The computer friendly message to send back
     )
   }
-}
-
-module.exports = {
-  ...,
-  BadRequestError // Add the error to exports
 }
 ```
 
