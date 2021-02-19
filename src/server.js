@@ -96,7 +96,7 @@ const server = app.listen(port, () => {
 
 // HTTP GET request to `/` will return text
 app.get(`/`, (req, res, next) => {
-  debug(`(Root) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Root) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
 
   // Send back a successfull response.
   res.status(200).send(`Dabbu Server running on port ${port}`)
@@ -104,7 +104,7 @@ app.get(`/`, (req, res, next) => {
 
 // HTTP GET request to `/providers` will return all enabled providers
 app.get(`${rootURL}/providers`, (req, res, next) => {
-  debug(`(List providers) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(List providers) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Send back a successfull response code (200) and the enabled providers.
   res.status(200).json({
@@ -117,7 +117,7 @@ app.get(`${rootURL}/providers`, (req, res, next) => {
 
 // HTTP GET request to /providers/:providerId will return status code 200 if the provider is enabled, else 503
 app.get(`${rootURL}/providers/:providerId`, (req, res, next) => {
-  debug(`(Check provider) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Check provider) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Return the response accordingly
   // Throw an error if the provider isn't enabled
@@ -132,7 +132,7 @@ app.get(`${rootURL}/providers/:providerId`, (req, res, next) => {
 
 // HTTP GET request to /data/:providerId/:folderPath will list files and folders in that folder
 app.get(`${rootURL}/data/:providerId/:folderPath`, (req, res, next) => {
-  debug(`(List) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(List) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
 
   // Throw an error if the provider isn't enabled
   if (enabledProviders.indexOf(req.params.providerId) === -1) {
@@ -161,7 +161,7 @@ app.get(`${rootURL}/data/:providerId/:folderPath`, (req, res, next) => {
 
 // HTTP GET request to /data/:providerId/:folderPath/:fileName will return the file
 app.get(`${rootURL}/data/:providerId/:folderPath/:fileName`, (req, res, next) => {
-  debug(`(Read) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Read) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
 
   // Throw an error if the provider isn't enabled
   if (enabledProviders.indexOf(req.params.providerId) === -1) {
@@ -190,7 +190,7 @@ app.get(`${rootURL}/data/:providerId/:folderPath/:fileName`, (req, res, next) =>
 
 // Create a file
 app.post(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("content"), (req, res, next) => {
-  debug(`(Create) Post request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Create) Post request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Throw an error if the provider isn't enabled
   if (enabledProviders.indexOf(req.params.providerId) === -1) {
@@ -219,7 +219,7 @@ app.post(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("con
 
 // Update a file
 app.put(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("content"), (req, res, next) => {
-  debug(`(Update) Put request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Update) Put request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Throw an error if the provider isn't enabled
   if (enabledProviders.indexOf(req.params.providerId) === -1) {
@@ -248,7 +248,7 @@ app.put(`${rootURL}/data/:providerId/:folderPath/:fileName`, upload.single("cont
 
 // Delete a file/folder
 app.delete(`${rootURL}/data/:providerId/:folderPath/:fileName?`, (req, res, next) => {
-  debug(`(Delete) Delete request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Delete) Delete request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
   
   // Throw an error if the provider isn't enabled
   if (enabledProviders.indexOf(req.params.providerId) === -1) {
@@ -276,7 +276,7 @@ app.use(errorHandler)
 
 // When the user presses CTRL+C, gracefully exit
 process.on('SIGINT', () => {
-  debug("SIGINT signal received: closing Dabbu server")
+  info("SIGINT signal received: closing Dabbu server")
   // Delete the .cache directory
   fs.remove(`./.cache/`) // Delete the .cache directory
     .then(() => info("Removed cache. Exiting.."))

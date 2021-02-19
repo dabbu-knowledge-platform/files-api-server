@@ -34,19 +34,6 @@ exports.info = (message) => {
   stream.end()
 }
 
-// Print out a debug message if debug mode is enabled
-const config = require("./config/dabbu_config.json")
-const debugMode = config.runtime.debug
-exports.debug = (message) => {
-  const date = new Date().toISOString()
-  if (debugMode === true) {
-    console.log(` DEBUG | ${date} | ${message}`)
-    let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
-    stream.write(`DEBUG | ${date} | ${message}\n`)
-    stream.end()
-  }
-}
-
 // Print out an error
 exports.error = (err) => {
   const date = new Date().toISOString()
