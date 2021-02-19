@@ -62,6 +62,21 @@ async function getLabelFromName(instance, name) {
   }
 }
 
+// Format a date to YYYYMMDD
+function formatDate(unformattedDate) {
+  let date = new Date(unformattedDate)
+  let month = `${(date.getMonth() + 1)}`
+  let day = `${date.getDate()}`
+  let year = `${date.getFullYear()}`
+
+  if (month.length < 2) 
+    month = `0${month}`
+  if (day.length < 2)
+    day = `0${day}`
+
+  return `${year}${month}${day}`
+}
+
 // Our special function to get all the messages in a thread, and their 
 // attachments, and send it back as a data: URI 
 async function createMailDataURI(instance, threadData) {
@@ -125,6 +140,7 @@ async function createMailDataURI(instance, threadData) {
                   // Add it to the attachments array as is, let the clients decode it
                   attachments.push({
                     fileName: part.filename,
+                    mimeType: part.mimeType,
                     data: attachmentResult.data.data
                   })
                 } else {
@@ -243,8 +259,8 @@ class GmailProvider extends Provider {
 
             // Add this to the results
             results.push({
-              name: `${subject} - ${threadResult.data.id}`,
-              path: diskPath(params["folderPath"], threadResult.data.id),
+              name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject}`,
+              path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject}`),
               kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
               mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
               size: NaN, // We have size of messages+attachments, not threads
@@ -350,8 +366,8 @@ class GmailProvider extends Provider {
 
         // Add this to the results
         return {
-          name: `${subject} - ${threadId}`,
-          path: `${diskPath(params["folderPath"])}/${threadId}`,
+          name: `${formatDate(lastModifiedDate)} - ${threadId} - ${subject}`,
+          path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject}`),
           kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
           mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
           size: NaN, // We have size of messages+attachments, not threads
