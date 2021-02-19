@@ -1,6 +1,6 @@
 {
   "name": "dabbu-server",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "A unified API interface to access all your data online",
   "directories": {
     "doc": "docs"
