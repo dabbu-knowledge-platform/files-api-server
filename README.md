@@ -30,9 +30,13 @@ If I have downloaded the executable to my downloads folder, the command would be
 ```bat
 $ C:\Users\<user name>\Downloads\dabbu-server-win.exe start
 ```
-- On Linux/MacOS:
+- On MacOS:
 ```sh
-$ ~/Downloads/dabbu-server-<linux or macos> start
+$ ~/Downloads/dabbu-server-macos start
+```
+- On Linux:
+```sh
+$ ~/Downloads/dabbu-server-linux start
 ```
 
 - Your server is now running! To check, go to http://localhost:8080/. You will see the text `Dabbu Server running on port 8080` on the page. If not, try running the server again or check if you have missed a step. If the problem persists, post a message on [Github discussions](https://github.com/gamemaker1/dabbu-server/discussions/categories/q-a) asking for help. We'll only be glad to help you :)
