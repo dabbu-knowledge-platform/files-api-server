@@ -35,10 +35,11 @@ const Provider = require("./provider.js").default
 // MARK: Functions
 
 // Get the thread ID from a file name (the file names are in 
-// the format `{subject} - {threadID}`)
+// the format `{date} - {threadID} - {subject}`)
 function getThreadIDFromName(name) {
   const splitName = name.split("-")
-  return splitName[splitName.length - 1].trim()
+  if (splitName.length === 1) return name
+  if (splitName.length >= 2) return splitName[1].trim()
 }
 
 // Get a label from a folder path
