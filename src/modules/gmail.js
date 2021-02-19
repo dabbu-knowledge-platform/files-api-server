@@ -276,8 +276,8 @@ class GmailProvider extends Provider {
 
             // Add this to the results
             results.push({
-              name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject}`,
-              path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject}`),
+              name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}.md`,
+              path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}.md`),
               kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
               mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
               size: NaN, // We have size of messages+attachments, not threads
@@ -383,8 +383,8 @@ class GmailProvider extends Provider {
 
         // Add this to the results
         return {
-          name: `${formatDate(lastModifiedDate)} - ${threadId} - ${subject}`,
-          path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject}`),
+          name: `${formatDate(lastModifiedDate)} - ${threadId} - ${subject || "(No subject)"}.md`,
+          path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}.md`),
           kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
           mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
           size: NaN, // We have size of messages+attachments, not threads
