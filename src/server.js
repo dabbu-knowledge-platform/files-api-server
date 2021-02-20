@@ -28,7 +28,7 @@ const fs = require("fs-extra")
 const path = require("path")
 
 // Custom error handler used to send back user and computer friendly messages to clients.
-const { ProviderNotEnabledError, errorHandler } = require("./errors.js")
+const { ProviderNotEnabledError, errorHandler, BadRequestError } = require("./errors.js")
 // Logging methods and utils
 const { info, debug, error, json } = require("./utils.js")
 
@@ -57,26 +57,12 @@ let enabledProviders = [
 
 // Get the command line args
 const args = process.argv.slice(2)
-// Check what command the user has given
-switch (args[0]) {
-  case "start":
-    // Check if the port has been mentioned
-    if (args[1]) port = parseInt(args[1])
-    // If there are any more, take them as providers
-    if (args.length > 2) enabledProviders = args.slice(2)
-    break
-  default:
-    console.log([
-      "Usage: dabbu-server <command> [options]",
-      "",
-      "Commands:",
-      "  dabbu-server start [port] [providers]  Run the server on the given port",
-      "",
-      "Default values:",
-      "  port: 8080",
-      "  providers: hard_drive, google_drive, gmail, one_drive"
-    ].join("\n"))
-    process.exit(0)
+// Check if there are any command line options the user has given
+if (args.length > 0) {
+  // Check if the port has been mentioned
+  if (args[1]) port = parseInt(args[1])
+  // If there are any more, take them as providers
+  if (args.length > 2) enabledProviders = args.slice(2)
 }
 
 // MARK: Server
@@ -269,6 +255,17 @@ app.delete(`${rootURL}/data/:providerId/:folderPath/:fileName?`, (req, res, next
       error(err)
       next(err) // Forward the error to our error handler
     })
+})
+
+// Retrieve a file/folder from cache
+app.get(`${rootURL}/cache/:filePath`, (req, res, next) => {
+  info(`(Get) Cached file requested with params: ${json(req.params)} and queries: ${json(req.query)}`)
+
+  if (req.params.filePath.includes("/..")) {
+    throw new BadRequestError("File path may not contain ..")
+  }
+
+  res.download(`./.cache/${req.params.filePath}`)
 })
 
 // Use a custom error handler to return user and computer friendly responses
