@@ -86,7 +86,7 @@ Please URL encode all params, especially file and folder paths while sending req
   - `fileName`: Name of the file - `string`
 - Request body: [Posted as multipart form data]
   - The request body may contain any fields that the provider requires to execute the request
-  - `content`: The file content - `file-data` [Compulsory]
+  - `content`: The file content - `file-data` [Optional]
   - `name`: The name of the file - `string` [Optional]
   - `path`: The path to the folder in which the file resides - `string` [Optional]
   - `createdAtTime`: Time the file was created (may not be supported by all providers) - `timestamp` [Optional]
@@ -112,3 +112,15 @@ Please URL encode all params, especially file and folder paths while sending req
   - `404`: The file was not found - `notFound`
   - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
   - `503`: Provider not available - `providerNotFound`
+
+### **Download a file from cache**
+#### **GET**: `/cache/:filePath`
+- Request parameters: [Compulsory]
+  - `filePath`: Path to the file - `string`
+- Request body: [Empty]
+- Response:
+  - `res`: Download of the file's contents
+- Errors:
+  - `400`: The file path was incorrect - `malformedUrl`
+  - `404`: The file was not found - `notFound`
+  - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`

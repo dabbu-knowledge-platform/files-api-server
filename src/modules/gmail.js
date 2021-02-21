@@ -17,8 +17,14 @@
 
 // MARK: Imports
 
+// Used to store the files generated from a thread
+const fs = require("fs-extra")
 // Used to make HTTP request to the Google Drive API endpoints
 const axios = require("axios")
+// Used to detect mime types based on file content
+const fileTypes = require("file-type")
+// Used to bundle threads with attachments into zips
+const archiver = require("archiver")
 
 // To convert html to markdown
 const TurndownService = require("turndown")
@@ -79,24 +85,33 @@ function formatDate(unformattedDate) {
 }
 
 // Our special function to get all the messages in a thread, and their 
-// attachments, and send it back as a data: URI 
+// attachments, and send back a download URL
 async function createMailDataURI(instance, threadData) {
   // The text and metadata of all the messages in one long string
   let messagesData = ""
   // The base 64 encoded attachments in the thread
   let attachments = []
+  // The subject of the last message
+  let subject = "(No subject)"
+  // The date, sender and recipients of the last message
+  let date, from, to
   // Loop through the thread for messages
   for (const message of threadData.messages) {
     // Get the message headers
     const headers = message.payload.headers
 
+    subject = headers.filter((header) => header.name.toLowerCase() === "subject")[0].value
+    date = headers.filter((header) => header.name.toLowerCase() === "date")[0].value
+    from = headers.filter((header) => header.name.toLowerCase() === "from")[0].value
+    to = headers.filter((header) => header.name.toLowerCase() === "to")[0].value
+
     // Fetch and write the metadata
     messagesData += [
       "---",
-      `subject: ${headers.filter((header) => header.name.toLowerCase() === "subject")[0].value}`, // Message subject
-      `date: ${headers.filter((header) => header.name.toLowerCase() === "date")[0].value}`, // Message sent on
-      `from: ${headers.filter((header) => header.name.toLowerCase() === "from")[0].value}`, // Message sent from
-      `to: ${headers.filter((header) => header.name.toLowerCase() === "to")[0].value}`, // Message sent to
+      `subject: ${subject}`, // Message subject
+      `date: ${date}`, // Message sent on
+      `from: ${from}`, // Message sent from
+      `to: ${to}`, // Message sent to
       "--",
       ""
     ].join("\n")
@@ -128,7 +143,8 @@ async function createMailDataURI(instance, threadData) {
                 "Attachment found:",
                 `- name: ${part.filename}`,
                 `- size: ${part.body.size} bytes`,
-                `- type: ${part.mimeType}`
+                `- type: ${part.mimeType}`,
+                ""
               ].join("\n")
   
               const attachmentId = part.body.attachmentId
@@ -141,8 +157,7 @@ async function createMailDataURI(instance, threadData) {
                   // Add it to the attachments array as is, let the clients decode it
                   attachments.push({
                     fileName: part.filename,
-                    mimeType: part.mimeType,
-                    data: attachmentResult.data.data
+                    data: Buffer.from(attachmentResult.data.data, 'base64')
                   })
                 } else {
                   // No data
@@ -170,13 +185,45 @@ async function createMailDataURI(instance, threadData) {
     messagesData += "\n\n"
   }
 
-  // Create a JSON object and return it as a data: URI
-  const threadObj = {
-    messages: Buffer.from(messagesData).toString('base64'),
-    attachments: attachments
+  // The output file name
+  const fileName = `${formatDate(date)} - ${threadData.id} - ${subject || "(No subject)"}`
+
+  // Pack it all in a zip file
+  const output = fs.createWriteStream(`./.cache/${fileName}.zip`)
+  const archive = archiver("zip", {
+    zlib: { level: 9 } // Sets the compression level.
+  })
+
+  // Now append files to the archive
+  // First add the message data itself
+  archive.append(messagesData, { name: `${fileName} - Messages.md` })
+
+  // Then append the attachments, if any
+  for (let j = 0, length = attachments.length; j < length; j++) {
+    const attachment = attachments[j]
+    const attachmentName = attachment.fileName
+    const attachmentData = attachment.data
+    const ext = (await fileTypes.fromBuffer(attachmentData) || {}).ext // The extension of the file
+    archive.append(attachmentData, { name: `${fileName} - ${attachmentName}${attachmentName.includes(ext) ? "" : ext}` })
   }
 
-  return `data:application/json,${JSON.stringify(threadObj)}`
+  return await new Promise((resolve, reject) => {
+    // Once the file is written, return
+    output.on("close", () => {
+      resolve(`http://localhost:${process.argv.slice(2)[1] || 8080}/dabbu/v1/api/cache/${encodeURIComponent(fileName)}.zip`)
+    })
+
+    // Catch errors
+    archive.on("error", (err) => {
+      throw err
+    })
+
+    // Finalize the contents
+    archive.finalize()
+
+    // Pipe archive data to the file
+    archive.pipe(output)
+  })
 }
 
 // MARK: Provider
@@ -207,30 +254,29 @@ class GmailProvider extends Provider {
     let results = []
     if (labelId) {
       // List out all the threads labelled with that particular label
-      let allThreads = []
+      let allMessages = []
       let nextPageToken = null
       do {
-        // List all files that match the given query
-        const listResult = await instance.get("/gmail/v1/users/me/threads", {
+        const listResult = await instance.get("/gmail/v1/users/me/messages", {
           params: {
-            labelIds: labelId,
-            pageSize: 100, // Get a max of 100 files at a time
-            pageToken: nextPageToken // Add the page token if there is any
+            q: `label:${labelId}`,
+            pageToken: nextPageToken
           }
         })
         
         // Get the next page token (incase Google Drive returned incomplete results)
         nextPageToken = listResult.data.nextPageToken
+
         // Add the files we got right now to the main list
-        allThreads = allThreads.concat(listResult.data.threads)
+        allMessages = allMessages.concat(listResult.data.messages)
       } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
       // Loop through the threads
-      for (let thread of allThreads) {
+      for (let thread of allMessages) {
         // If the export type is view, get only the metadata, else get everything
-        const threadResult = await instance.get(`/gmail/v1/users/me/threads/${thread.id}`, {
+        const threadResult = await instance.get(`/gmail/v1/users/me/threads/${thread.threadId}`, {
           params: {
-            format: exportType === "view" ? "METADATA" : "FULL"
+            format: "METADATA"
           }
         })
         
@@ -265,19 +311,12 @@ class GmailProvider extends Provider {
             if (lastModifiedDateHeaders.length > 0) lastModifiedDate = lastModifiedDateHeaders[0].value
 
             // The content URI
-            let contentURI
-            if (exportType === "view") {
-              // If exportType is view, return a link to view the thread in the inbox
-              contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
-            } else {
-              // Else return the data URI created specially by Dabbu
-              contentURI = await createMailDataURI(instance, threadResult.data)
-            }
+            let contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
 
             // Add this to the results
             results.push({
-              name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}.md`,
-              path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}.md`),
+              name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`,
+              path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`),
               kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
               mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
               size: NaN, // We have size of messages+attachments, not threads
@@ -383,8 +422,8 @@ class GmailProvider extends Provider {
 
         // Add this to the results
         return {
-          name: `${formatDate(lastModifiedDate)} - ${threadId} - ${subject || "(No subject)"}.md`,
-          path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}.md`),
+          name: `${formatDate(lastModifiedDate)} - ${threadId} - ${subject || "(No subject)"}`,
+          path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`),
           kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
           mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
           size: NaN, // We have size of messages+attachments, not threads

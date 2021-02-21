@@ -1,16 +1,16 @@
 {
   "name": "dabbu-server",
-  "version": "1.4.5",
+  "version": "1.5.0",
   "description": "A unified API interface to access all your data online",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "start": "node src/server.js start",
-    "clean": "rm -r dist && mkdir dist",
+    "clean": "rm -r dist; mkdir dist",
     "prebuild": "npm run clean",
     "build": "pkg --output dist/dabbu-server .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\"; exit 1"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,7 @@
     "multer": "^1.4.2"
   },
   "devDependencies": {
+    "archiver": "^5.2.0",
     "axios": "^0.21.1",
     "file-type": "16.2.0",
     "turndown": "^7.0.0"

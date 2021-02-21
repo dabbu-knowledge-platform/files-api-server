@@ -21,7 +21,7 @@
 exports.GeneralError = class GeneralError extends Error {
   // It must have an HTTP response code, a user-friendly message and a computer-friendly reason
   constructor(code, message, reason) {
-    super();
+    super()
     this.code = code
     this.message = message
     this.reason = reason
@@ -69,7 +69,7 @@ exports.ProviderNotEnabledError = class ProviderNotEnabledError extends this.Gen
 
 // The custom error handler we use on the server
 exports.errorHandler = (err, req, res, next) => {
-  if (err instanceof GeneralError) {
+  if (err instanceof this.GeneralError) {
     // If it is a custom error, return the code, message and reason accordingly
     return res.status(err.code).json({
       code: err.code,
@@ -92,7 +92,7 @@ exports.errorHandler = (err, req, res, next) => {
     } else if (err.isAxiosError) {
       console.error(err.response.data)
       // If it's an axios error, return the status code and the error
-      const errorMessage = err.response.data && err.response.data.error && err.response.data.error.message ? err.response.data.error.message : "unknown error"
+      const errorMessage = err.response.data && err.response.data.error && err.response.data.error.message ? err.response.data.error.message : "Unknown error"
       const errorReason = err.response.data && err.response.data.error && err.response.data.error.reason ? err.response.data.error.reason : err.response.data.error.code || "unknownReason"
       console.error(`${err.response.status} (${err.response.statusText}): ${errorMessage}`)
       return res.status(err.response.status).json({

@@ -46,11 +46,11 @@ class HardDriveDataProvider extends Provider {
       throw new MissingParamError("Expected base path to be part of request body")
     }
     // Get the folder path in the URL
-    const folderPath = params["folderPath"]
+    const folderPath = params["folderPath"].replace(basePath, "")
     let {compareWith, operator, value, orderBy, direction} = queries
 
     // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -101,12 +101,12 @@ class HardDriveDataProvider extends Provider {
     // Get the base path provided in the request body
     const basePath = body["base_path"]
     // Get the folder path in the URL
-    const folderPath = params["folderPath"]
+    const folderPath = params["folderPath"].replace(basePath, "")
     // Get the file name in the URL
     const fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -139,12 +139,12 @@ class HardDriveDataProvider extends Provider {
     // Get the base path provided in the request body
     const basePath = body["base_path"]
     // Get the folder path in the URL
-    const folderPath = params["folderPath"]
+    const folderPath = params["folderPath"].replace(basePath, "")
     // Get the file name in the URL
     const fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -201,7 +201,7 @@ class HardDriveDataProvider extends Provider {
     let fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
+    if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -225,7 +225,7 @@ class HardDriveDataProvider extends Provider {
     }
     if (body["path"]) {
       // Don't allow relative paths, let clients do that
-      if (body["path"].indexOf("..") !== -1) {
+      if (body["path"].indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
       await fs.move(diskPath(basePath, folderPath, fileName), diskPath(basePath, body["path"], fileName), { overwrite: true })
@@ -262,14 +262,14 @@ class HardDriveDataProvider extends Provider {
     // Get the base path provided in the request body
     const basePath = body["base_path"]
     // Get the folder path in the URL
-    const folderPath = params["folderPath"]
+    const folderPath = params["folderPath"].replace(basePath, "")
     // Get the file name in the URL
     const fileName = params["fileName"]
 
     if (folderPath && fileName) {
       // If there is a file name provided, delete the file      
       // Don't allow relative paths, let clients do that
-      if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
+      if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
 
@@ -283,7 +283,7 @@ class HardDriveDataProvider extends Provider {
     } else if (folderPath && !fileName) {
       // If there is only a folder name provided, delete the folder and its contents
       // Don't allow relative paths, let clients do that
-      if ([basePath, folderPath].join("/").indexOf("..") !== -1) {
+      if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
 
