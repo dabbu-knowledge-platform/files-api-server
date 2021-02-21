@@ -58,7 +58,7 @@ class OneDriveDataProvider extends Provider {
     let {compareWith, operator, value, orderBy, direction, exportType} = queries
 
     // Don't allow relative paths, let clients do th
-    if (folderPath.indexOf("..") !== -1) {
+    if (folderPath.indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -131,7 +131,7 @@ class OneDriveDataProvider extends Provider {
     const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
     // Don't allow relative paths, let clients do that
-    if ([folderPath, fileName].join("/").indexOf("..") !== -1) {
+    if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -190,7 +190,7 @@ class OneDriveDataProvider extends Provider {
     const exportType = body["exportType"]
 
     // Don't allow relative paths, let clients do that
-    if ([folderPath, fileName].join("/").indexOf("..") !== -1) {
+    if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -282,7 +282,7 @@ class OneDriveDataProvider extends Provider {
     const exportType = body["exportType"]
 
     // Don't allow relative paths, let clients do that
-    if ([folderPath, fileName].join("/").indexOf("..") !== -1) {
+    if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
@@ -313,7 +313,7 @@ class OneDriveDataProvider extends Provider {
     }
     if (body["path"]) {
       // Don't allow relative paths, let clients do that
-      if (body["path"].indexOf("..") !== -1) {
+      if (body["path"].indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
       // Set the new parent on the file
@@ -390,7 +390,7 @@ class OneDriveDataProvider extends Provider {
     const fileName = params["fileName"]
 
     // Don't allow relative paths, let clients do that
-    if (folderPath.indexOf("..") !== -1) {
+    if (folderPath.indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 

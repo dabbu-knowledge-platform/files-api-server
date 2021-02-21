@@ -86,7 +86,7 @@ Please URL encode all params, especially file and folder paths while sending req
   - `fileName`: Name of the file - `string`
 - Request body: [Posted as multipart form data]
   - The request body may contain any fields that the provider requires to execute the request
-  - `content`: The file content - `file-data` [Compulsory]
+  - `content`: The file content - `file-data` [Optional]
   - `name`: The name of the file - `string` [Optional]
   - `path`: The path to the folder in which the file resides - `string` [Optional]
   - `createdAtTime`: Time the file was created (may not be supported by all providers) - `timestamp` [Optional]
