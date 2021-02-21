@@ -7,10 +7,10 @@
   },
   "scripts": {
     "start": "node src/server.js start",
-    "clean": "rm -r dist && mkdir dist",
+    "clean": "rm -r dist; mkdir dist",
     "prebuild": "npm run clean",
     "build": "pkg --output dist/dabbu-server .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\"; exit 1"
   },
   "repository": {
     "type": "git",
