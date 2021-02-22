@@ -8,9 +8,11 @@ assignees: gamemaker1
 ---
 
 **Name of provider**
+
 Which provider do you want to add?
 
 **Any ideas on how it should be implemented**
+
 If the provider has extra content like messages, contacts, events, etc, how do you think should it be turned into files and folders?
 
 **Additional information**
