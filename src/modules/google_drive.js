@@ -286,7 +286,9 @@ class GoogleDriveDataProvider extends Provider {
       // Get the next page token (incase Google Drive returned incomplete results)
       nextPageToken = listResult.data.nextPageToken
       // Add the files we got right now to the main list
-      allFiles = allFiles.concat(listResult.data.items)
+      if (listResult.data.items) {
+        allFiles = allFiles.concat(listResult.data.items)
+      }
     } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
     // Once we get everything, parse and print the files

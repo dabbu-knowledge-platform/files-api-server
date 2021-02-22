@@ -260,12 +260,12 @@ class GmailProvider extends Provider {
     let results = []
     if (labelIds) {
       // List out all the threads labelled with that particular label
-      let allMessages = []
+      let allThreads = []
       let nextPageToken = null
       do {
-        const listResult = await instance.get("/gmail/v1/users/me/messages", {
+        const listResult = await instance.get("/gmail/v1/users/me/threads/", {
           params: {
-            q: labelIds.map(id => `label:${id}`).join(" "),
+            labelIds: labelIds.join(" "),
             pageToken: nextPageToken
           }
         })
@@ -274,64 +274,70 @@ class GmailProvider extends Provider {
         nextPageToken = listResult.data.nextPageToken
 
         // Add the files we got right now to the main list
-        allMessages = allMessages.concat(listResult.data.messages)
+        if (listResult.data.threads) {
+          allThreads = allThreads.concat(listResult.data.threads)
+        }
       } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
       // Loop through the threads
-      for (let thread of allMessages) {
-        // If the export type is view, get only the metadata, else get everything
-        const threadResult = await instance.get(`/gmail/v1/users/me/threads/${thread.threadId}`, {
-          params: {
-            format: "METADATA"
-          }
-        })
-        
-        // If the thread exists, parse it
-        if (threadResult.data && threadResult.data.messages) {
-          // Get all its messages
-          const messages = threadResult.data.messages
-          if (messages.length > 0) {
-            // Get the first and last messages
-            const firstMessage = messages[0]
-            const lastMessage = messages[messages.length - 1]
-            // Get the headers of the messages
-            let firstHeaders = firstMessage.payload.headers
-            let lastHeaders = lastMessage.payload.headers
-
-            // Get the subject from the last email, as that is what is seen in
-            // the user's inbox
-            let subject = "(Empty Subject)"
-            const subjectHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "subject")
-            if (subjectHeaders.length > 0) subject = subjectHeaders[0].value
-
-            // The created at time is when the first message was sent
-            let createdAtDate
-            const createdAtDateHeaders = firstHeaders.filter((header) => header.name.toLowerCase() === "date")
-            if (createdAtDateHeaders.length > 0) createdAtDate = createdAtDateHeaders[0].value
-
-            // The last modified time is when the last message was sent
-            // Note: would be more accurate to use internalDate, but that
-            // is only returned when retrieving a specific message
-            let lastModifiedDate
-            const lastModifiedDateHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "date")
-            if (lastModifiedDateHeaders.length > 0) lastModifiedDate = lastModifiedDateHeaders[0].value
-
-            // The content URI
-            let contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
-
-            // Add this to the results
-            results.push({
-              name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`,
-              path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`),
-              kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
-              mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
-              size: NaN, // We have size of messages+attachments, not threads
-              createdAtTime: new Date(createdAtDate).toISOString(), // When the first message was sent
-              lastModifiedTime: new Date(lastModifiedDate).toISOString(), // When the last message was sent
-              contentURI: contentURI // Content URI
-            })
+      if (allThreads.length > 0) {
+        for (let thread of allThreads) {
+          // If the export type is view, get only the metadata, else get everything
+          const threadResult = await instance.get(`/gmail/v1/users/me/threads/${thread.id}`, {
+            params: {
+              format: "METADATA"
+            }
+          })
+          
+          // If the thread exists, parse it
+          if (threadResult.data && threadResult.data.messages) {
+            // Get all its messages
+            const messages = threadResult.data.messages
+            if (messages.length > 0) {
+              // Get the first and last messages
+              const firstMessage = messages[0]
+              const lastMessage = messages[messages.length - 1]
+              // Get the headers of the messages
+              let firstHeaders = firstMessage.payload.headers
+              let lastHeaders = lastMessage.payload.headers
+  
+              // Get the subject from the last email, as that is what is seen in
+              // the user's inbox
+              let subject = "(Empty Subject)"
+              const subjectHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "subject")
+              if (subjectHeaders.length > 0) subject = subjectHeaders[0].value
+  
+              // The created at time is when the first message was sent
+              let createdAtDate
+              const createdAtDateHeaders = firstHeaders.filter((header) => header.name.toLowerCase() === "date")
+              if (createdAtDateHeaders.length > 0) createdAtDate = createdAtDateHeaders[0].value
+  
+              // The last modified time is when the last message was sent
+              // Note: would be more accurate to use internalDate, but that
+              // is only returned when retrieving a specific message
+              let lastModifiedDate
+              const lastModifiedDateHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "date")
+              if (lastModifiedDateHeaders.length > 0) lastModifiedDate = lastModifiedDateHeaders[0].value
+  
+              // The content URI
+              let contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
+  
+              // Add this to the results
+              results.push({
+                name: `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`,
+                path: diskPath(params["folderPath"], `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`),
+                kind: "file", // An entire thread can be viewed at once. Labels are folders, not threads
+                mimeType: "mail/thread", // Weird mime type invented by me TODO: replace this with a proper one
+                size: NaN, // We have size of messages+attachments, not threads
+                createdAtTime: new Date(createdAtDate).toISOString(), // When the first message was sent
+                lastModifiedTime: new Date(lastModifiedDate).toISOString(), // When the last message was sent
+                contentURI: contentURI // Content URI
+              })
+            }
           }
         }
+      } else {
+        return []
       }
     } else {
       // Return all the labels the user or Gmail has created
