@@ -196,7 +196,7 @@ class HardDriveDataProvider extends Provider {
     // Get the base path provided in the request body
     const basePath = body["base_path"]
     // Get the folder path in the URL
-    let folderPath = params["folderPath"]
+    let folderPath = params["folderPath"].replace(basePath, "")
     // Get the file name in the URL
     let fileName = params["fileName"]
 

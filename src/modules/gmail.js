@@ -49,23 +49,29 @@ function getThreadIDFromName(name) {
 }
 
 // Get a label from a folder path
-async function getLabelFromName(instance, name) {
+async function getLabelsFromName(instance, name) {
   if (name.toLowerCase() == "null" || name.toLowerCase() == "/") {
     return null
   } else {
-    const labelName = name.replace(/\//g, "")
+    // Loop through space separated labels
+    const labelNames = name.replace(/\//g, "").split(" ")
+    let labels = []
 
     const labelsResult = await instance.get(`/gmail/v1/users/me/labels`)
-
-    // If there is a result, parse it
-    if (labelsResult.data && labelsResult.data.labels) {
-      // Loop through the labels
-      for (const label of labelsResult.data.labels) {
-        if (label.name === labelName) {
-          return label.id
+    for (let i = 0, length = labelNames.length; i < length; i++) {
+      const labelName = labelNames[i]
+      // If there is a result, parse it
+      if (labelsResult.data && labelsResult.data.labels) {
+        // Loop through the labels
+        for (const label of labelsResult.data.labels) {
+          if (label.name === labelName) {
+            labels.push(label.id)
+          }
         }
       }
     }
+
+    return labels
   }
 }
 
@@ -244,7 +250,7 @@ class GmailProvider extends Provider {
     })
 
     // Folder path for threads are treated as space separated labels
-    const labelId = await getLabelFromName(instance, params["folderPath"])
+    const labelIds = await getLabelsFromName(instance, params["folderPath"])
 
     // Get the export type and compare/sort params from the query parameters
     let {compareWith, operator, value, orderBy, direction, exportType} = queries
@@ -252,14 +258,14 @@ class GmailProvider extends Provider {
     // If the request is for / (the root folder), then return a list
     // of all labels. Else return the list of threads with that label
     let results = []
-    if (labelId) {
+    if (labelIds) {
       // List out all the threads labelled with that particular label
       let allMessages = []
       let nextPageToken = null
       do {
         const listResult = await instance.get("/gmail/v1/users/me/messages", {
           params: {
-            q: `label:${labelId}`,
+            q: labelIds.map(id => `label:${id}`).join(" "),
             pageToken: nextPageToken
           }
         })
