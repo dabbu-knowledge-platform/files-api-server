@@ -1,12 +1,13 @@
 {
   "name": "dabbu-server",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "A unified API interface to access all your data online",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "start": "node src/server.js start",
+    "start": "node src/server.js",
+    "debug": "clear && DEBUG=true node src/server.js",
     "clean": "rm -r dist; mkdir dist",
     "prebuild": "npm run clean",
     "build": "pkg --output dist/dabbu-server .",

@@ -27,7 +27,7 @@ const axios = require("axios")
 // Custom errors we throw
 const { NotFoundError, BadRequestError, FileExistsError, GeneralError } = require("../errors.js")
 // Used to generate platform-independent file/folder paths
-const { diskPath, sortFiles } = require("../utils.js")
+const { diskPath, sortFiles, log, json } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
@@ -36,12 +36,18 @@ const Provider = require("./provider.js").default
 
 // Get the folder ID based on its name
 async function getFolderId(instance, folderName, parentId = "root", isShared = false, insertIfNotFound = false) {
+  // Log it
+  log("google_drive", `Parsing ID from folder name => ${folderName}; parentId => ${parentId}; shared => ${isShared}`)
   // If it's the root folder, return `root` as the ID
   if (folderName === "/") {
+    // Log it
+    log("google_drive", `Folder ID => root`)
     return "root"
   }
 
   // Query the Drive API
+  // Log it
+  log("google_drive", `Fetching folders with name => ${folderName}`)
   const result = await instance.get("/drive/v2/files", {
     params: {
       q: isShared
@@ -50,14 +56,20 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
       fields: `items(id, title)`
     }
   })
-  
+
   if (result.data.items.length > 0) {
+    // Log it
+    log("google_drive", `Folder ID => ${result.data.items[0].id}`)
     // If there is a valid result, return the folder ID
     const folderId = result.data.items[0].id
     return folderId
   } else {
+    // Log it
+    log("google_drive", `Folder was not found`)
     // There is no such folder
     if (insertIfNotFound) {
+      // Log it
+      log("google_drive", `Inserting new folder`)
       // Insert a folder if the `insertIfNotFound` option is true
       const newFolderResult = await instance.post("/drive/v2/files", {
         "title": folderName,
@@ -66,6 +78,8 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
       })
 
       if (newFolderResult.data && newFolderResult.data.id) {
+        // Log it
+        log("google_drive", `Created folder with ID => ${newFolderResult.data.id}`)
         return newFolderResult.data.id
       } else {
         throw new GeneralError(500, "No response from Google Drive. Could not create folder.", "invalidResponse")
@@ -79,8 +93,12 @@ async function getFolderId(instance, folderName, parentId = "root", isShared = f
 
 // Get the folder ID of the last folder in the path
 async function getFolderWithParents(instance, folderPath, isShared = false, insertIfNotFound = false) {
+  // Log it
+  log("google_drive", `Parsing folder ID from folder path => ${folderPath}; shared => ${isShared}`)
   // If it's the root folder, return `root` as the ID
   if (folderPath === "/") {
+    // Log it
+    log("google_drive", `Folder ID => root`)
     return "root"
   }
 
@@ -94,27 +112,41 @@ async function getFolderWithParents(instance, folderPath, isShared = false, inse
     i++
   }
 
+  // Log it
+  log("google_drive", `Folder path => ${folderNames}`)
+
   if (folderNames.length > 1) {
     // If the path has multiple folders, loop through them, get their IDs and 
     // then get the next folder ID with it as a parent
     let prevFolderId = "root"
+    // Log it
+    log("google_drive", `Looping through folder heirarchy`)
     for (let j = 0, length = folderNames.length; j < length; j++) {
+      // Log it
+      log("google_drive", `Current folder => ${folderNames[j]}`)
       // Don't set sharedWithMe here to true if this is not the first folder, 
       // because then the folder is implicitly shared as part of the first folder
       prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0, insertIfNotFound)
     }
+    // Log it
+    log("google_drive", `Folder ID (nested) => ${prevFolderId}`)
     // Return the ID of the last folder
     return prevFolderId
   } else {
     // Return the last and only folder's ID
     // Set sharedWithMe here to true (if passed on as true) as the 
     // folder will have been explicitly shared
-    return await getFolderId(instance, folderNames[folderNames.length - 1], "root", isShared, insertIfNotFound)
+    const folderId = await getFolderId(instance, folderNames[folderNames.length - 1], "root", isShared, insertIfNotFound)
+    // Log it
+    log("google_drive", `Folder ID (below root) => ${folderId}`)
+    return folderId
   }
 }
 
 // Get the ID of a file based on its name
 async function getFileId(instance, fileName, parentId = "root", isShared = false, errorOutIfExists = false) {
+  // Log it
+  log("google_drive", `Fetching files with name => ${fileName}; parentId => ${parentId}; shared => ${isShared}`)
   // Query the Drive API
   const result = await instance.get("/drive/v2/files", {
     params: {
@@ -126,6 +158,8 @@ async function getFileId(instance, fileName, parentId = "root", isShared = false
   })
   
   if (result.data.items.length > 0) {
+    // Log it
+    log("google_drive", `Received ${result.data.items.length} result(s)`)
     // If there is a valid result:
     if (errorOutIfExists) {
       // If the `errorOutIfExists` option is true (used when creating a file), error out
@@ -133,6 +167,8 @@ async function getFileId(instance, fileName, parentId = "root", isShared = false
     } else {
       // Else return the file ID
       const fileId = result.data.items[0].id
+      // Log it
+      log("google_drive", `File ID => ${fileId}`)
       return fileId
     }
   } else {
@@ -140,12 +176,17 @@ async function getFileId(instance, fileName, parentId = "root", isShared = false
     if (!errorOutIfExists) {
       // If the `errorOutIfExists` option is false (used when creating a file), error out
       throw new NotFoundError(`File ${fileName} does not exist`)
+    } else {
+      // Log it
+      log("google_drive", `File doesn't exist (with name => ${fileName})`)
     }
   }
 }
 
 // Get the file ID of a file with a folder path before it
 async function getFileWithParents(instance, filePath, isShared = false) {
+  // Log it
+  log("google_drive", `Parsing file ID from file path => ${filePath}; shared = ${isShared}`)
   // Parse the path
   let folderNames = filePath.split("/")
   // Get the file name and remove it from the folder path
@@ -160,24 +201,41 @@ async function getFileWithParents(instance, filePath, isShared = false) {
     i++
   }
 
+  // Log it
+  log("google_drive", `Folder names => ${folderNames}; file name => ${fileName}`)
+
   if (folderNames.length > 0) {
     // If the path has multiple folders, loop through them, get their IDs and 
     // then get the next folder ID with it as a parent
     let prevFolderId = "root"
+    // Log it
+    log("google_drive", `Looping through folder heirarchy`)
     for (let j = 0, length = folderNames.length; j < length; j++) {
       // Don't set sharedWithMe here to true if this is not the first folder, 
       // because then the folder is implicitly shared as part of the first folder
+      // Log it
+      log("google_drive", `Current folder => ${prevFolderId}`)
       prevFolderId = await getFolderId(instance, folderNames[j], prevFolderId, isShared && j === 0)
     }
+    // Log it
+    log("google_drive", `Final folder ID => ${prevFolderId}`)
     // Return the file ID with the parent ID being the last folder's ID
     // Don't set sharedWithMe here to true, because the file is implicitly
     // shared as part of a main folder
-    return await getFileId(instance, fileName, prevFolderId)
+    const fileId = await getFileId(instance, fileName, prevFolderId)
+    // Log it
+    log("google_drive", `File ID (nested) => ${fileId}`)
+    // Return the file ID
+    return fileId
   } else {
     // Get the file ID
     // Set sharedWithMe here to true (if passed on as true) as the 
     // file will have been explicitly shared
-    return await getFileId(instance, fileName, "root", isShared)
+    const fileId = await getFileId(instance, fileName, "root", isShared)
+    // Log it
+    log("google_drive", `File ID (below root) => ${fileId}`)
+    // Return the file ID
+    return fileId
   }
 }
 
@@ -251,6 +309,9 @@ class GoogleDriveDataProvider extends Provider {
     // Get the export type and compare/sort params from the query parameters
     let {compareWith, operator, value, orderBy, direction, exportType} = queries
 
+    // Log it
+    log("google_drive", `Folder path => ${folderPath}; shared => ${isShared}; queries => ${json(queries, true)}`)
+
     // Don't allow relative paths, let clients do th
     if (folderPath.indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -269,11 +330,17 @@ class GoogleDriveDataProvider extends Provider {
       q = `'${folderId}' in parents and trashed = false`
     }
 
+    // Log it
+    log("google_drive", `Runnning GET request on files matching query => ${q}`)
+
     // Query the Drive API
     let allFiles = []
     let nextPageToken = null
     do {
       // List all files that match the given query
+      // Log it
+      log("google_drive", `Running request`)
+      log("google_drive", `Page token => ${nextPageToken}`)
       const listResult = await instance.get("/drive/v2/files", {
         params: {
           q: q,
@@ -285,14 +352,19 @@ class GoogleDriveDataProvider extends Provider {
       
       // Get the next page token (incase Google Drive returned incomplete results)
       nextPageToken = listResult.data.nextPageToken
+
       // Add the files we got right now to the main list
       if (listResult.data.items) {
+        // Log it
+        log("google_drive", `Received files => ${listResult.data.items.map(file => file.title)}`)
         allFiles = allFiles.concat(listResult.data.items)
       }
     } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
     // Once we get everything, parse and print the files
     if (allFiles.length > 0) {
+      // Log it
+      log("google_drive", `Received ${allFiles.length} files`)
       // If a valid result is returned, loop through all the files and folders there
       let fileObjs = []
       for (let i = 0, length = allFiles.length; i < length; i++) {
@@ -330,6 +402,9 @@ class GoogleDriveDataProvider extends Provider {
           }
         }
 
+        // Log it
+        log("google_drive", `Adding file to results (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
         // Append to a final array that will be returned
         fileObjs.push({
           name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
@@ -339,9 +414,14 @@ class GoogleDriveDataProvider extends Provider {
       // Sort the array now
       fileObjs = sortFiles(compareWith, operator, value, orderBy, direction, fileObjs)
 
+      // Log it
+      log("google_drive", `Sorted files, final result => ${json(fileObjs, true)}`)
+
       // Return all the files as a final array
       return fileObjs
     } else {
+      // Log it
+      log("google_drive", `No files returned`)
       // Empty folder
       return []
     }
@@ -367,6 +447,9 @@ class GoogleDriveDataProvider extends Provider {
     // Is the file shared (explicitly or implicitly)
     const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
+    // Log it
+    log("google_drive", `Folder path => ${folderPath}; file name => ${fileName}; shared => ${isShared}; queries => ${json(queries, true)}`)
+
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -374,6 +457,9 @@ class GoogleDriveDataProvider extends Provider {
     
     // Get the parent folder ID
     const folderId = await getFolderWithParents(instance, folderPath, isShared)
+
+    // Log it
+    log("google_drive", `Folder ID => ${folderId}`)
 
     // Construct the query
     let q
@@ -384,6 +470,9 @@ class GoogleDriveDataProvider extends Provider {
       // Else just do a normal get
       q = `title='${fileName}' and '${folderId}' in parents and trashed = false`
     }
+
+    // Log it
+    log("google_drive", `Running GET request on files matching query => ${q}`)
     
     // Query the Drive API
     // No need to do the pagination thing here, our query is specifically searching for a file
@@ -396,6 +485,9 @@ class GoogleDriveDataProvider extends Provider {
 
     if (listResult.data.items.length > 0) {
       // If we get a valid result
+      // Log it
+      log("google_drive", `Received ${listResult.data.items.length} item(s)`)
+      // Get the file metadata and content
       const fileObj = listResult.data.items[0]
       const name = fileObj.title // Name of the file
       const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
@@ -430,6 +522,9 @@ class GoogleDriveDataProvider extends Provider {
         }
       }
 
+      // Log it
+      log("google_drive", `Adding file to results (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
       // Return the file metadata and content
       return {
         name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
@@ -460,6 +555,9 @@ class GoogleDriveDataProvider extends Provider {
     // This must be mentioned in the body as it is a provider-specific variable
     const exportType = body["exportType"]
 
+    // Log it
+    log("google_drive", `Folder path => ${folderPath}; file name => ${fileName}; exportType => ${exportType}`)
+
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -481,7 +579,7 @@ class GoogleDriveDataProvider extends Provider {
     let meta = {
       "title": fileName,
       parents: [{id: folderId}],
-      mimeType: await fileTypes.fromFile(fileMeta.path)
+      mimeType: (await fileTypes.fromFile(fileMeta.path) || {}).mime
     }
 
     // If there is a lastModifiedTime present, set the file's lastModifiedTime to that
@@ -489,26 +587,43 @@ class GoogleDriveDataProvider extends Provider {
       meta["modifiedDate"] = new Date(body["lastModifiedTime"]).toISOString()
     }
 
+    // Log it
+    log("google_drive", `File metadata => ${json(meta, true)}`)
+
     // First, post the file meta data to let Google Drive know we are posting the file's contents too
     const driveMetaResult = await instance.post("/drive/v2/files", meta)
 
     if (driveMetaResult.data) {
       // If drive acknowledges the request, then upload the file as well
       const file = driveMetaResult.data
+      // Log it
+      log("google_drive", `Uploaded metadata successfully; file ID => ${file.id}; uploading file from local path => ${fileMeta.path}`)
+      // Upload the file's content
       let result = await instance.put(`/upload/drive/v2/files/${file.id}?convert=true&uploadType=media`, fs.createReadStream(fileMeta.path))
       if (result.data) {
+        // Log it
+        log("google_drive", `File successfully uploaded, checking if conversion is required`)
         // If the uploaded file is an MS Office file, convert it to a Google Doc/Sheet/Slide
         const importType = getImportTypeForDoc(result.data.mimeType)
         if (importType !== "auto") {
+          // Log it
+          log("google_drive", `Converting file to Google Workspace format => ${importType}`)
           // Copy the file in a converted format
           result = await instance.post(`/drive/v2/files/${file.id}/copy?convert=true`)
+          // Log it
+          log("google_drive", `Converted file succesfully => ${result.data.id}`)
           // Delete the original one
           await instance.delete(`/drive/v2/files/${file.id}`)
+          // Log it
+          log("google_drive", `Deleted original format document => ${file.id}`)
         }
 
         // If the creation was successful, return a file object
-        if (result.response && result.response.data) {
-          const fileObj = result.response.data
+        if (result.data) {
+          // Log it
+          log("google_drive", `Upload (and conversion, if applicable) finished successfully, returning file meta and content URI`)
+
+          const fileObj = result.data
 
           const name = fileObj.title // Name of the file
           const kind = fileObj.mimeType == "application/vnd.google-apps.folder" ? "folder" : "file" // File or folder
@@ -543,6 +658,9 @@ class GoogleDriveDataProvider extends Provider {
             }
           }
 
+          // Log it
+          log("google_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
           // Return the file metadata and content
           return {
             name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
@@ -573,6 +691,9 @@ class GoogleDriveDataProvider extends Provider {
     // Get the file path from the URL
     let fileName = params["fileName"]
 
+    // Log it
+    log("google_drive", `Folder path => ${folderPath}; file name => ${fileName}`)
+
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -582,46 +703,68 @@ class GoogleDriveDataProvider extends Provider {
     const folderId = await getFolderWithParents(instance, folderPath, false, false)
     const fileId = await getFileId(instance, fileName, folderId, false, false)
 
+    // Log it
+    log("google_drive", `Folder ID => ${folderId}; file ID => ${fileId}`)
+
     // The result of the operation
     let result
 
     // Upload the new file data if provided
     if (fileMeta) {
+      // Log it
+      log("google_drive", `Detected content upload, updating file contents in drive with contents of file => ${fileMeta.path}`)
       result = await instance.put(`/upload/drive/v2/files/${fileId}?uploadType=media`, fs.createReadStream(fileMeta.path))
     }
 
     // Check if the user passed fields to set values in
     // We can only set name, path, and lastModifiedTime, not createdAtTime
     if (body["name"]) {
+      // Log it
+      log("google_drive", `Detected name field, patching file name => ${body["name"]}`)
       // Rename the file by sending a patch request
       result = await instance.patch(`/drive/v2/files/${fileId}`, {
         "title": body["name"]
       })
+      // Log it
+      log("google_drive", `Patch succesfull, file renamed => ${body["name"]}`)
       fileName = body["name"]
     }
     if (body["path"]) {
+      // Log it
+      log("google_drive", `Detected path field, moving file => ${body["path"]}`)
       // Don't allow relative paths, let clients do that
       if (body["path"].indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
       }
       // Get the new folder ID
       const newFolderId = await getFolderWithParents(instance, body["path"], false, true)
+      // Log it
+      log("google_drive", `New folder ID => ${newFolderId}`)
       // Move the file by sending a patch request
       result = await instance.patch(`/drive/v2/files/${fileId}`, {
         parents: [{id: newFolderId}],
       })
+      // Log it
+      log("google_drive", `Patch successfull, moved file to new path => ${body["path"]}`)
       folderPath = body["path"]
     }
     if (body["lastModifiedTime"]) {
       const modifiedDate = new Date(body["lastModifiedTime"]).toISOString()
+      // Log it
+      log("google_drive", `Detected lastModifiedTime field, patching to => ${modifiedDate}`)
       // Set the lastModifiedTime by sending a patch request
       result = await instance.patch(`/drive/v2/files/${fileId}?modifiedDateBehavior=fromBody`, {
         "modifiedDate": modifiedDate
       })
+      // Log it
+      log("google_drive", `Patch successfull, last modified data set => ${modifiedDate}`)
     }
 
     // Now send back the updated file object
     if (result.response && result.response.data) {
+      // Log it
+      log("google_drive", `Patch requests successfull, returning file object`)
+
       const fileObj = result.response.data
       // If the creation was successful, return a file object
       const name = fileObj.title // Name of the file
@@ -657,6 +800,9 @@ class GoogleDriveDataProvider extends Provider {
         }
       }
 
+      // Log it
+      log("google_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
       // Return the file metadata and content
       return {
         name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
@@ -680,6 +826,9 @@ class GoogleDriveDataProvider extends Provider {
     // Get the file path from the URL
     const fileName = params["fileName"]
 
+    // Log it
+    log("google_drive", `Folder path => ${folderPath}; file name => ${fileName}`)
+
     // Don't allow relative paths, let clients do that
     if (folderPath.indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -689,8 +838,14 @@ class GoogleDriveDataProvider extends Provider {
       // If there is a file name provided, delete the file
       const filePath = diskPath(folderPath, fileName)
 
+      // Log it
+      log("google_drive", `Deleting file => ${filePath}`)
+
       // Get the file ID
       const fileId = await getFileWithParents(instance, filePath)
+
+      // Log it
+      log("google_drive", `Deleting file with ID => ${fileId}`)
 
       // Delete the file
       return await instance.delete(`/drive/v2/files/${fileId}`)
@@ -698,6 +853,9 @@ class GoogleDriveDataProvider extends Provider {
       // If there is only a folder name provided, delete the folder
       // Get the folder ID
       const folderId = await getFolderWithParents(instance, folderPath)
+
+      // Log it
+      log("google_drive", `Deleting folder => ${folderPath}; ID => ${folderId}`)
 
       // Delete the folder
       return await instance.delete(`/drive/v2/files/${folderId}`)

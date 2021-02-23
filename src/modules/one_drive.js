@@ -27,7 +27,7 @@ const axios = require("axios")
 // Custom errors we throw
 const { BadRequestError } = require("../errors.js")
 // Used to generate platform-independent file/folder paths
-const { diskPath, sortFiles } = require("../utils.js")
+const { diskPath, sortFiles, log, json } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
@@ -57,20 +57,29 @@ class OneDriveDataProvider extends Provider {
     // Get the export type and compare/sort params from the query parameters
     let {compareWith, operator, value, orderBy, direction, exportType} = queries
 
+    // Log it
+    log("one_drive", `Folder path => ${folderPath}; shared => ${isShared}; queries => ${json(queries, true)}`)
+
     // Don't allow relative paths, let clients do th
     if (folderPath.indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
     // Query the one drive API for the docs
-    const listResult = await instance.get(
-        isShared 
+    // Create the query
+    let listQuery = isShared 
           ? `/me/drive/sharedWithMe${folderPath && folderPath !== "/" ? `:${folderPath}:` : ""}`
           : `/me/drive/root${folderPath && folderPath !== "/" ? `:${folderPath}:` : ""}/children`
-    )
+    // Log it
+    log("one_drive", `Running GET request for files that match the following query => ${listQuery}`)
+
+    // Fetch the results
+    const listResult = await instance.get(listQuery)
 
     // Get the list of files and folders
     if (listResult.data && listResult.data.value && listResult.data.value.length !== 0) {
+      // Log it
+      log("one_drive", `Received ${listResult.data.value.length} files`)
       // If a valid result is returned, loop through all the files and folders there
       let fileObjs = []
       for (let i = 0, length = listResult.data.value.length; i < length; i++) {
@@ -93,6 +102,9 @@ class OneDriveDataProvider extends Provider {
               || (`https://graph.microsoft.com/v1.0/${isShared ? `/me/drive/sharedWithMe:${path}:/content` : `/me/drive/root:${path}:/content`}`) // With access token
         }
 
+        // Log it
+        log("one_drive", `Adding file to results (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
         // Append to a final array that will be returned
         fileObjs.push({
           name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
@@ -102,10 +114,15 @@ class OneDriveDataProvider extends Provider {
       // Sort the array now
       fileObjs = sortFiles(compareWith, operator, value, orderBy, direction, fileObjs)
 
+      // Log it
+      log("one_drive", `Sorted files, final result => ${json(fileObjs, true)}`)
+
       // Return all the files as a final array
       return fileObjs
     } else {
       // Empty folder
+      // Log it
+      log("one_drive", `Received 0 files`)
       return []
     }
   }
@@ -130,20 +147,31 @@ class OneDriveDataProvider extends Provider {
     // Is the file shared (explicitly or implicitly)
     const isShared = diskPath(params["folderPath"]).startsWith("/Shared") || diskPath(params["folderPath"]).startsWith("Shared")
 
+    // Log it
+    log("one_drive", `Folder path => ${folderPath}; file name => ${fileName}; shared => ${isShared}; queries => ${json(queries, true)}`)
+
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
     }
 
-    // Query the one drive API for the docs
-    const listResult = await instance.get(
-      isShared 
-        ? `/me/drive/sharedWithMe:${diskPath(folderPath, fileName)}:`
-        : `/me/drive/root:${diskPath(folderPath, fileName)}`
-    )
+    // Create the query
+    let fetchQuery = isShared 
+          ? `/me/drive/sharedWithMe:${diskPath(folderPath, fileName)}:`
+          : `/me/drive/root:${diskPath(folderPath, fileName)}`
+    // Log it
+    log("one_drive", `Running GET request for the file => ${fetchQuery}`)
 
-    if (listResult.data) {
-      const fileObj = listResult.data
+    // Fetch the results
+    const fetchResult = await instance.get(fetchQuery)
+
+    // Parse the result and return a file object
+    if (fetchResult.data) {
+      // Log it
+      log("one_drive", `Received file => ${json(fetchResult.data, true)}`)
+
+      // Parse the returned object
+      const fileObj = fetchResult.data
       const name = fileObj.name // Name of the file
       const kind = fileObj.folder ? "folder" : "file" // File or folder
       const path = isShared ? diskPath("/Shared", folderPath, name) : diskPath(folderPath, name) // Absolute path to the file
@@ -161,6 +189,9 @@ class OneDriveDataProvider extends Provider {
         contentURI = fileObj["@microsoft.graph.downloadUrl"] // Without access token, but short-lived
             || (`https://graph.microsoft.com/v1.0/${isShared ? `/me/drive/sharedWithMe:${path}:/content` : `/me/drive/root:${path}:/content`}`) // With access token
       }
+
+      // Log it
+      log("one_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
 
       // Return the object
       return ({
@@ -189,6 +220,9 @@ class OneDriveDataProvider extends Provider {
     // This must be mentioned in the body as it is a provider-specific variable
     const exportType = body["exportType"]
 
+    // Log it
+    log("one_drive", `Folder path => ${folderPath}; file name => ${fileName}; queries => ${json(queries, true)}`)
+
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -202,14 +236,23 @@ class OneDriveDataProvider extends Provider {
 
     let result
 
-    // Run a PUT request to upload the file contents to a new file
-    // We don't need to create folders if they don't exist, One Drive does that for us
+    // Run a PUT request to upload the file contents to a new file. Also, we 
+    // don't need to create folders if they don't exist, One Drive does that 
+    // for us
+    // Get the mime type of the file
     const mimeType =  (await fileTypes.fromFile(fileMeta.path) || {}).mime
+    // Log it
+    log("one_drive", `Uploading file using PUT request from local path => ${fileMeta.path}; mimeType => ${mimeType}`)
+
+    // Upload the file
     result = await instance.put(`/me/drive/root:${diskPath(folderPath, fileName)}:/content`, fs.createReadStream(fileMeta.path), {
       headers: {
         "Content-Type": mimeType
       }
     })
+
+    // Log it
+    log("one_drive", `File ${diskPath(folderPath, fileName)} successfully uploaded`)
 
     // Update the files metadata with the given fields
     let meta = {}
@@ -225,6 +268,8 @@ class OneDriveDataProvider extends Provider {
 
     // Update the files metadata with the given fields
     if (meta.lastModifiedTime || meta.createdAtTime) {
+      // Log it
+      log("one_drive", `Patching the file's metadata to the following: ${json(meta, true)}`)
       // Run a patch request to update the metadata
       result = await instance.patch(`/me/drive/root:${diskPath(folderPath, fileName)}:/`, {
         fileSystemInfo: {
@@ -232,6 +277,9 @@ class OneDriveDataProvider extends Provider {
           lastModifiedDateTime: new Date(meta["lastModifiedTime"]).toISOString()
         }
       })
+
+      // Log it
+      log("one_drive", `Patch operation successfull`)
     }
 
     if (result.data) {
@@ -253,6 +301,9 @@ class OneDriveDataProvider extends Provider {
         contentURI = fileObj["@microsoft.graph.downloadUrl"] // Without access token, but short-lived
             || (`https://graph.microsoft.com/v1.0/${isShared ? `/me/drive/sharedWithMe:${path}:/content` : `/me/drive/root:${path}:/content`}`) // With access token
       }
+
+      // Log it
+      log("one_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
 
       // Return the object
       return ({
@@ -281,6 +332,9 @@ class OneDriveDataProvider extends Provider {
     // This must be mentioned in the body as it is a provider-specific variable
     const exportType = body["exportType"]
 
+    // Log it
+    log("one_drive", `Folder path => ${folderPath}; file name => ${fileName}; queries => ${json(queries, true)}`)
+
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -291,27 +345,41 @@ class OneDriveDataProvider extends Provider {
 
     // Upload the new file data if provided
     if (fileMeta) {
-      // Run a PUT request to upload the file contents to a new file
-      // We don't need to create folders if they don't exist, One Drive does that for us
+      // Run a PUT request to upload the file contents to a new file. Also, we 
+      // don't need to create folders if they don't exist, One Drive does that 
+      // for us
+      // Get the mime type of the file
       const mimeType =  (await fileTypes.fromFile(fileMeta.path) || {}).mime
+      // Log it
+      log("one_drive", `Updating file contents using PUT request from local path => ${fileMeta.path}; mimeType => ${mimeType}`)
+
+      // Upload the file
       result = await instance.put(`/me/drive/root:${diskPath(folderPath, fileName)}:/content`, fs.createReadStream(fileMeta.path), {
         headers: {
           "Content-Type": mimeType
         }
       })
+
+      // Log it
+      log("one_drive", `File ${diskPath(folderPath, fileName)} successfully uploaded`)
     }
 
     // Check if the user passed fields to set values in
     // We can set name, path, createAtTime and lastModifiedTime
     if (body["name"]) {
+      // Log it
+      log("one_drive", `Detected name field, setting to ${body["name"]}`)
       // Rename the file by sending a patch request
-      console.log(body["name"])
       result = await instance.patch(`/me/drive/root:${diskPath(folderPath, fileName)}:/`, {
         "name": body["name"]
       })
+      // Log it
+      log("one_drive", `Patch operation successfull, name changed to ${body["name"]}`)
       fileName = body["name"]
     }
     if (body["path"]) {
+      // Log it
+      log("one_drive", `Detected path field, setting to ${body["path"]}`)
       // Don't allow relative paths, let clients do that
       if (body["path"].indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -325,9 +393,14 @@ class OneDriveDataProvider extends Provider {
           id: result.data.id
         }
       })
+      // Log it
+      log("one_drive", `Patch operation successfull, file moved to ${body["path"]}`)
       folderPath = body["path"]
     }
     if (body["lastModifiedTime"]) {
+      // Log it
+      log("one_drive", `Detected lastModifiedTime field, setting to ${body["lastModifiedTime"]}`)
+      // Turn it into a ISO string
       const modifiedDate = new Date(body["lastModifiedTime"]).toISOString()
       // Set the lastModifiedTime by sending a patch request
       result = await instance.patch(`/me/drive/root:${diskPath(folderPath, fileName)}:/`, {
@@ -335,15 +408,22 @@ class OneDriveDataProvider extends Provider {
           lastModifiedDateTime: modifiedDate
         }
       })
+      // Log it
+      log("one_drive", `Patch operation successfull, lastModifiedTime changed to ${body["lastModifiedTime"]}`)
     }
-    if (body["createAtTime"]) {
-      const modifiedDate = new Date(body["createAtTime"]).toISOString()
+    if (body["createdAtTime"]) {
+      // Log it
+      log("one_drive", `Detected createdAtTIme field, setting to ${body["createdAtTIme"]}`)
+      // Turn it into a ISO string
+      const createdDate = new Date(body["createdAtTime"]).toISOString()
       // Set the createAtTime by sending a patch request
       result = await instance.patch(`/me/drive/root:${diskPath(folderPath, fileName)}:/`, {
         fileSystemInfo: {
-          createdDateTime: modifiedDate
+          createdDateTime: createdDate
         }
       })
+      // Log it
+      log("one_drive", `Patch operation successfull, createdAtTime changed to ${body["createdAtTime"]}`)
     }
 
     if (result.data) {
@@ -365,6 +445,9 @@ class OneDriveDataProvider extends Provider {
         contentURI = fileObj["@microsoft.graph.downloadUrl"] // Without access token, but short-lived
             || (`https://graph.microsoft.com/v1.0/${isShared ? `/me/drive/sharedWithMe:${path}:/content` : `/me/drive/root:${path}:/content`}`) // With access token
       }
+
+      // Log it
+      log("one_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
 
       // Return the object
       return ({
@@ -395,9 +478,13 @@ class OneDriveDataProvider extends Provider {
     }
 
     if (folderPath && fileName) {
+      // Log it
+      log("one_drive", `Deleting file ${diskPath(folderPath, fileName)}`)
       // If there is a file name provided, delete the file
       return await instance.delete(`/me/drive/root:${diskPath(folderPath, fileName)}`)
     } else if (folderPath && !fileName) {
+      // Log it
+      log("one_drive", `Deleting folder ${diskPath(folderPath)}`)
       // If there is only a folder name provided, delete the folder
       return await instance.delete(`/me/drive/root:${diskPath(folderPath)}`)
     } else {

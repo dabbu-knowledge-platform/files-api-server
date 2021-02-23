@@ -34,6 +34,17 @@ exports.info = (message) => {
   stream.end()
 }
 
+// Print out a provider log
+exports.log = (provider, message) => {
+  if (process.env.debug || process.env.DEBUG) {
+    const date = new Date().toISOString()
+    console.log(` DEBUG  | ${date} | ${provider} | ${message}`)
+    let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags:'a' })
+    stream.write(`DEBUG  | ${date} | ${provider} | ${message}\n`)
+    stream.end()
+  }
+}
+
 // Print out an error
 exports.error = (err) => {
   const date = new Date().toISOString()
@@ -45,8 +56,12 @@ exports.error = (err) => {
 }
 
 // Format JSON
-exports.json = (string) => {
-  return JSON.stringify(string)
+exports.json = (string, decorate = false) => {
+  if (decorate) {
+    return JSON.stringify(string, null, 4)
+  } else {
+    return JSON.stringify(string)
+  }
 }
 
 // Get a platform-independent path

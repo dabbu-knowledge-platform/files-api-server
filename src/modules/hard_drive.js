@@ -25,7 +25,7 @@ const fileTypes = require("file-type")
 // Custom errors we throw
 const { NotFoundError, BadRequestError, FileExistsError, MissingParamError } = require("../errors.js")
 // Used to generate platform-independent file/folder paths
-const { diskPath, sortFiles } = require("../utils.js")
+const { diskPath, sortFiles, log, json } = require("../utils.js")
 
 // Import the default Provider class we need to extend
 const Provider = require("./provider.js").default
@@ -45,9 +45,13 @@ class HardDriveDataProvider extends Provider {
       // If it doesn't exist, error out
       throw new MissingParamError("Expected base path to be part of request body")
     }
+
     // Get the folder path in the URL
     const folderPath = params["folderPath"].replace(basePath, "")
     let {compareWith, operator, value, orderBy, direction} = queries
+
+    // Log it
+    log("hard_drive", `Base path => ${basePath}; folder path => ${folderPath}; queries => ${json(queries, true)}`)
 
     // Don't allow relative paths, let clients do that
     if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
@@ -61,11 +65,17 @@ class HardDriveDataProvider extends Provider {
 
     // List the files and folders at that location
     let files = await fs.readdir(diskPath(basePath, folderPath))
+    // Log it
+    log("hard_drive", `Read dir => ${json(files, true)} at ${diskPath(basePath, folderPath)}`)
+
     let fileObjs = []
 
     // Then loop through the list of files
     for (let i = 0, length = files.length; i < length; i++) {
       const fileName = files[i]
+      // Log it
+      log("hard_drive", `Fetching stats for file => ${fileName}`)
+
       // Get the statistics related to that file, `fs.readdir` only gives the name
       const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links
 
@@ -83,6 +93,9 @@ class HardDriveDataProvider extends Provider {
       const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
       const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
+      // Log it
+      log("hard_drive", `Adding file to results (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
       // Append to a final array that will be returned
       fileObjs.push({
         name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI
@@ -91,6 +104,9 @@ class HardDriveDataProvider extends Provider {
 
     // Sort the array now
     fileObjs = sortFiles(compareWith, operator, value, orderBy, direction, fileObjs)
+
+    // Log it
+    log("hard_drive", `Sorted files, final result => ${json(fileObjs, true)}`)
 
     // Return all the files as a final array
     return fileObjs
@@ -105,6 +121,9 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     const fileName = params["fileName"]
 
+    // Log it
+    log("hard_drive", `Base path => ${basePath}; folder path => ${folderPath}; file name => ${fileName}`)
+
     // Don't allow relative paths, let clients do that
     if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
       throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -114,6 +133,9 @@ class HardDriveDataProvider extends Provider {
     if (!(await fs.pathExists(diskPath(basePath, folderPath)))) {
       throw new NotFoundError(`Folder ${diskPath(basePath, folderPath)} was not found`)
     }
+
+    // Log it
+    log("hard_drive", `Fetching stats for ${diskPath(basePath, folderPath, fileName)}`)
 
     // Get the statistics related to that file, `fs.readdir` only gives the name
     const statistics = await fs.stat(diskPath(basePath, folderPath, fileName)) // Change to lstat if you want to support sym links
@@ -131,6 +153,10 @@ class HardDriveDataProvider extends Provider {
     const createdAtTime = statistics["birthTime"] // When it was created
     const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
+
+    // Log it
+    log("hard_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
     return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
 
@@ -142,6 +168,9 @@ class HardDriveDataProvider extends Provider {
     const folderPath = params["folderPath"].replace(basePath, "")
     // Get the file name in the URL
     const fileName = params["fileName"]
+
+    // Log it
+    log("hard_drive", `Base path => ${basePath}; folder path => ${folderPath}; file name => ${fileName}`)
 
     // Don't allow relative paths, let clients do that
     if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
@@ -159,6 +188,9 @@ class HardDriveDataProvider extends Provider {
       throw new FileExistsError(`File ${diskPath(basePath, folderPath, fileName)} already exists`)
     }
 
+    // Log it
+    log("hard_drive", `Moving file ${fileMeta.path} to ${diskPath(basePath, folderPath, fileName)}`)
+
     // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
     // uploaded. Move the file from that path to the specified one.
     await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName))
@@ -166,6 +198,9 @@ class HardDriveDataProvider extends Provider {
     // Check if the user passed fields to set values in
     // We can only set lastModifiedTime (mtime), not createAtTime
     if (body["lastModifiedTime"]) {
+      // Log it
+      log("hard_drive", `Setting lastModifiedTime to ${body["lastModifiedTime"]}`)
+      // Convert it to a date object
       const mtime = new Date(body["lastModifiedTime"])
       // Set the lastModifiedTime
       await fs.utimes(fileMeta.path, mtime, mtime)
@@ -187,6 +222,9 @@ class HardDriveDataProvider extends Provider {
     const createdAtTime = statistics["birthTime"] // When it was created
     const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
+
+    // Log it
+    log("hard_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
 
     return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
@@ -212,6 +250,8 @@ class HardDriveDataProvider extends Provider {
 
     // If there is some file data specified, update the file with it
     if (fileMeta) {
+      // Log it
+      log("hard_drive", `Updating file contents with contents of file => ${fileMeta.path}`)
       // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
       // uploaded. Move the file from that path to the specified one and overwrite it.
       await fs.move(fileMeta.path, diskPath(basePath, folderPath, fileName), { overwrite: true })
@@ -220,10 +260,14 @@ class HardDriveDataProvider extends Provider {
     // Check if the user passed fields to set values in
     // We can only set name, path, and lastModifiedTime (mtime), not createdAtTime (birthTime)
     if (body["name"]) {
+      // Log it
+      log("hard_drive", `Setting name to ${body["name"]}`)
       await fs.rename(diskPath(basePath, folderPath, fileName), diskPath(basePath, folderPath, body["name"]))
       fileName = body["name"]
     }
     if (body["path"]) {
+      // Log it
+      log("hard_drive", `Moving file to ${body["path"]}`)
       // Don't allow relative paths, let clients do that
       if (body["path"].indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -232,6 +276,8 @@ class HardDriveDataProvider extends Provider {
       folderPath = body["path"]
     }
     if (body["lastModifiedTime"]) {
+      // Log it
+      log("hard_drive", `Setting lastModifiedTime to ${body["lastModifiedTime"]}`)
       const mtime = new Date(body["lastModifiedTime"])
       // Set the lastModifiedTime
       await fs.utimes(diskPath(basePath, folderPath, fileName), mtime, mtime)
@@ -254,6 +300,9 @@ class HardDriveDataProvider extends Provider {
     const lastModifiedTime = statistics["mtime"] // Last time the file or its metadata was changed
     const contentURI = "file://" + diskPath(basePath, folderPath, fileName).replace(/\ /g, "%20") // Content URI, allows the file to be downloaded
 
+    // Log it
+    log("hard_drive", `Returning file (Parsed name => ${name}; kind => ${kind}; path => ${path}; mimeType => ${mimeType}; size => ${size}; createdAtTime => ${createdAtTime}; lastModifiedTime => ${lastModifiedTime}; contentURI => ${contentURI})`)
+
     return {name, kind, path, mimeType, size, createdAtTime, lastModifiedTime, contentURI} // Return it as an object
   }
 
@@ -266,8 +315,14 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     const fileName = params["fileName"]
 
+    // Log it
+    log("hard_drive", `Base path => ${basePath}; folder path => ${folderPath}; file name => ${fileName}`)
+
     if (folderPath && fileName) {
       // If there is a file name provided, delete the file      
+      // Log it
+      log("hard_drive", `Deleting file => ${diskPath(folderPath, fileName)}`)
+
       // Don't allow relative paths, let clients do that
       if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)
@@ -282,6 +337,9 @@ class HardDriveDataProvider extends Provider {
       return await fs.unlink(diskPath(basePath, folderPath, fileName))
     } else if (folderPath && !fileName) {
       // If there is only a folder name provided, delete the folder and its contents
+      // Log it
+      log("hard_drive", `Deleting folder => ${folderPath}`)
+
       // Don't allow relative paths, let clients do that
       if ([basePath, folderPath].join("/").indexOf("/..") !== -1) {
         throw new BadRequestError(`Folder paths must not contain relative paths`)

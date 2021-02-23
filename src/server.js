@@ -259,7 +259,7 @@ app.delete(`${rootURL}/data/:providerId/:folderPath/:fileName?`, (req, res, next
 
 // Retrieve a file/folder from cache
 app.get(`${rootURL}/cache/:filePath`, (req, res, next) => {
-  info(`(Get) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
+  info(`(Cache) Get request called with params: ${json(req.params)} and queries: ${json(req.query)}`)
 
   if (req.params.filePath.includes("/..")) {
     throw new BadRequestError("File path may not contain ..")
