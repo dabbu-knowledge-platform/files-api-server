@@ -21,8 +21,6 @@
 const fs = require("fs-extra")
 // Used to make HTTP request to the Google Drive API endpoints
 const axios = require("axios")
-// Used to detect mime types based on file content
-const fileTypes = require("file-type")
 // Used to bundle threads with attachments into zips
 const archiver = require("archiver")
 
@@ -90,214 +88,281 @@ function formatDate(unformattedDate) {
   return `${year}${month}${day}`
 }
 
+// Helper functions for parsing the thread's messages
+// Some parts are taken from https://github.com/EmilTholin/gmail-api-parse-message/
+
+// Convert a message's headers to simpler key-value pairs
+function indexHeaders(headers) {
+  if (!headers) {
+    return {}
+  } else {
+    return headers.reduce(function (result, header) {
+      result[header.name.toLowerCase()] = header.value
+      return result
+    }, {})
+  }
+}
+
+// Parse a Gmail message and return a nice object
+function parseGmailMessage(message) {
+  // Get the message ID, thread ID, label IDs (though only thread ID is needed)
+  let result = {
+    id: message.id,
+    threadId: message.threadId,
+    labelIds: message.labelIds
+  }
+
+  // The message payload (contains body and attachments)
+  let payload = message.payload
+  if (!payload) {
+    return result
+  }
+
+  // The headers, contains the subject, date, from and to emails
+  let headers = indexHeaders(payload.headers)
+
+  // Parse the subject, date, from and to emails from the headers
+  result.subject = headers["subject"]
+  result.date = headers["date"]
+  result.from = headers["from"]
+  result.to = headers["to"]
+
+  // The message is usually divided into parts
+  let parts = [payload]
+  let firstPartProcessed = false
+
+  // Keep going through the parts
+  while (parts.length !== 0) {
+    // Get the first part and then remove it from the array
+    let part = parts.shift()
+
+    // If this part contains subparts, add those subparts
+    // to the array
+    if (part.parts) {
+      parts = parts.concat(part.parts)
+    }
+    // Get the headers only if this is not the first part
+    if (firstPartProcessed) {
+      headers = indexHeaders(part.headers)
+    }
+
+    // If there is no body, skip this part
+    if (!part.body) {
+      continue
+    }
+
+    // Is the part made up of html
+    let isHtml = part.mimeType && part.mimeType.indexOf("text/html") !== -1
+    // Is the part made up of plain text
+    let isPlain = part.mimeType && part.mimeType.indexOf("text/plain") !== -1
+    // Does the part point to an attachment
+    let isAttachment = Boolean(part.body.attachmentId || (headers["content-disposition"] && headers["content-disposition"].toLowerCase().indexOf("attachment") !== -1))
+    // Is the part an inline attachment
+    let isInline = headers["content-disposition"] && headers["content-disposition"].toLowerCase().indexOf("inline") !== -1
+
+    if (isHtml && !isAttachment) {
+      // Convert the html to markdown and add it to the result
+      result.text = turndownService.turndown(Buffer.from(part.body.data, "base64").toString("ascii"))
+    } else if (isPlain && !isAttachment) {
+      // Add the plain text to the result
+      result.text = Buffer.from(part.body.data, "base64").toString("ascii")
+    } else if (isAttachment) {
+      // If it is an attachment, return the metadata so we can
+      // fetch the attachment
+      
+      let body = part.body
+      if (!result.attachments) {
+        result.attachments = []
+      }
+
+      result.attachments.push({
+        filename: part.filename,
+        mimeType: part.mimeType,
+        size: body.size,
+        attachmentId: body.attachmentId,
+        headers: indexHeaders(part.headers)
+      })
+    } else if (isInline) {
+      // If it is an attachment, return the metadata so we can
+      // fetch the attachment
+
+      let body = part.body
+      if (!result.inline) {
+        result.inline = []
+      }
+
+      result.inline.push({
+        filename: part.filename,
+        mimeType: part.mimeType,
+        size: body.size,
+        attachmentId: body.attachmentId,
+        headers: indexHeaders(part.headers)
+      })
+    }
+
+    firstPartProcessed = true
+  }
+
+  // Return succesfully
+  return result
+}
+
 // Our special function to get all the messages in a thread, and their 
 // attachments, and send back a download URL
 async function createMailDataURI(instance, threadData) {
-  // The text and metadata of all the messages in one long string
-  let messagesData = ""
-  // The base 64 encoded attachments in the thread
-  let attachments = []
-  // The subject of the last message
-  let subject = "(No subject)"
-  // The date, sender and recipients of the last message
-  let date, from, to
-  // Loop through the thread for messages
-  for (const message of threadData.messages) {
-    // Get the message headers
-    const headers = message.payload.headers
-    // Log it
-    log("gmail", `Headers for message => ${json(headers, true)}`)
+  // Store the file paths in which the messages have been stored
+  let messagePaths = []
+  // Store the file paths in which the attachments have been stored
+  let attachmentPaths = []
+  // The final archive name
+  let archiveName = ""
+  // Loop through the messages
+  for (let i = 0, length = threadData.messages.length; i < length; i++) {
+    // Parse the message
+    const message = parseGmailMessage(threadData.messages[i])
 
-    subject = (headers.filter((header) => header.name.toLowerCase() === "subject")[0] || {}).value
-    date = (headers.filter((header) => header.name.toLowerCase() === "date")[0] || {}).value
-    from = (headers.filter((header) => header.name.toLowerCase() === "from")[0] || {}).value
-    to = (headers.filter((header) => header.name.toLowerCase() === "to")[0] || {}).value
-
-    // Log it
-    log("gmail", `Parsed subject => ${subject}, date => ${date}, from => ${from}, to => ${to}`)
-
-    // Fetch and write the metadata
-    messagesData += [
-      "---",
-      `subject: ${subject}`, // Message subject
-      `date: ${date}`, // Message sent on
-      `from: ${from}`, // Message sent from
-      `to: ${to}`, // Message sent to
-      "--",
-      ""
-    ].join("\n")
-
-    // Log it
-    log("gmail", `Appended message metadata`)
-
-    // Gmail either separates the message into parts or puts everything into
-    // the body
-    // Check if there are parts (usually this is the way messages are sent)
-    if (message.payload.parts) {
-      // Log it
-      log("gmail", `Detected payload part split`)
-      for (const part of message.payload.parts) {
-        // Log it
-        log("gmail", `Found part; part ID => ${part.partId}; mime type => ${part.mimeType}; file name (if attachment) => ${part.filename}; size: ${part.body ? part.body.size : NaN}`)
-        // First check if it is quoted text from a previous message
-        const transferEncodingHeader = part.headers.filter((header) => header.name.toLowerCase() === "content-transfer-encoding")
-        if (transferEncodingHeader.length > 0 && transferEncodingHeader[0].value === "quoted-printable" && part.mimeType === "text/html") {
-          // If so, simply add a "..."
-          messagesData += "..."
-          // Log it
-          log("gmail", `Found gmail UI specific quoted text, ommitting`)
-        } else {
-          // Else if it is text, print it out
-          if (part.mimeType === "text/plain" && !part.filename) {
-            // Log it
-            log("gmail", `Appending email plain text`)
-            messagesData += Buffer.from(part.body.data, 'base64').toString('ascii')
-          } else if (part.mimeType === "text/html" && !part.filename) {
-            // Log it
-            log("gmail", `Detected text/html data in message body. Converting to md.`)
-            // Convert html to markdown
-            let html = Buffer.from(part.body.data, 'base64').toString('ascii')
-            let mdFromHtml = turndownService.turndown(html)
-            messagesData += mdFromHtml
-            // Log it
-            log("gmail", `Appended markdown data`)
+    // Generate the file name based on the parsed message => `YYYYMMDD - {thread ID} - {subject}`
+    const messageFileName = `${formatDate(message.date)} - ${message.threadId} - ${message.subject}`
+    archiveName = messageFileName
+    
+    // Show the attachments and inline stuff in a nice way at the
+    // end of the file
+    let attachmentsText = ""
+    let inlineText = ""
+    if (!message.attachments) {
+      attachmentsText = "No attachments found"
+    } else {
+      for (let j = 0, length = message.attachments.length; j < length; j++) {
+        let attachment = message.attachments[j]
+        // First add the text to the message file
+        attachmentsText += [
+          `${attachment.filename}:`,
+          ` - mimeType: ${attachment.mimeType}`,
+          ` - size: ${attachment.size}\n`,
+        ].join("\n")
+        // Then fetch the attachment
+        // Surround in try-catch block as we don't want one failed result to kill
+        // the entire operation
+        try {
+          // Get the attachment as a base64 encoded string
+          const attachmentResult = await instance.get(`/gmail/v1/users/me/messages/${message.id}/attachments/${attachment.attachmentId}`)
+          if (attachmentResult.data && attachmentResult.data.data) {
+            // Write the attachment data to a file 
+            await fs.writeFile(`./.cache/${messageFileName} - ${attachment.filename}`, Buffer.from(attachmentResult.data.data, "base64"))
+            // Add the file path and name to the array
+            attachmentPaths.push({
+              name: `${messageFileName} - ${attachment.filename}`,
+              path: `./.cache/${messageFileName} - ${attachment.filename}`
+            })
           } else {
-            // Else it is an attachment
-            // Log it
-            log("gmail", `Found attachment`)
-            // Check if this part is announcing the attachment or is the attachment
-            if (part.mimeType !== "multipart/alternative") {
-              // If it is an attachment, fetch it and store it
-              messagesData += [
-                "Attachment found:",
-                `- name: ${part.filename}`,
-                `- size: ${part.body.size} bytes`,
-                `- type: ${part.mimeType}`,
-                ""
-              ].join("\n")
-
-              // Log it
-              log("gmail", `Appended attachment type => ${part.mimeType}, size => ${part.body.size}, filename => ${part.filename}`)
-  
-              // Get the ID of the attachment and fetch it separately
-              const attachmentId = part.body.attachmentId
-              // Log it
-              log("gmail", `Fetching attachment content => ${attachmentId}`)
-              // Surround in try-catch block as we don't want one failed result to kill
-              // the entire operation
-              try {
-                // Get the attachment as a base64 encoded string
-                const attachmentResult = await instance.get(`/gmail/v1/users/me/messages/${message.id}/attachments/${attachmentId}`)
-                if (attachmentResult.data && attachmentResult.data.data) {
-                  // Log it
-                  log("gmail", `Received data for attachment => ${attachmentId}`)
-                  // Add it to the attachments array as is, let the clients decode it
-                  attachments.push({
-                    fileName: part.filename,
-                    data: Buffer.from(attachmentResult.data.data, 'base64')
-                  })
-                } else {
-                  // No data
-                  messagesData += "Failed to fetch attachment\n"
-                  // Log it
-                  log("gmail", `No data received from attachment`)
-                }
-              } catch (err) {
-                // Some weird error occurred, tell the user
-                messagesData += `Failed to fetch attachment: ${err.message}\n`
-                // Log it
-                log("gmail", `ERROR while fetching attachment`)
-              }
-            } else {
-              // Else we are announcing, skip it
-              // Log it
-              log("gmail", `Attachment announced, skipping to next part to extract metadata; mime type of part => ${part.mimeType}`)
-            }
+            // No data
+            attachmentsText += "Failed to fetch attachment"
           }
+        } catch (err) {
+          // Some error occurred, tell the user
+          attachmentsText += `Failed to fetch attachment: ${err.message}\n`
         }
       }
-    } else if (message.payload.body) {
-      // Log it
-      log("gmail", `Detect payload body (html email; converting to md)`)
-      // If there is a body, attach that instead
-      // Convert the html to markdown
-      const html = Buffer.from(message.payload.body.data, 'base64').toString('ascii')
-      messagesData += turndownService.turndown(html)
-      // Log it
-      log("gmail", `Appended md body`)
+    }
+    if (!message.inline) {
+      inlineText = "No inline attachments found"
     } else {
-      messagesData += "Error: couldn't parse the email body"
-      // Log it
-      log("gmail", `Couldn't detect valid parts or body in message payload`)
+      for (let j = 0, length = message.inline.length; j < length; j++) {
+        let attachment = message.inline[j]
+        // First add the text to the message file
+        inlineText += [
+          `${attachment.filename}:`,
+          ` - mimeType: ${attachment.mimeType}`,
+          ` - size: ${attachment.size}\n`,
+        ].join("\n")
+        // Then fetch the attachment
+        // Surround in try-catch block as we don't want one failed result to kill
+        // the entire operation
+        try {
+          // Get the attachment as a base64 encoded string
+          const attachmentResult = await instance.get(`/gmail/v1/users/me/messages/${message.id}/attachments/${attachment.attachmentId}`)
+          if (attachmentResult.data && attachmentResult.data.data) {
+            // Write the attachment data to a file 
+            await fs.writeFile(`./.cache/${messageFileName} - ${i + 1} - ${attachment.filename}`, Buffer.from(attachmentResult.data.data, "base64"))
+            // Add the file path and name to the array
+            attachmentPaths.push({
+              name: `${messageFileName} - ${i + 1} - ${attachment.filename}`,
+              path: `./.cache/${messageFileName} - ${i + 1} - ${attachment.filename}`
+            })
+          } else {
+            // No data
+            attachmentsText += "Failed to fetch attachment"
+          }
+        } catch (err) {
+          // Some error occurred, tell the user
+          attachmentsText += `Failed to fetch attachment: ${err.message}\n`
+        }
+      }
     }
     
-    // Line break between two messages
-    messagesData += "\n\n"
+    // Write the data to the file
+    await fs.writeFile(`./.cache/${messageFileName} - ${i + 1}.md`, [
+      `---`,
+      `subject: ${message.subject}`,
+      `date: ${message.date}`,
+      `from: ${message.from}`,
+      `to: ${message.to}`,
+      `--`,
+      ``,
+      `${(message.text || "(No body)").replace(/  \n/g, "")}`,
+      ``,
+      `--`,
+      `Attachments:`,
+      `${attachmentsText}`,
+      `--`,
+      `Inline attachments:`,
+      `${inlineText}`
+    ].join("\n"))
+
+    messagePaths.push({
+      name: `${messageFileName} - ${i + 1}.md`,
+      path: `./.cache/${messageFileName} - ${i + 1}.md`
+    })
   }
 
-  // The output file name
-  const fileName = `${formatDate(date)} - ${threadData.id} - ${subject || "(No subject)"}`
-
-  // Log it
-  log("gmail", `Generating zip for thread => ${fileName}.zip`)
-
   // Pack it all in a zip file
-  const output = fs.createWriteStream(`./.cache/${fileName}.zip`)
+  const output = fs.createWriteStream(`./.cache/${archiveName}.zip`)
   const archive = archiver("zip", {
     zlib: { level: 9 } // Sets the compression level.
   })
 
-  // Log it
-  log("gmail", `Created archive file write stream`)
-
   // Now append files to the archive
-  // First add the message data itself
-  archive.append(messagesData, { name: `${fileName} - Messages.md` })
-  // Log it
-  log("gmail", `Appended message data file to archive`)
-
-  // Then append the attachments, if any
-  // Log it
-  log("gmail", `Appending attachments to archive`)
-  for (let j = 0, length = attachments.length; j < length; j++) {
-    // Get the name, data and extension
-    const attachment = attachments[j]
-    // File name of the attachment
-    const attachmentName = attachment.fileName
-    // The data as a Buffer
-    const attachmentData = attachment.data
-    // Extension based on its mime type
-    const ext = (await fileTypes.fromBuffer(attachmentData) || {ext: ""}).ext
+  // First add the messages
+  for (let k = 0, length = messagePaths.length; k < length; k++) {
+    // Get the path and name object
+    const message = messagePaths[k]
     
     // Add the data to the archive
-    archive.append(attachmentData, { name: `${fileName} - ${attachmentName}${attachmentName.includes(ext) ? "" : ext}` })
-    // Log it
-    log("gmail", `Added attachment => ${attachmentName}, ${ext}`)
+    archive.file(message.path, { name: message.name })
+  }
+
+  // Then append the attachments, if any
+  for (let k = 0, length = attachmentPaths.length; k < length; k++) {
+    // Get the path and name object
+    const attachment = attachmentPaths[k]
+    
+    // Add the data to the archive
+    archive.file(attachment.path, { name: attachment.name })
   }
 
   return await new Promise((resolve, reject) => {
     // Once the file is written, return
     output.on("close", () => {
-      // Log it
-      log("gmail", `Finished draining output, returning URI => ${`http://localhost:${process.argv.slice(2)[1] || 8080}/dabbu/v1/api/cache/${encodeURIComponent(fileName)}.zip`}`)
-      resolve(`http://localhost:${process.argv.slice(2)[1] || 8080}/dabbu/v1/api/cache/${encodeURIComponent(fileName)}.zip`)
+      resolve(`http://localhost:${process.argv.slice(2)[1] || 8080}/dabbu/v1/api/cache/${encodeURIComponent(archiveName)}.zip`)
     })
 
     // Catch errors
     archive.on("error", (err) => {
-      // Log it
-      log("gmail", `Error while creating archive`)
-      throw err
+      reject(err)
     })
 
     // Finalize the contents
     archive.finalize()
-
-    // Log it
-    log("gmail", `Finalised data, piping output`)
-
-    // Log it
-    log("gmail", ``)
 
     // Pipe archive data to the file
     archive.pipe(output)
@@ -321,17 +386,11 @@ class GmailProvider extends Provider {
       headers: {"Authorization": accessToken}
     })
 
-    // Log it
-    log("gmail", `Parsing label names from folder path => ${params["folderPath"]}`)
     // Folder path for threads are treated as space separated labels
     const labelIds = await getLabelsFromName(instance, params["folderPath"])
-    // Log it
-    log("gmail", `Label IDs parsed => ${labelIds}`)
 
     // Get the export type and compare/sort params from the query parameters
     let {compareWith, operator, value, orderBy, direction} = queries
-    // Log it
-    log("gmail", `Sort and compare params => ${json(queries, true)}`)
 
     // If the request is for / (the root folder), then return a list
     // of all labels. Else return the list of threads with that label
@@ -339,16 +398,10 @@ class GmailProvider extends Provider {
     if (labelIds) {
       // Convert the list to a query param
       let labelIdQ = `?labelIds=${labelIds.join("&labelIds=")}`
-      // Log it
-      log("gmail", `Running GET requests on threads with labels => ${labelIdQ}`)
       // List out all the threads labelled with that particular label
       let allThreads = []
       let nextPageToken = null
       do {
-        // Log it
-        log("gmail", `Running request`)
-        log("gmail", `Page token => ${nextPageToken}`)
-
         // Run the GET request
         const listResult = await instance.get(`/gmail/v1/users/me/threads/${labelIdQ}&maxResults=100${nextPageToken ? `&pageToken=${nextPageToken}` : ""}`)
         
@@ -357,19 +410,13 @@ class GmailProvider extends Provider {
 
         // Add the files we got right now to the main list
         if (listResult.data.threads) {
-          // Log it
-          log("gmail", `Received threads => ${listResult.data.threads.map(thread => thread.id)}`)
           allThreads = allThreads.concat(listResult.data.threads)
         }
       } while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
 
       // Loop through the threads
       if (allThreads.length > 0) {
-        // Log it
-        log("gmail", `Received ${allThreads.length} threads`)
         for (let thread of allThreads) {
-          // Log it
-          log("gmail", `Fetching headers for ${thread.id}`)
           // If the export type is view, get only the metadata, else get everything
           const threadResult = await instance.get(`/gmail/v1/users/me/threads/${thread.id}`, {
             params: {
@@ -379,8 +426,6 @@ class GmailProvider extends Provider {
           
           // If the thread exists, parse it
           if (threadResult.data && threadResult.data.messages) {
-            // Log it
-            log("gmail", `Received headers for thread => ${threadResult.data.id}`)
             // Get all its messages
             const messages = threadResult.data.messages
             if (messages.length > 0) {
@@ -397,16 +442,12 @@ class GmailProvider extends Provider {
               const subjectHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "subject")
               if (subjectHeaders.length > 0) subject = subjectHeaders[0].value
 
-              // Log it
-              log("gmail", `Parsed subject => ${subject}`)
   
               // The created at time is when the first message was sent
               let createdAtDate
               const createdAtDateHeaders = firstHeaders.filter((header) => header.name.toLowerCase() === "date")
               if (createdAtDateHeaders.length > 0) createdAtDate = createdAtDateHeaders[0].value
 
-              // Log it
-              log("gmail", `Parsed time when first message was sent => ${createdAtDate}`)
   
               // The last modified time is when the last message was sent
               // Note: would be more accurate to use internalDate, but that
@@ -415,14 +456,10 @@ class GmailProvider extends Provider {
               const lastModifiedDateHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "date")
               if (lastModifiedDateHeaders.length > 0) lastModifiedDate = lastModifiedDateHeaders[0].value
 
-              // Log it
-              log("gmail", `Parsed time when last message was sent => ${lastModifiedDate}`)
   
               // The content URI
               let contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
 
-              // Log it
-              log("gmail", `Adding thread ${`${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${subject || "(No subject)"}`} to results`)
   
               // Add this to the results
               results.push({
@@ -439,24 +476,16 @@ class GmailProvider extends Provider {
           }
         }
       } else {
-        // Log it
-        log("gmail", `No threads returned`)
         return []
       }
     } else {
-      // Log it
-      log("gmail", `Folder path was parsed to be /, returning labels`)
       // Return all the labels the user or Gmail has created
       const labelsResult = await instance.get(`/gmail/v1/users/me/labels`)
 
       // If there is a result, parse it
       if (labelsResult.data && labelsResult.data.labels) {
-        // Log it
-        log("gmail", `Received label IDs => ${json(labelsResult.data.labels, true)}`)
         // Loop through the labels
         for (const label of labelsResult.data.labels) {
-          // Log it
-          log("gmail", `Adding label ${label.name} => ${label.id} to results`)
           // Add the label to the results
           results.push({
             name: `${label.name}`,
@@ -475,8 +504,6 @@ class GmailProvider extends Provider {
     // Sort the results using the sortFile function
     results = sortFiles(compareWith, operator, value, orderBy, direction, results)
 
-    // Log it
-    log("gmail", `Sorted labels/threads, final result => ${json(results, true)}`)
 
     return results
   }
@@ -491,20 +518,12 @@ class GmailProvider extends Provider {
       headers: {"Authorization": accessToken}
     })
 
-    // Log it
-    log("gmail", `Parsing thread ID from file name => ${params["fileName"]}`)
     // File name is the thread ID
     const threadId = getThreadIDFromName(params["fileName"])
-    // Log it
-    log("gmail", `Parsed thread ID => ${threadId}`)
 
     // Get the export type
     const {exportType} = queries
-    // Log it
-    log("gmail", `Export type => ${exportType}`)
 
-    // Log it
-    log("gmail", `Fetching thread with ID => ${threadId}`)
     // Get that particular thread from the Gmail API
     const threadResult = await instance.get(`/gmail/v1/users/me/threads/${threadId}`, {
       params: {
@@ -514,8 +533,6 @@ class GmailProvider extends Provider {
 
     // If the thread exists, parse it
     if (threadResult.data && threadResult.data.messages) {
-      // Log it
-      log("gmail", `Fetched thread ${threadId}`)
       // Get all its messages
       const messages = threadResult.data.messages
       if (messages.length > 0) {
@@ -532,16 +549,12 @@ class GmailProvider extends Provider {
         const subjectHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "subject")
         if (subjectHeaders.length > 0) subject = (subjectHeaders[0] || {}).value
 
-        // Log it
-        log("gmail", `Parsed subject => ${subject}`)
 
         // The created at time is when the first message was sent
         let createdAtDate
         const createdAtDateHeaders = firstHeaders.filter((header) => header.name.toLowerCase() === "date")
         if (createdAtDateHeaders.length > 0) createdAtDate = (createdAtDateHeaders[0] || {}).value
 
-        // Log it
-        log("gmail", `Parsed time when first message was sent => ${createdAtDate}`)
 
         // The last modified time is when the last message was sent
         // Note: would be more accurate to use internalDate, but that
@@ -550,25 +563,17 @@ class GmailProvider extends Provider {
         const lastModifiedDateHeaders = lastHeaders.filter((header) => header.name.toLowerCase() === "date")
         if (lastModifiedDateHeaders.length > 0) lastModifiedDate = (lastModifiedDateHeaders[0] || {}).value
 
-        // Log it
-        log("gmail", `Parsed time when last message was sent ${lastModifiedDate}`)
 
         // The content URI
         let contentURI
         if (exportType === "view") {
           // If exportType is view, return a link to view the thread in the inbox
           contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
-          // Log it
-          log("gmail", `Content URI of type view => ${contentURI}`)
         } else {
           // Else return the data URI created specially by Dabbu
           contentURI = await createMailDataURI(instance, threadResult.data)
-          // Log it
-          log("gmail", `Created mail data URI => ${contentURI}`)
         }
 
-        // Log it
-        log("gmail", `Returning thread => ${threadId}`)
 
         // Add this to the results
         return {
@@ -582,12 +587,8 @@ class GmailProvider extends Provider {
           contentURI: contentURI // Content URI
         }
       } else {
-        // Log it
-        log("gmail", `Thread ${threadId} has no messages`)
       }
     } else {
-      // Log it
-      log("gmail", `Couldn't find thread with ID => ${threadId}`)
       throw new NotFoundError(`Coudn't find thread with ID ${threadId}`)
     }
   }
@@ -624,12 +625,8 @@ class GmailProvider extends Provider {
       headers: {"Authorization": accessToken}
     })
 
-    // Log it
-    log("gmail", `Parsing thread ID from file name => ${params["fileName"]}`)
     // File name is the thread ID, we don't care about the folder
     const threadId = getThreadIDFromName(params["fileName"])
-    // Log it
-    log("gmail", `Parsed thread ID => ${threadId}`)
 
     // Check if there is a thread ID (in delete, file name is optional,
     // but in Gmail, we can't delete a label)
@@ -637,8 +634,6 @@ class GmailProvider extends Provider {
       throw new MissingParamError("Missing thread ID")
     }
 
-    // Log it
-    log("gmail", `Trashing thread ${threadId}`)
 
     // Trash the thread, don't delete it permanently
     return await instance.post(`/gmail/v1/users/me/threads/${threadId}/trash`)

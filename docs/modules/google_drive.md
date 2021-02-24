@@ -12,3 +12,4 @@ Requires an access token of the format `Bearer <token>` added to the header unde
 ## Shared files and permissions
 
 - Currently, it is only possible to view and download files and folders shared with you (located in the hidden `/Shared` folder). Files and folders that you have shared with others will appear in their respective paths in your Drive. Sharing files and folders with others is not yet supported through this server module.
+- Updating and creating shared files is also not supported
