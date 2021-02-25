@@ -124,7 +124,8 @@ function parseGmailMessage(message) {
   let headers = indexHeaders(payload.headers)
 
   // Parse the subject, date, from and to emails from the headers
-  result.subject = headers['subject']
+  result.subject =
+    headers['subject'] === '' ? '(No subject)' : headers['subject']
   result.date = headers['date']
   result.from = headers['from']
   result.to = headers['to']
@@ -264,13 +265,13 @@ async function createMailDataURI(instance, threadData) {
           if (attachmentResult.data && attachmentResult.data.data) {
             // Write the attachment data to a file
             await fs.writeFile(
-              `./.cache/${messageFileName} - ${attachment.filename}`,
+              `./.cache/_server/${messageFileName} - ${attachment.filename}`,
               Buffer.from(attachmentResult.data.data, 'base64')
             )
             // Add the file path and name to the array
             attachmentPaths.push({
               name: `${messageFileName} - ${attachment.filename}`,
-              path: `./.cache/${messageFileName} - ${attachment.filename}`,
+              path: `./.cache/_server/${messageFileName} - ${attachment.filename}`,
             })
           } else {
             // No data
@@ -304,13 +305,15 @@ async function createMailDataURI(instance, threadData) {
           if (attachmentResult.data && attachmentResult.data.data) {
             // Write the attachment data to a file
             await fs.writeFile(
-              `./.cache/${messageFileName} - ${i + 1} - ${attachment.filename}`,
+              `./.cache/_server/${messageFileName} - ${i + 1} - ${
+                attachment.filename
+              }`,
               Buffer.from(attachmentResult.data.data, 'base64')
             )
             // Add the file path and name to the array
             attachmentPaths.push({
               name: `${messageFileName} - ${i + 1} - ${attachment.filename}`,
-              path: `./.cache/${messageFileName} - ${i + 1} - ${
+              path: `./.cache/_server/${messageFileName} - ${i + 1} - ${
                 attachment.filename
               }`,
             })
@@ -327,7 +330,7 @@ async function createMailDataURI(instance, threadData) {
 
     // Write the data to the file
     await fs.writeFile(
-      `./.cache/${messageFileName} - ${i + 1}.md`,
+      `./.cache/_server/${messageFileName} - ${i + 1}.md`,
       [
         `---`,
         `subject: ${message.subject}`,
@@ -349,12 +352,12 @@ async function createMailDataURI(instance, threadData) {
 
     messagePaths.push({
       name: `${messageFileName} - ${i + 1}.md`,
-      path: `./.cache/${messageFileName} - ${i + 1}.md`,
+      path: `./.cache/_server/${messageFileName} - ${i + 1}.md`,
     })
   }
 
   // Pack it all in a zip file
-  const output = fs.createWriteStream(`./.cache/${archiveName}.zip`)
+  const output = fs.createWriteStream(`./.cache/_server/${archiveName}.zip`)
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
   })
@@ -384,7 +387,7 @@ async function createMailDataURI(instance, threadData) {
       resolve(
         `http://localhost:${
           process.argv.slice(2)[1] || 8080
-        }/dabbu/v1/api/cache/${encodeURIComponent(archiveName)}.zip`
+        }/dabbu/v1/api/cache/${encodeURIComponent(`${archiveName}.zip`)}`
       )
     })
 
@@ -477,7 +480,7 @@ class GmailProvider extends Provider {
 
               // Get the subject from the last email, as that is what is seen in
               // the user's inbox
-              let subject = '(Empty Subject)'
+              let subject = '(No Subject)'
               const subjectHeaders = lastHeaders.filter(
                 (header) => header.name.toLowerCase() === 'subject'
               )
@@ -610,7 +613,7 @@ class GmailProvider extends Provider {
 
         // Get the subject from the last email, as that is what is seen in
         // the user's inbox
-        let subject = '(Empty Subject)'
+        let subject = '(No Subject)'
         const subjectHeaders = lastHeaders.filter(
           (header) => header.name.toLowerCase() === 'subject'
         )

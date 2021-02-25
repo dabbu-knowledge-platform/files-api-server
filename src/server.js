@@ -44,7 +44,7 @@ const rootURL = '/dabbu/v1/api'
 // Create an express server
 const app = express()
 // Define where multer should store the uploaded files
-const upload = multer({ dest: path.normalize(`./.cache/`) })
+const upload = multer({ dest: path.normalize(`./.cache/_server/`) })
 
 // MARK: Input processing
 
@@ -313,7 +313,7 @@ app.get(`${rootURL}/cache/:filePath`, (req, res, next) => {
     throw new BadRequestError('File path may not contain ..')
   }
 
-  res.download(`./.cache/${req.params.filePath}`)
+  res.download(`./.cache/_server/${req.params.filePath}`)
 })
 
 // Use a custom error handler to return user and computer friendly responses
@@ -323,7 +323,7 @@ app.use(errorHandler)
 process.on('SIGINT', () => {
   info('SIGINT signal received: closing Dabbu server')
   // Delete the .cache directory
-  fs.remove(`./.cache/`) // Delete the .cache directory
+  fs.remove(`./.cache/_server/`) // Delete the .cache directory
     .then(() => info('Removed cache. Exiting..'))
     .then(() => server.close()) // Call close on the server created when we called app.listen
     .then(() => info('Server closed'))
