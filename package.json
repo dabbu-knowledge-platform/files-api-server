@@ -12,7 +12,7 @@
     "check-format": "npx prettier --check .",
     "format": "npx prettier --write .",
     "prebuild": "npm run check-format",
-    "build": "pkg --output dist/dabbu-server .",
+    "build": "npx pkg --output dist/dabbu-server .",
     "test": "echo \"Error: no test specified\"; exit 1"
   },
   "repository": {
@@ -34,6 +34,7 @@
     "archiver": "^5.2.0",
     "axios": "^0.21.1",
     "file-type": "16.2.0",
+    "pkg": "^4.4.9",
     "prettier": "2.2.1",
     "turndown": "^7.0.0"
   },
