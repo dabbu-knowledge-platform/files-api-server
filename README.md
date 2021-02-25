@@ -1,5 +1,7 @@
 # Dabbu Server
 
+[![Node.js CI](https://github.com/gamemaker1/dabbu-server/actions/workflows/node.js.yml/badge.svg)](https://github.com/gamemaker1/dabbu-server/actions/workflows/node.js.yml)
+
 A unified API platform to access your emails, photos, and chats as simple files and folders.
 
 ## Intro
