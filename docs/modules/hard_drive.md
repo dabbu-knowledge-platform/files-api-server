@@ -1,6 +1,6 @@
 # Dabbu Hard Drive Data Provider
 
-To install its dependencies, run: 
+To install its dependencies, run:
 
 `npm install mmmagic`
 

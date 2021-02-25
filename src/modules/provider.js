@@ -1,24 +1,24 @@
 /* Dabbu Server - a unified API to retrieve your files and folders stored online
  * Copyright (C) 2021  gamemaker1
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 // MARK: Imports
 
 // Custom error to return
-const { NotImplementedError } = require("../errors.js");
+const { NotImplementedError } = require('../errors.js')
 
 // MARK: Provider
 
@@ -26,27 +26,37 @@ const { NotImplementedError } = require("../errors.js");
 class Provider {
   // Default list function, throws a NotImplementedError
   async list(body, headers, params, queries) {
-    throw new NotImplementedError(`The provider ${params["providerId"]} does not support LIST requests`)
+    throw new NotImplementedError(
+      `The provider ${params['providerId']} does not support LIST requests`
+    )
   }
 
   // Default read function, throws a NotImplementedError
   async read(body, headers, params, queries) {
-    throw new NotImplementedError(`The provider ${params["providerId"]} does not support GET requests`)
+    throw new NotImplementedError(
+      `The provider ${params['providerId']} does not support GET requests`
+    )
   }
 
   // Default create function, throws a NotImplementedError
   async create(body, headers, params, queries, fileMeta) {
-    throw new NotImplementedError(`The provider ${params["providerId"]} does not support CREATE requests`)
+    throw new NotImplementedError(
+      `The provider ${params['providerId']} does not support CREATE requests`
+    )
   }
 
   // Default update function, throws a NotImplementedError
   async update(body, headers, params, queries, fileMeta) {
-    throw new NotImplementedError(`The provider ${params["providerId"]} does not support UPDATE requests`)
+    throw new NotImplementedError(
+      `The provider ${params['providerId']} does not support UPDATE requests`
+    )
   }
 
   // Default delete function, throws a NotImplementedError
   async delete(body, headers, params, queries) {
-    throw new NotImplementedError(`The provider ${params["providerId"]} does not support DELETE requests`)
+    throw new NotImplementedError(
+      `The provider ${params['providerId']} does not support DELETE requests`
+    )
   }
 }
 

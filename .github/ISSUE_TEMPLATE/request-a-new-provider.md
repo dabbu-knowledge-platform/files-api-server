@@ -1,10 +1,9 @@
 ---
 name: Request a new provider
 about: Ask for a new provider to be added to Dabbu server
-title: "[NPROV]:"
+title: '[NPROV]:'
 labels: enhancement, new-provider
 assignees: gamemaker1
-
 ---
 
 **Name of provider**

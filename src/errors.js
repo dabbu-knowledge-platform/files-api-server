@@ -1,19 +1,19 @@
 /* Dabbu Server - a unified API to retrieve your files and folders stored online
  * Copyright (C) 2021  gamemaker1
- * 
+ *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ */
 
 // MARK: Errors
 
@@ -31,37 +31,41 @@ exports.GeneralError = class GeneralError extends Error {
 // Bad request; returned if the URL has any typos or mistakes
 exports.BadRequestError = class BadRequestError extends this.GeneralError {
   constructor(message) {
-    super(400, message, "malformedURL")
+    super(400, message, 'malformedURL')
   }
 }
 // Missing provider specific variable in the request body; but returns a 400 Malformed URL code
 exports.MissingParamError = class MissingParamError extends this.GeneralError {
   constructor(message) {
-    super(400, message, "missingParam")
+    super(400, message, 'missingParam')
   }
 }
 // 404 not found
 exports.NotFoundError = class NotFoundError extends this.GeneralError {
   constructor(message) {
-    super(404, message, "notFound")
+    super(404, message, 'notFound')
   }
 }
 // Not implemented; used when a certain request verb like PUT (update) is not supported by a provider
-exports.NotImplementedError = class NotImplementedError extends this.GeneralError {
+exports.NotImplementedError = class NotImplementedError extends (
+  this.GeneralError
+) {
   constructor(message) {
-    super(405, message, "notImplemented")
+    super(405, message, 'notImplemented')
   }
 }
 // Conflict; used when a file already exists and you try to create it instead of update it
 exports.FileExistsError = class FileExistsError extends this.GeneralError {
   constructor(message) {
-    super(409, message, "conflict")
+    super(409, message, 'conflict')
   }
 }
 // Service unavailable; used when the provider is not enabled in the config file
-exports.ProviderNotEnabledError = class ProviderNotEnabledError extends this.GeneralError {
+exports.ProviderNotEnabledError = class ProviderNotEnabledError extends (
+  this.GeneralError
+) {
   constructor(message) {
-    super(503, message, "providerNotEnabled")
+    super(503, message, 'providerNotEnabled')
   }
 }
 
@@ -75,32 +79,44 @@ exports.errorHandler = (err, req, res, next) => {
       code: err.code,
       error: {
         message: err.message,
-        reason: err.reason
-      }
+        reason: err.reason,
+      },
     })
   } else {
-    if (err.code && typeof err.code === "number") {
+    if (err.code && typeof err.code === 'number') {
       // If there is a valid numerical code to the error, return it with the code, message and "unknownReason"
       console.error(err)
       return res.status(err.code).json({
         code: err.code,
         error: {
           message: err.message,
-          reason: "unknownReason"
-        }
+          reason: 'unknownReason',
+        },
       })
     } else if (err.isAxiosError) {
       console.error(err.response.data)
       // If it's an axios error, return the status code and the error
-      const errorMessage = err.response.data && err.response.data.error && err.response.data.error.message ? err.response.data.error.message : "Unknown error"
-      const errorReason = err.response.data && err.response.data.error && err.response.data.error.reason ? err.response.data.error.reason : err.response.data.error.code || "unknownReason"
-      console.error(`${err.response.status} (${err.response.statusText}): ${errorMessage}`)
+      const errorMessage =
+        err.response.data &&
+        err.response.data.error &&
+        err.response.data.error.message
+          ? err.response.data.error.message
+          : 'Unknown error'
+      const errorReason =
+        err.response.data &&
+        err.response.data.error &&
+        err.response.data.error.reason
+          ? err.response.data.error.reason
+          : err.response.data.error.code || 'unknownReason'
+      console.error(
+        `${err.response.status} (${err.response.statusText}): ${errorMessage}`
+      )
       return res.status(err.response.status).json({
         code: err.response.status,
         error: {
           message: errorMessage,
-          reason: errorReason
-        }
+          reason: errorReason,
+        },
       })
     } else {
       console.error(err)
@@ -109,8 +125,8 @@ exports.errorHandler = (err, req, res, next) => {
         code: 500,
         error: {
           message: err.message,
-          reason: "internalServerError"
-        }
+          reason: 'internalServerError',
+        },
       })
     }
   }

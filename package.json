@@ -1,15 +1,17 @@
 {
   "name": "dabbu-server",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "A unified API interface to access all your data online",
+  "main": "src/server.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
     "start": "node src/server.js",
-    "debug": "clear && DEBUG=true node src/server.js",
-    "clean": "rm -r dist; mkdir dist",
-    "prebuild": "npm run clean",
+    "clean": "rm -r dist/ && mkdir dist/",
+    "check-format": "npx prettier --check .",
+    "format": "npx prettier --write .",
+    "prebuild": "npm run check-format",
     "build": "pkg --output dist/dabbu-server .",
     "test": "echo \"Error: no test specified\"; exit 1"
   },
@@ -32,6 +34,7 @@
     "archiver": "^5.2.0",
     "axios": "^0.21.1",
     "file-type": "16.2.0",
+    "prettier": "2.2.1",
     "turndown": "^7.0.0"
   },
   "bin": "src/server.js",

@@ -53,7 +53,7 @@ $ git checkout -b my-branch-name -t upstream/main
 
 ### Step 4: Code
 
-To get a decent idea of how the code is organised and what happens where, read [this](./docs/Code.md) file. Also, the code is heavily commented to allow you to understand exactly what happens. Remember to also read through the [Code Style Guidelines](./docs/CodeStyles.md) before starting to write code. 
+To get a decent idea of how the code is organised and what happens where, read [this](./docs/Code.md) file. Also, the code is heavily commented to allow you to understand exactly what happens. Remember to also read through the [Code Style Guidelines](./docs/CodeStyles.md) before starting to write code.
 
 To test a change without building the executables, you can type `npm start` and it will run the server directly.
 
@@ -107,7 +107,7 @@ See [conventionalcommits.org](https://conventionalcommits.org) for more details.
 
 ### Step 6: Rebase
 
-Once you have committed your changes, it is a good idea to use `git rebase` (*NOT `git merge`*) to synchronize your work with the main repository.
+Once you have committed your changes, it is a good idea to use `git rebase` (_NOT `git merge`_) to synchronize your work with the main repository.
 
 ```sh
 $ git fetch upstream
@@ -118,7 +118,7 @@ This ensures that your working branch has the latest changes from `gamemaker1/da
 
 ### Step 7: Test
 
-Bug fixes and features should always come with tests. Please test your own code adequately. Also, before finally pushing your code, clone it into a fresh environment (different user or maybe a different computer) and make sure it works just as fine. Make sure you test the executables in the `dist/` directory, not just the *.js files.
+Bug fixes and features should always come with tests. Please test your own code adequately. Also, before finally pushing your code, clone it into a fresh environment (different user or maybe a different computer) and make sure it works just as fine. Make sure you test the executables in the `dist/` directory, not just the \*.js files.
 
 ### Step 8: Push
 
@@ -150,7 +150,7 @@ Feel free to post a comment in the pull request to ping reviewers if you are awa
 
 **Approval and Request Changes Workflow**
 
-All pull requests require approval from a [Code Owner](https://github.com/dabbu-server/blob/main/.github/CODE_OWNERS) of the area you modified in order to land. Whenever a maintainer reviews a pull request they may request changes. These may be small, such as fixing a typo, or may involve substantive changes. Such requests are intended to be helpful, but at times may come across as abrupt or unhelpful, especially if they do not include concrete suggestions on *how* to change them. 
+All pull requests require approval from a [Code Owner](https://github.com/dabbu-server/blob/main/.github/CODE_OWNERS) of the area you modified in order to land. Whenever a maintainer reviews a pull request they may request changes. These may be small, such as fixing a typo, or may involve substantive changes. Such requests are intended to be helpful, but at times may come across as abrupt or unhelpful, especially if they do not include concrete suggestions on _how_ to change them.
 
 Try not to be discouraged. Try asking the maintainer for advice on how to implement it. If you feel that a review is unfair, say so or seek the input of another project contributor. Often such comments are the result of a reviewer having taken insufficient time to review and are not ill-intended. Such difficulties can often be resolved with a bit of patience. That said, reviewers should be expected to provide helpful feedback.
 

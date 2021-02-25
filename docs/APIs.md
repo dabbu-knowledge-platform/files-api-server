@@ -5,7 +5,9 @@
 Please URL encode all params, especially file and folder paths while sending requests. **IMP: The server only works with `/` as a path separator for folder paths, NOT `\`. Please keep this in mind while using these APIs.**
 
 ### **List all enabled providers**
+
 #### **GET**: `/providers`
+
 - Request parameters: [None]
 - Request body: [Empty]
 - Response:
@@ -13,7 +15,9 @@ Please URL encode all params, especially file and folder paths while sending req
 - Errors: [None]
 
 ### **Check if a provider is enabled**
+
 #### **GET**: `/providers/:providerId`
+
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
 - Response:
@@ -22,7 +26,9 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not enabled - (Sends only HTTP code, no response body)
 
 ### **List files in a folder**
+
 #### **GET**: `/data/:providerId/:folderPath?compareWith=$compareWith&operator=$operator&value=$value&orderBy=$orderBy&direction=$direction&exportType=$uriType`
+
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
@@ -44,7 +50,9 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not available - `providerNotFound`
 
 ### **Get a file**
+
 #### **GET**: `/data/:providerId/:folderPath/:fileName?exportType=$uriType`
+
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
@@ -61,7 +69,9 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not available - `providerNotFound`
 
 ### **Upload a file**
+
 #### **POST**: `/data/:providerId/:folderPath/:fileName`
+
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
@@ -79,7 +89,9 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not available - `providerNotFound`
 
 ### **Update a file**
+
 #### **PUT**: `/data/:providerId/:folderPath/:fileName`
+
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
@@ -99,7 +111,9 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not available - `providerNotFound`
 
 ### **Delete a file**
+
 #### **DELETE**: `/data/:providerId/:folderPath/:fileName?`
+
 - Request parameters: [Compulsory]
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder (If only folder path is given, then the entire folder with its contents will be deleted) - `string`
@@ -114,7 +128,9 @@ Please URL encode all params, especially file and folder paths while sending req
   - `503`: Provider not available - `providerNotFound`
 
 ### **Download a file from cache**
+
 #### **GET**: `/cache/:filePath`
+
 - Request parameters: [Compulsory]
   - `filePath`: Path to the file - `string`
 - Request body: [Empty]
