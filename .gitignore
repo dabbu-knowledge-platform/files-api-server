@@ -1,5 +1,6 @@
 node_modules/
 creds/
 dist/
+docs/_site/
 .cache*
 dabbu_server_log.txt

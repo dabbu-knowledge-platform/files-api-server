@@ -1,9 +1,11 @@
-# Dabbu Hard Drive Data Provider
+---
+layout: home
+nav_order: 11
+parent: Provider Modules
+---
 
-To install its dependencies, run:
+# Hard Drive
 
-`npm install mmmagic`
+## Provider specific fields
 
-# Provider specific variables
-
-Requires a variable called `base_path` in every request's body. It is the path to be treated as root by the provider for all paths passed in requests.
+Requires a field called `base_path` in every request's body. It is the path to be treated as root by the provider for all paths passed in requests.

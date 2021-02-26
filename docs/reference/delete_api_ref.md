@@ -1,0 +1,110 @@
+---
+layout: home
+nav_order: 9
+parent: HTTP Requests
+---
+
+# Deleting a file or folder
+
+**Using cURL:**
+
+```bash
+$ curl -i -X DELETE "http://localhost:8080/dabbu/v1/api/data/<provider_id>/<folder_path>/<file_name>/" \ # omit the file name if you want to delete the folder
+  > -H "Authorization: Bearer <access_token>" \ # Only needed if the provider requires authorization
+  > -d "field1: value1" -d "field2: value2" # Only needed if the provider requires certain fields
+```
+
+**Using NodeJS:**
+
+```js
+// The library used to make HTTP requests to the Dabbu Server
+// Add it to your project (if you are using nodejs) using `npm install axios`
+// For browser, refer to https://github.com/axios/axios#installing
+const axios = require('axios').default
+
+// Get the server address, provider ID and URL encode the folder path
+let server = 'http://localhost:8080'
+let provider = 'hard_drive' || 'google_drive' || 'one_drive' || 'gmail'
+let urlEncodedFolderPath = encodeURIComponent('/Downloads')
+let urlEncodedFileName = encodeURIComponent('dabbu_server_log.txt')
+
+// The URL to send the request to
+let url = `${server}/dabbu/v1/api/data/${provider}/${encodedFolderPath}?exportType=media`
+// Send a DELETE request
+let res = await axios.delete(url, {
+  // Only needed if the provider requires certain fields, else
+  // skip the data: {...} part entirely
+  data: {
+    field1: 'value1',
+    field2: 'value2',
+  },
+  // Only needed if the provider requires authorization, else
+  // skip the headers: {...} part entirely
+  headers: {
+    Authorization: `Bearer ${accessToken}`,
+  },
+})
+
+// Note: we are not handling errors here as we are using async-await, which
+// will throw an error if the server returns an error response.
+
+// Check if there is a response
+if (res.data.code === 200) {
+  console.log('File deleted successfully')
+} else {
+  // Else there was no response from the server or an error was thrown
+  console.log(
+    'No response from server, error should have been thrown before this'
+  )
+}
+```
+
+**Using Python:**
+
+```py
+# Import the requests library
+# Install it using `pip install requests`
+# Refer to https://requests.readthedocs.io/en/master/
+import requests
+# To encode the folder path
+import urllib
+
+# The provider ID
+providerId = 'hard_drive' or 'google_drive' or 'one_drive' or 'gmail'
+# The folder path
+folderPath = '/Downloads'
+# The file name
+fileName = 'dabbu_server_log.txt'
+
+# The URL to send a DELETE request to
+# If you want to delete a folder, simply omit the file name
+URL = 'http://localhost:8080/dabbu/v1/api/data/{providerId}/{encodedFolderPath}/{encodedFileName}'.format(
+  providerId = providerId,
+  encodedFolderPath = urllib.parse.quote(folderPath),
+  encodedFileName = urllib.parse.quote(fileName)
+)
+
+# Make the DELETE request
+res = requests.delete(
+  url = URL,
+  data = {
+    # Only needed if the provider requires certain
+    # fields in the request body
+    'field1': 'value1'
+  },
+  headers = {
+    # Only needed if the provider requires authorization
+    'Authorization': 'Bearer {accessToken}'.format(accessToken = '<access_token>')
+  }
+)
+
+# Extract the JSON from the response
+data = res.json()
+
+# Parse the response and check if the server deleted the file
+if res.ok:
+  print('File successfully deleted')
+else:
+  # An error occurred
+  print('An error occurred: {err}'.format(err = res.error))
+```
