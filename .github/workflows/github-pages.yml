@@ -1,6 +1,8 @@
 name: Build and Deploy to Github Pages
 
 on:
+  workflow_dispatch:
+    inputs:
   push:
     branches:
       - master  # Here source code branch is `master`, it could be other branch
@@ -25,3 +27,4 @@ jobs:
           provider: 'github'
           token: ${{ secrets.GH_TOKEN }}
           branch: 'docs'
+
