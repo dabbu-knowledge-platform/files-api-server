@@ -49,8 +49,8 @@ const upload = multer({ dest: path.normalize(`./.cache/_server/`) })
 // MARK: Input processing
 
 // Parse the command line arguments and run the server
-// The port to run the server on
-let port = 8080
+// The port to run the server on (also check for env variables for port)
+let port = process.env.PORT || process.env.port || 8080
 // The providers enabled by default (all)
 let enabledProviders = ['hard_drive', 'one_drive', 'google_drive', 'gmail']
 
