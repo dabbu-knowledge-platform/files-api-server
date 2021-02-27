@@ -1,27 +1,22 @@
 ---
 layout: home
-title: Listing files and folders in a specific folder
-nav_order: 5
+title: Deleting a file or folder
+nav_order: 10
 parent: HTTP Requests
 ---
 
-# Listing files and folders in a specific folder
+# Deleting a file or folder
 
-**GET**: `/data/:providerId/:folderPath`
+**DELETE**: `/data/:providerId/:folderPath/:fileName?`
 
 - Request parameters: [Compulsory]
-  - `providerId`: Provider ID - `string`
-  - `folderPath`: Path to folder - `string`
 
-- Query parameters: [Optional]
-  - `compareWith`: Compare items by a field (specify field name) - `string`
-  - `operator`: Only take items with value equal to, less than or greater than the value specified - `enum<string> - =, <, >`
-  - `value`: The value of the field the item must be equal to, less than or greater than - `string`
-  - `orderBy`: Order by a field (specify field name) - `string`
-  - `direction`: The order in which to sort the items - `enum<string> - asc, desc`
-  - `exportType`: Type of URI that the content should be returned in; `view` for opening it in the provider's editor, `media` for a download link, other values may be accepted by the provider - `string`
+  - `providerId`: Provider ID - `string`
+  - `folderPath`: Path to folder (If only folder path is given, then the entire folder with its contents will be deleted) - `string`
+  - `fileName`: Name of the file - `string` [Optional]
 
 - Request body: [Optional]
+
   - The request body may contain any fields that the provider requires to execute the request
 
 - Response:
@@ -36,34 +31,19 @@ parent: HTTP Requests
       "message": string,
       // The reason for the error (computer-friendly)
       "reason": string
-    },
-    // Array of files and folders in the specified folder
-    content: [
-      Files object {
-        "name": string,
-        "kind": enum<string>(file, folder),
-        "provider": string,
-        "path": string,
-        "mimeType": string,
-        "size": int,
-        "createdAtTime": timestamp,
-        "lastModifiedTime": timestamp,
-        "contentURI": URI
-      }
-    ]
+    }
   }
   ```
 
 - Errors:
-  - `400`: Bad URL, invalid syntax for query parameters - `malformedURL`
-  - `404`: The folder was not found - `notFound`
+  - `404`: The file was not found - `notFound`
   - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
   - `503`: Provider not available - `providerNotFound`
 
 **Using cURL:**
 
 ```bash
-$ curl -i -X GET "http://localhost:8080/dabbu/v1/api/data/<provider id>/<folder path>/?exportType=view" \
+$ curl -i -X DELETE "http://localhost:8080/dabbu/v1/api/data/<provider_id>/<folder_path>/<file_name>/" \ # omit the file name if you want to delete the folder
   > -H "Authorization: Bearer <access_token>" \ # Only needed if the provider requires authorization
   > -d "field1: value1" -d "field2: value2" # Only needed if the provider requires certain fields
 ```
@@ -80,11 +60,12 @@ const axios = require('axios').default
 let server = 'http://localhost:8080'
 let provider = 'hard_drive' || 'google_drive' || 'one_drive' || 'gmail'
 let urlEncodedFolderPath = encodeURIComponent('/Downloads')
+let urlEncodedFileName = encodeURIComponent('dabbu_server_log.txt')
 
 // The URL to send the request to
-let url = `${server}/dabbu/v1/api/data/${provider}/${encodedFolderPath}?exportType=view`
-// Send a GET request
-let res = await axios.get(url, {
+let url = `${server}/dabbu/v1/api/data/${provider}/${encodedFolderPath}?exportType=media`
+// Send a DELETE request
+let res = await axios.delete(url, {
   // Only needed if the provider requires certain fields, else
   // skip the data: {...} part entirely
   data: {
@@ -102,14 +83,13 @@ let res = await axios.get(url, {
 // will throw an error if the server returns an error response.
 
 // Check if there is a response
-if (res.data.content.length > 0) {
-  // Get the files from the response
-  let files = res.data.content
-  // Print the files
-  console.log(JSON.stringify(files))
+if (res.data.code === 200) {
+  console.log('File deleted successfully')
 } else {
-  // Else print out empty folder
-  console.log('Empty folder')
+  // Else there was no response from the server or an error was thrown
+  console.log(
+    'No response from server, error should have been thrown before this'
+  )
 }
 ```
 
@@ -127,15 +107,19 @@ import urllib
 providerId = 'hard_drive' or 'google_drive' or 'one_drive' or 'gmail'
 # The folder path
 folderPath = '/Downloads'
+# The file name
+fileName = 'dabbu_server_log.txt'
 
-# The URL to send a GET request to
-URL = 'http://localhost:8080/dabbu/v1/api/data/{providerId}/{encodedFolderPath}?exportType=view'.format(
+# The URL to send a DELETE request to
+# If you want to delete a folder, simply omit the file name
+URL = 'http://localhost:8080/dabbu/v1/api/data/{providerId}/{encodedFolderPath}/{encodedFileName}'.format(
   providerId = providerId,
-  encodedFolderPath = urllib.parse.quote(folderPath)
+  encodedFolderPath = urllib.parse.quote(folderPath),
+  encodedFileName = urllib.parse.quote(fileName)
 )
 
-# Make the GET request
-res = requests.get(
+# Make the DELETE request
+res = requests.delete(
   url = URL,
   data = {
     # Only needed if the provider requires certain
@@ -151,11 +135,10 @@ res = requests.get(
 # Extract the JSON from the response
 data = res.json()
 
-# Parse the response and check if there are files
-if res.content.length > 0:
-  # Print the files
-  print(res.content)
+# Parse the response and check if the server deleted the file
+if res.ok:
+  print('File successfully deleted')
 else:
-  # It is an empty folder
-  print('Empty folder')
+  # An error occurred
+  print('An error occurred: {err}'.format(err = res.error))
 ```

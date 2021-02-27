@@ -1,12 +1,12 @@
 ---
 layout: home
 title: Understanding the APIs
-nav_order: 2
+nav_order: 3
 ---
 
 # Understanding the APIs
 
-## What is an API
+## What is an API?
 
 An API is a set of rules that allow programs/applications to talk to each other, **asking for and returning data in a uniform format**.
 
@@ -44,7 +44,7 @@ There are several actions you can perform on resources by making HTTP requests t
 - update the metadata and/or contents of a file at a certain path [PUT]
 - delete a file or folder at a certain path [DELETE]
 
-Read on to try out the APIs yourself! 
+Read on to try out the APIs yourself!
 
 {: style="text-align: right" }
 [Working with the API \>](./working_with_the_api)

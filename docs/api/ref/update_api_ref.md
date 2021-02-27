@@ -1,7 +1,7 @@
 ---
 layout: home
 title: Updating a file's metadata and/or contents
-nav_order: 8
+nav_order: 9
 parent: HTTP Requests
 ---
 
@@ -10,11 +10,13 @@ parent: HTTP Requests
 **PUT**: `/data/:providerId/:folderPath/:fileName`
 
 - Request parameters: [Compulsory]
+
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
   - `fileName`: Name of the file - `string`
 
 - Request body: [Posted as multipart form data]
+
   - The request body may contain any fields that the provider requires to execute the request
   - `content`: The file content - `file-data` [Optional]
   - `name`: The name of the file - `string` [Optional]
@@ -23,7 +25,7 @@ parent: HTTP Requests
   - `lastModifiedTime`: Last time the file's content or metadata (varies from provider to provider) was changed (may not be supported by all providers) - `timestamp` [Optional]
 
 - Response:
-  
+
   ```json
   {
     // HTTP reponse status code
@@ -37,14 +39,14 @@ parent: HTTP Requests
     },
     // The file that was updated (with updated values)
     content: Files object {
-      "name": string, 
-      "kind": enum<string>(file, folder), 
+      "name": string,
+      "kind": enum<string>(file, folder),
       "provider": string,
-      "path": string, 
-      "mimeType": string, 
-      "size": int, 
-      "createdAtTime": timestamp, 
-      "lastModifiedTime": timestamp, 
+      "path": string,
+      "mimeType": string,
+      "size": int,
+      "createdAtTime": timestamp,
+      "lastModifiedTime": timestamp,
       "contentURI": URI
     }
   }

@@ -6,7 +6,7 @@ A unified API platform to access your emails, photos, and chats as simple files 
 
 ## Intro
 
-Tired of having your files and folders randomly scattered about online with multiple companies from Google to Dropbox? Want to access your Google Drive or OneDrive as fast and easily as your hard drive? Well, that's exactly what we have tried doing with Dabbu. We'll let this GIF do the talking:
+Tired of having your files and folders randomly scattered about online with multiple providers like Google Drive and One Drive? Want to access all your files and folders using a single, unified interface? Dabbu’s APIs (Application Programming Interfaces) allow you to access your files and folders from any provider (Google Drive, Gmail, Microsoft OneDrive, etc) from a single, unified interface. Behind these APIs is a software layer that connects to these providers and returns your files and folders in one unified format. We'll let this GIF do the talking:
 
 ![](./media/DabbuCLI.gif)
 
@@ -44,7 +44,7 @@ To update the server, simply download the new version from the [Releases page](h
 
 ## Installing clients to call the Dabbu API
 
-Here is a list of clients that have been made to interact with the Dabbu API:
+Here is a list of clients that use the Dabbu API to interact with your files and folders:
 
 - [**Dabbu CLI**](https://github.com/gamemaker1/dabbu-cli) - A CLI that leverages the Dabbu API and neatly retrieves your files and folders scattered online.
 
@@ -63,9 +63,7 @@ _And more to come...!_
 
 ## Docs
 
-The API documentation is in the file [docs/APIs.md](./docs/APIs.md).
-
-The code structure is documented in the file [docs/Code.md](./docs/Code.md).
+The documentation for the API can be found [here](https://gamemaker1.github.io/dabbu-server)
 
 ## Issues and pull requests
 

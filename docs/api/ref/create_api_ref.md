@@ -1,7 +1,7 @@
 ---
 layout: home
 title: Creating a new file
-nav_order: 7
+nav_order: 8
 parent: HTTP Requests
 ---
 
@@ -10,11 +10,13 @@ parent: HTTP Requests
 **POST**: `/data/:providerId/:folderPath/:fileName`
 
 - Request parameters: [Compulsory]
+
   - `providerId`: Provider ID - `string`
   - `folderPath`: Path to folder - `string`
   - `fileName`: Name of the file - `string`
 
 - Request body: [Posted as multipart form data]
+
   - The request body may contain any fields that the provider requires to execute the request
   - `content`: The file content - `file-data` [Compulsory]
   - `createdAtTime`: Time the file was created (may not be supported by all providers) - `timestamp` [Optional]
