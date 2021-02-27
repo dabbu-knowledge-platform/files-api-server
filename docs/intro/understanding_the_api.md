@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Understanding the APIs
 nav_order: 2
 ---
 
@@ -43,4 +44,7 @@ There are several actions you can perform on resources by making HTTP requests t
 - update the metadata and/or contents of a file at a certain path [PUT]
 - delete a file or folder at a certain path [DELETE]
 
-Read on to try out the APIs yourself! [>>](./working_with_the_api)
+Read on to try out the APIs yourself! 
+
+{: style="text-align: right" }
+[Working with the API \>](./working_with_the_api)

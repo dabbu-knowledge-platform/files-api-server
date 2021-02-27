@@ -1,10 +1,64 @@
 ---
 layout: home
+title: Listing files and folders in a specific folder
 nav_order: 5
 parent: HTTP Requests
 ---
 
 # Listing files and folders in a specific folder
+
+**GET**: `/data/:providerId/:folderPath`
+
+- Request parameters: [Compulsory]
+  - `providerId`: Provider ID - `string`
+  - `folderPath`: Path to folder - `string`
+
+- Query parameters: [Optional]
+  - `compareWith`: Compare items by a field (specify field name) - `string`
+  - `operator`: Only take items with value equal to, less than or greater than the value specified - `enum<string> - =, <, >`
+  - `value`: The value of the field the item must be equal to, less than or greater than - `string`
+  - `orderBy`: Order by a field (specify field name) - `string`
+  - `direction`: The order in which to sort the items - `enum<string> - asc, desc`
+  - `exportType`: Type of URI that the content should be returned in; `view` for opening it in the provider's editor, `media` for a download link, other values may be accepted by the provider - `string`
+
+- Request body: [Optional]
+  - The request body may contain any fields that the provider requires to execute the request
+
+- Response:
+
+  ```json
+  {
+    // HTTP reponse status code
+    "code": int,
+    // Only exists if there is an error
+    "error": {
+      // The error message (user-friendly)
+      "message": string,
+      // The reason for the error (computer-friendly)
+      "reason": string
+    },
+    // Array of files and folders in the specified folder
+    content: [
+      Files object {
+        "name": string,
+        "kind": enum<string>(file, folder),
+        "provider": string,
+        "path": string,
+        "mimeType": string,
+        "size": int,
+        "createdAtTime": timestamp,
+        "lastModifiedTime": timestamp,
+        "contentURI": URI
+      }
+    ]
+  }
+  ```
+
+- Errors:
+  - `400`: Bad URL, invalid syntax for query parameters - `malformedURL`
+  - `404`: The folder was not found - `notFound`
+  - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
+  - `503`: Provider not available - `providerNotFound`
 
 **Using cURL:**
 

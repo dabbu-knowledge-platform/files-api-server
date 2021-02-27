@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Hard Drive
 nav_order: 11
 parent: Provider Modules
 ---

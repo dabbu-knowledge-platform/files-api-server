@@ -1,10 +1,57 @@
 ---
 layout: home
+title: Retrieving a file's data
 nav_order: 6
 parent: HTTP Requests
 ---
 
 # Retrieving a file's data
+
+**GET**: `/data/:providerId/:folderPath/:fileName`
+
+- Request parameters: [Compulsory]
+  - `providerId`: Provider ID - `string`
+  - `folderPath`: Path to folder - `string`
+  - `fileName`: Name of the file - `string`
+
+- Query parameters: [Optional]
+  - `exportType`: Type of URI that the content should be returned in; `view` for opening it in the provider's editor, `media` for a download link, other values may be accepted by the provider - `string`
+
+- Request body: [Optional]
+  - The request body may contain any fields that the provider requires to execute the request
+
+- Response:
+  
+  ```json
+  {
+    // HTTP reponse status code
+    "code": int,
+    // Only exists if there is an error
+    "error": {
+      // The error message (user-friendly)
+      "message": string,
+      // The reason for the error (computer-friendly)
+      "reason": string
+    },
+    // The file that was requested
+    content: Files object {
+      "name": string, 
+      "kind": enum<string>(file, folder), 
+      "provider": string,
+      "path": string, 
+      "mimeType": string, 
+      "size": int, 
+      "createdAtTime": timestamp, 
+      "lastModifiedTime": timestamp, 
+      "contentURI": URI
+    }
+  }
+  ```
+
+- Errors:
+  - `404`: The folder was not found - `notFound`
+  - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
+  - `503`: Provider not available - `providerNotFound`
 
 **Using cURL:**
 

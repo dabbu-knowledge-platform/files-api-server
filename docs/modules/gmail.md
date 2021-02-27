@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Gmail
 nav_order: 14
 parent: Provider Modules
 ---

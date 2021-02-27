@@ -1,10 +1,42 @@
 ---
 layout: home
+title: Deleting a file or folder
 nav_order: 9
 parent: HTTP Requests
 ---
 
 # Deleting a file or folder
+
+**DELETE**: `/data/:providerId/:folderPath/:fileName?`
+
+- Request parameters: [Compulsory]
+  - `providerId`: Provider ID - `string`
+  - `folderPath`: Path to folder (If only folder path is given, then the entire folder with its contents will be deleted) - `string`
+  - `fileName`: Name of the file - `string` [Optional]
+
+- Request body: [Optional]
+  - The request body may contain any fields that the provider requires to execute the request
+
+- Response:
+
+  ```json
+  {
+    // HTTP reponse status code
+    "code": int,
+    // Only exists if there is an error
+    "error": {
+      // The error message (user-friendly)
+      "message": string,
+      // The reason for the error (computer-friendly)
+      "reason": string
+    }
+  }
+  ```
+  
+- Errors:
+  - `404`: The file was not found - `notFound`
+  - `500`: Internal server error, used if an uncaught exception appears - `internalServerError`
+  - `503`: Provider not available - `providerNotFound`
 
 **Using cURL:**
 

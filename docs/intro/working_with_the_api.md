@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Working with the APIs
 nav_order: 3
 ---
 
@@ -25,10 +26,12 @@ To see an example of how a client could handle authorization (without the upcomi
 
 Dabbu Server uses the **GET, POST, PUT and DELETE** methods on all resources.
 
+To get an overview of what each does, the input and output, and code examples, take a look at the [HTTP Requests section](../ref/).
+
 ### Notes on making HTTP requests
 
 Always ensure that all folder paths are **delimited with a forward slash** and not a back slash.
 
 Always ensure that the provider ID, folder path, file name and query parameters are **URL encoded**.
 
-Always ensure you have **supplied required fields in the request body and request headers** for that particular provider. For example, the Hard Drive requires a field in the request body called `base_path`, containing the path to the folder to treat as root while retrieving a resource. For details on what provider requires what fields/headers, take a look at the [Provider Modules section](../modules/index.md).
+Always ensure you have **supplied required fields in the request body and request headers** for that particular provider. For example, the Hard Drive requires a field in the request body called `base_path`, containing the path to the folder to treat as root while retrieving a resource. For details on what provider requires what fields/headers, take a look at the [Provider Modules section](../modules/).
