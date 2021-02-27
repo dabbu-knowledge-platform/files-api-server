@@ -519,6 +519,7 @@ class GmailProvider extends Provider {
                   } - ${subject || '(No subject)'}`
                 ),
                 kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
+                provider: 'gmail',
                 mimeType: 'mail/thread', // Weird mime type invented by me TODO: replace this with a proper one
                 size: NaN, // We have size of messages+attachments, not threads
                 createdAtTime: createdAtDate
@@ -548,6 +549,7 @@ class GmailProvider extends Provider {
             name: `${label.name}`,
             path: `/${label.name}`,
             kind: 'folder', // Labels are folders, threads are files within them
+            provider: 'gmail',
             mimeType: 'mail/label', // Weird mime type invented by me TODO: replace this with a proper one
             size: NaN, // We could return number of threads or number of messages with that label, but it will require another request per label
             createdAtTime: NaN, // No such thing as when the label was created
@@ -659,6 +661,7 @@ class GmailProvider extends Provider {
             }`
           ),
           kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
+          provider: 'gmail',
           mimeType: 'mail/thread', // Weird mime type invented by me TODO: replace this with a proper one
           size: NaN, // We have size of messages+attachments, not threads
           createdAtTime: createdAtDate

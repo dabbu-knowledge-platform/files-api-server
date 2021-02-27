@@ -134,6 +134,7 @@ class OneDriveDataProvider extends Provider {
         fileObjs.push({
           name,
           kind,
+          provider: 'one_drive',
           path,
           mimeType,
           size,
@@ -236,6 +237,7 @@ class OneDriveDataProvider extends Provider {
       return {
         name,
         kind,
+        provider: 'one_drive',
         path,
         mimeType,
         size,
@@ -364,6 +366,7 @@ class OneDriveDataProvider extends Provider {
       return {
         name,
         kind,
+        provider: 'one_drive',
         path,
         mimeType,
         size,
@@ -518,6 +521,7 @@ class OneDriveDataProvider extends Provider {
       return {
         name,
         kind,
+        provider: 'one_drive',
         path,
         mimeType,
         size,

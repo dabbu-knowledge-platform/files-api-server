@@ -423,6 +423,7 @@ class GoogleDriveDataProvider extends Provider {
         fileObjs.push({
           name,
           kind,
+          provider: 'google_drive',
           path,
           mimeType,
           size,
@@ -551,6 +552,7 @@ class GoogleDriveDataProvider extends Provider {
       return {
         name,
         kind,
+        provider: 'google_drive',
         path,
         mimeType,
         size,
@@ -686,6 +688,7 @@ class GoogleDriveDataProvider extends Provider {
           return {
             name,
             kind,
+            provider: 'google_drive',
             path,
             mimeType,
             size,
@@ -836,6 +839,7 @@ class GoogleDriveDataProvider extends Provider {
       return {
         name,
         kind,
+        provider: 'google_drive',
         path,
         mimeType,
         size,

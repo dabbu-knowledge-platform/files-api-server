@@ -109,6 +109,7 @@ class HardDriveDataProvider extends Provider {
       fileObjs.push({
         name,
         kind,
+        provider: 'hard_drive',
         path,
         mimeType,
         size,
@@ -181,6 +182,7 @@ class HardDriveDataProvider extends Provider {
     return {
       name,
       kind,
+      provider: 'hard_drive',
       path,
       mimeType,
       size,
@@ -260,6 +262,7 @@ class HardDriveDataProvider extends Provider {
     return {
       name,
       kind,
+      provider: 'hard_drive',
       path,
       mimeType,
       size,
@@ -356,6 +359,7 @@ class HardDriveDataProvider extends Provider {
     return {
       name,
       kind,
+      provider: 'hard_drive',
       path,
       mimeType,
       size,
