@@ -2,5 +2,7 @@ node_modules/
 creds/
 dist/
 docs/
-.cache*
+.cache/
+.git/
+.heroku*
 dabbu_server_log.txt
