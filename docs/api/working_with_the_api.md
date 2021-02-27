@@ -41,4 +41,4 @@ Always ensure you have **supplied required fields in the request body and reques
 Read on to see how to make requests using `curl`, `nodejs` and `python`.
 
 {: style="text-align: right" }
-[HTTP requests and code samples \>](../ref/)
+[HTTP requests and code samples \>](./ref/)
