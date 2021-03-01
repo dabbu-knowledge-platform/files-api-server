@@ -108,7 +108,7 @@ app.get(`${rootURL}/providers`, (req, res, next) => {
   })
 })
 
-// HTTP GET request to /providers/:providerId will return status code 200 if the provider is enabled, else 503
+// HTTP GET request to /providers/:providerId will return status code 200 if the provider is enabled, else 501
 app.get(`${rootURL}/providers/:providerId`, (req, res, next) => {
   info(
     `(Check provider) Get request called with params: ${json(
@@ -119,7 +119,7 @@ app.get(`${rootURL}/providers/:providerId`, (req, res, next) => {
   // Return the response accordingly
   // Throw an error if the provider isn't enabled
   if (enabledProviders.indexOf(req.params.providerId) === -1) {
-    res.sendStatus(503) // Not enabled
+    res.sendStatus(501) // Not enabled
   } else {
     res.sendStatus(200) // Enabled
   }

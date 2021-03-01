@@ -51,7 +51,7 @@ exports.NotImplementedError = class NotImplementedError extends (
   this.GeneralError
 ) {
   constructor(message) {
-    super(405, message, 'notImplemented')
+    super(501, message, 'notImplemented')
   }
 }
 // Conflict; used when a file already exists and you try to create it instead of update it
@@ -65,7 +65,7 @@ exports.ProviderNotEnabledError = class ProviderNotEnabledError extends (
   this.GeneralError
 ) {
   constructor(message) {
-    super(503, message, 'providerNotEnabled')
+    super(501, message, 'providerNotEnabled')
   }
 }
 
