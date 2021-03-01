@@ -63,7 +63,7 @@ _And more to come...!_
 
 ## Docs
 
-The documentation is a work in progress, keep an eye on this page to know more.
+The documentation for the server can be found [here](https://dabbu-knowledge-platform.github.io/impls/server).
 
 ## Issues and pull requests
 
