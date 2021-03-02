@@ -62,9 +62,10 @@ const args = process.argv.slice(2)
 // Check if there are any command line options the user has given
 if (args.length > 0) {
   // Check if the port has been mentioned
-  if (args[1]) port = parseInt(args[1])
+  if (args[0])
+    port = args[0] || process.env.PORT || process.env.port || 8080
   // If there are any more, take them as providers
-  if (args.length > 2) enabledProviders = args.slice(2)
+  if (args.length > 1) enabledProviders = args.slice(1)
 }
 
 // MARK: Server
