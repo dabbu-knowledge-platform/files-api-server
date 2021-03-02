@@ -117,15 +117,7 @@ This ensures that your working branch has the latest changes from `dabbu-knowled
 
 Bug fixes and features should always come with tests. Please test your own code adequately. Also, before finally pushing your code, clone it into a fresh environment (different user or maybe a different computer) and make sure it works just as fine. Make sure you test the executables in the `dist/` directory, not just the \*.js files.
 
-### Step 8: Document
-
-Once your commits are ready to go - with adequate testing - begin the process of documenting your code. All the docs are located in the `docs/` folder. If you have changed an API or added an API, make the neccessary changes within the `docs/api/ref/` folder. If you added a new provider, add it to the `docs/modules/` folder.
-
-If you feel the documentation is a bit unfriendly to beginners, feel free to change it as you wish.
-
-The documentation uses jekyll. To set up jekyll on your computer and make changes to the documentation, follow [this](https://docs.github.com/en/github/working-with-github-pages/testing-your-github-pages-site-locally-with-jekyll) guide.
-
-### Step 9: Push
+### Step 8: Push
 
 Once you have documented your code as required, begin the process of opening a pull request by pushing your working branch to your fork on GitHub.
 
@@ -133,11 +125,11 @@ Once you have documented your code as required, begin the process of opening a p
 $ git push origin add-awesome-new-feature
 ```
 
-### Step 10: Opening the Pull Request
+### Step 9: Opening the Pull Request
 
 From within GitHub, opening a new pull request will present you with a template that should be filled out.
 
-### Step 11: Discuss and update
+### Step 10: Discuss and update
 
 You will probably get feedback or requests for changes to your pull request. This is a big part of the submission process so don't be discouraged! Some contributors may sign off on the pull request right away. Others may have detailed comments or feedback. This is a necessary part of the process in order to evaluate whether the changes are correct and necessary.
 
@@ -159,7 +151,7 @@ All pull requests require approval from an organization member in order to land.
 
 Try not to be discouraged. Try asking the maintainer for advice on how to implement it. If you feel that a review is unfair, say so or seek the input of another project contributor. Often such comments are the result of a reviewer having taken insufficient time to review and are not ill-intended. Such difficulties can often be resolved with a bit of patience. That said, reviewers should be expected to provide helpful feedback.
 
-### Step 12: Landing
+### Step 11: Landing
 
 In order to land, a pull request needs to be reviewed and approved by at least one Code Owner. After that, if there are no objections from other contributors, the pull request can be merged.
 
