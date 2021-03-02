@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - data.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -53,7 +53,8 @@ router.get(`/:providerId/:folderPath`, (req, res, next) => {
   }
 
   // Any JS file stored in the src/modules folder is considered a provider.
-  const Module = require(`../modules/${req.params.providerId}.js`).default
+  const Module = require(`../modules/${req.params.providerId}.js`)
+    .default
 
   // Execute the list function of the provider and return the response or error.
   new Module()
@@ -86,7 +87,8 @@ router.get(`/:providerId/:folderPath/:fileName`, (req, res, next) => {
   }
 
   // Any JS file stored in the src/modules folder is considered a provider.
-  const Module = require(`../modules/${req.params.providerId}.js`).default
+  const Module = require(`../modules/${req.params.providerId}.js`)
+    .default
 
   // Execute the read function of the provider and return the response or error.
   new Module()
@@ -122,7 +124,8 @@ router.post(
     }
 
     // Any JS file stored in the src/modules folder is considered a provider.
-    const Module = require(`../modules/${req.params.providerId}.js`).default
+    const Module = require(`../modules/${req.params.providerId}.js`)
+      .default
 
     // Execute the create function of the provider and return the response or error.
     new Module()
@@ -159,7 +162,8 @@ router.put(
     }
 
     // Any JS file stored in the src/modules folder is considered a provider.
-    const Module = require(`../modules/${req.params.providerId}.js`).default
+    const Module = require(`../modules/${req.params.providerId}.js`)
+      .default
 
     // Execute the update function of the provider and return the response or error.
     new Module()
@@ -178,34 +182,38 @@ router.put(
 )
 
 // Delete a file/folder
-router.delete(`/:providerId/:folderPath/:fileName?`, (req, res, next) => {
-  info(
-    `(Delete) Delete request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
-
-  // Throw an error if the provider isn't enabled
-  if (req.enabledProviders.indexOf(req.params.providerId) === -1) {
-    throw new ProviderNotEnabledError(
-      `The provider ${req.params.providerId} has not been enabled.`
+router.delete(
+  `/:providerId/:folderPath/:fileName?`,
+  (req, res, next) => {
+    info(
+      `(Delete) Delete request called with params: ${json(
+        req.params
+      )} and queries: ${json(req.query)}`
     )
+
+    // Throw an error if the provider isn't enabled
+    if (req.enabledProviders.indexOf(req.params.providerId) === -1) {
+      throw new ProviderNotEnabledError(
+        `The provider ${req.params.providerId} has not been enabled.`
+      )
+    }
+
+    // Any JS file stored in the src/modules folder is considered a provider.
+    const Module = require(`../modules/${req.params.providerId}.js`)
+      .default
+
+    // Execute the delete function of the provider and return the response or error.
+    new Module()
+      .delete(req.body, req.headers, req.params, req.query)
+      .then((result) => {
+        res.sendStatus(204) // Send back a 200 response code
+      })
+      .catch((err) => {
+        error(err)
+        next(err) // Forward the error to our error handler
+      })
   }
-
-  // Any JS file stored in the src/modules folder is considered a provider.
-  const Module = require(`../modules/${req.params.providerId}.js`).default
-
-  // Execute the delete function of the provider and return the response or error.
-  new Module()
-    .delete(req.body, req.headers, req.params, req.query)
-    .then((result) => {
-      res.sendStatus(204) // Send back a 200 response code
-    })
-    .catch((err) => {
-      error(err)
-      next(err) // Forward the error to our error handler
-    })
-})
+)
 
 // MARK: Exports
 

@@ -6,7 +6,7 @@ The following is a set of guidelines for contributing to Dabbu. These are just g
 
 ## Issues
 
-You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and spreading the word! If you want to report a bug, create an issue by clicking [here](https://github.com/gamemaker1/dabbu-server/issues/new/choose). While creating an issue, try to follow the Bug report or Feature request template.
+You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and spreading the word! If you want to report a bug, create an issue by clicking [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). While creating an issue, try to follow the Bug report or Feature request template.
 
 ## Pull requests
 
@@ -21,20 +21,20 @@ You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and
 
 ### Step 1: Fork
 
-Fork the project [on the GitHub website](https://github.com/gamemaker1/dabbu-server) and clone your fork locally.
+Fork the project [on the GitHub website](https://github.com/dabbu-knowledge-platform/files-api-server) and clone your fork locally.
 
 Run the following to clone your fork locally:
 
 ```sh
-$ git clone https://github.com/<your-username>/dabbu-server
-$ cd dabbu-server
-$ git remote add upstream https://github.com/gamemaker1/dabbu-server.git
+$ git clone https://github.com/<your-username>/files-api-server
+$ cd files-api-server
+$ git remote add upstream https://github.com/dabbu-knowledge-platform/files-api-server.git
 $ git fetch upstream
 ```
 
 ### Step 2: Build
 
-All you need to do to build is run `npm run build`. If the command runs successfully, there should be 3 files (`dabbu-server-linux`, `dabbu-server-macos` and `dabbu-server-win.exe`) in the `dist/` folder. These are the executables that can be run on linux, macos and windows respectively without installation of external dependencies.
+All you need to do to build is run `npm run build`. If the command runs successfully, there should be 3 files (`files-api-server-linux`, `files-api-server-macos` and `files-api-server-win.exe`) in the `dist/` folder. These are the executables that can be run on linux, macos and windows respectively without installation of external dependencies.
 
 Once you've built the project locally, you're ready to start making changes!
 
@@ -111,7 +111,7 @@ $ git fetch upstream
 $ git rebase upstream/main
 ```
 
-This ensures that your working branch has the latest changes from `gamemaker1/dabbu-server` main.
+This ensures that your working branch has the latest changes from `dabbu-knowledge-platform/files-api-server` main.
 
 ### Step 7: Test
 
@@ -155,7 +155,7 @@ Feel free to post a comment in the pull request to ping reviewers if you are awa
 
 **Approval and Request Changes Workflow**
 
-All pull requests require approval from a [Code Owner](https://github.com/dabbu-server/blob/main/.github/CODE_OWNERS) of the area you modified in order to land. Whenever a maintainer reviews a pull request they may request changes. These may be small, such as fixing a typo, or may involve substantive changes. Such requests are intended to be helpful, but at times may come across as abrupt or unhelpful, especially if they do not include concrete suggestions on _how_ to change them.
+All pull requests require approval from an organization member in order to land. Whenever a maintainer reviews a pull request they may request changes. These may be small, such as fixing a typo, or may involve substantive changes. Such requests are intended to be helpful, but at times may come across as abrupt or unhelpful, especially if they do not include concrete suggestions on _how_ to change them.
 
 Try not to be discouraged. Try asking the maintainer for advice on how to implement it. If you feel that a review is unfair, say so or seek the input of another project contributor. Often such comments are the result of a reviewer having taken insufficient time to review and are not ill-intended. Such difficulties can often be resolved with a bit of patience. That said, reviewers should be expected to provide helpful feedback.
 

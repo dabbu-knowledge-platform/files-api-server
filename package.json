@@ -1,7 +1,7 @@
 {
-  "name": "dabbu-server",
-  "version": "1.6.0",
-  "description": "A unified API interface to access all your data online",
+  "name": "dabbu-files-api-server",
+  "version": "1.6.1",
+  "description": "An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!",
   "main": "src/server.js",
   "directories": {
     "doc": "docs"
@@ -12,19 +12,19 @@
     "check-format": "npx prettier --check .",
     "format": "npx prettier --write .",
     "prebuild": "npm run check-format",
-    "build": "npx pkg --output dist/dabbu-server .",
+    "build": "npx pkg --output dist/files-api-server .",
     "test": "echo \"Error: no test specified\"; exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gamemaker1/dabbu-server.git"
+    "url": "git+https://github.com/dabbu-knowledge-platform/files-api-server.git"
   },
   "author": "gamemaker1",
   "license": "GPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/gamemaker1/dabbu-server/issues"
+    "url": "https://github.com/dabbu-knowledge-platform/files-api-server/issues"
   },
-  "homepage": "https://github.com/gamemaker1/dabbu-server#readme",
+  "homepage": "https://github.com/dabbu-knowledge-platform/files-api-server#readme",
   "dependencies": {
     "express": "^4.17.1",
     "fs-extra": "^9.1.0",

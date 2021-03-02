@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - utils.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,7 +29,9 @@ const { BadRequestError } = require('./errors.js')
 exports.info = (message) => {
   const date = new Date().toISOString()
   console.log(` INFO  | ${date} | ${message}`)
-  let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags: 'a' })
+  let stream = fs.createWriteStream(`dabbu_server_log.txt`, {
+    flags: 'a',
+  })
   stream.write(`INFO  | ${date} | ${message}\n`)
   stream.end()
 }
@@ -39,7 +41,9 @@ exports.log = (provider, message) => {
   if (process.env.debug || process.env.DEBUG) {
     const date = new Date().toISOString()
     console.log(` DEBUG  | ${date} | ${provider} | ${message}`)
-    let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags: 'a' })
+    let stream = fs.createWriteStream(`dabbu_server_log.txt`, {
+      flags: 'a',
+    })
     stream.write(`DEBUG  | ${date} | ${provider} | ${message}\n`)
     stream.end()
   }
@@ -49,7 +53,9 @@ exports.log = (provider, message) => {
 exports.error = (err) => {
   const date = new Date().toISOString()
   console.log(` ERROR | ${date} | ${this.json(err)}`)
-  let stream = fs.createWriteStream(`dabbu_server_log.txt`, { flags: 'a' })
+  let stream = fs.createWriteStream(`dabbu_server_log.txt`, {
+    flags: 'a',
+  })
   stream.write(`ERROR | ${date} | ${this.json(err)}\n`)
   stream.write('\n')
   stream.end()
@@ -101,7 +107,9 @@ exports.sortFiles = (
   }
 
   if (operator && possibleOps.indexOf(operator) === -1) {
-    throw new BadRequestError(`Operator ${operator} is not a valid operator`)
+    throw new BadRequestError(
+      `Operator ${operator} is not a valid operator`
+    )
   }
 
   if (orderBy && possibleFields.indexOf(orderBy) === -1) {
@@ -111,7 +119,9 @@ exports.sortFiles = (
   }
 
   if (direction && possibleDirs.indexOf(direction) === -1) {
-    throw new BadRequestError(`Direction ${direction} is not a valid direction`)
+    throw new BadRequestError(
+      `Direction ${direction} is not a valid direction`
+    )
   }
 
   // Create a new array in which to store the filtered and sorted array
@@ -129,9 +139,11 @@ exports.sortFiles = (
         // is < or >
         // For path, convert it to length of the path
         if (compareWith === 'path') {
-          autoCastField = this.diskPath(file[compareWith].split('/')).split('/')
+          autoCastField = this.diskPath(
+            file[compareWith].split('/')
+          ).split('/').length
+          autoCastValue = this.diskPath(value.split('/')).split('/')
             .length
-          autoCastValue = this.diskPath(value.split('/')).split('/').length
         }
         // For mime type, ideally should check only for equality, but leaving it
         // to lexographically sorted if the operator is > or <
@@ -175,7 +187,11 @@ exports.sortFiles = (
       // If it is a name or kind, compare it lexographically
       // Use the same for mimeType and contentURI, even
       // though they are fields that shouldn't be used to order
-      if (orderBy === 'name' || orderBy === 'kind' || orderBy === 'mimeType') {
+      if (
+        orderBy === 'name' ||
+        orderBy === 'kind' ||
+        orderBy === 'mimeType'
+      ) {
         return direction === 'desc'
           ? file1[orderBy].localeCompare(file2[orderBy])
           : file2[orderBy].localeCompare(file1[orderBy])

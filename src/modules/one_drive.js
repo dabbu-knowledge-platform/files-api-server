@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - one_drive.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,7 +42,8 @@ class OneDriveDataProvider extends Provider {
   // List files and folders at a particular location
   async list(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -76,7 +77,9 @@ class OneDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do th
     if (folderPath.indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Query the one drive API for the docs
@@ -100,7 +103,11 @@ class OneDriveDataProvider extends Provider {
     ) {
       // If a valid result is returned, loop through all the files and folders there
       let fileObjs = []
-      for (let i = 0, length = listResult.data.value.length; i < length; i++) {
+      for (
+        let i = 0, length = listResult.data.value.length;
+        i < length;
+        i++
+      ) {
         const fileObj = listResult.data.value[i]
         const name = fileObj.name // Name of the file
         const kind = fileObj.folder ? 'folder' : 'file' // File or folder
@@ -117,7 +124,8 @@ class OneDriveDataProvider extends Provider {
             : null // Mime type
         const size = fileObj.size // Size in bytes, let clients convert to whatever unit they want
         const createdAtTime = fileObj.fileSystemInfo.createdDateTime // When it was created
-        const lastModifiedTime = fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
+        const lastModifiedTime =
+          fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
         let contentURI = null
         // If the export type is media, then return a googleapis.com link
         if (exportType === 'view') {
@@ -169,7 +177,8 @@ class OneDriveDataProvider extends Provider {
   // Return a file obj at a specified location
   async read(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -182,7 +191,9 @@ class OneDriveDataProvider extends Provider {
     })
 
     // Get the folder path from the URL
-    const folderPath = diskPath(params['folderPath'].replace('Shared', ''))
+    const folderPath = diskPath(
+      params['folderPath'].replace('Shared', '')
+    )
     // Get the file path from the URL
     const fileName = params['fileName']
     // Get the export type from the query parameters
@@ -194,7 +205,9 @@ class OneDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Create the query
@@ -224,7 +237,8 @@ class OneDriveDataProvider extends Provider {
           : null // Mime type
       const size = fileObj.size // Size in bytes, let clients convert to whatever unit they want
       const createdAtTime = fileObj.fileSystemInfo.createdDateTime // When it was created
-      const lastModifiedTime = fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
+      const lastModifiedTime =
+        fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
       let contentURI = null
       // If the export type is media, then return a googleapis.com link
       if (exportType === 'view') {
@@ -259,7 +273,8 @@ class OneDriveDataProvider extends Provider {
   // Create a file at a specified location
   async create(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -282,7 +297,9 @@ class OneDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Check if there is a file uploaded
@@ -299,7 +316,8 @@ class OneDriveDataProvider extends Provider {
     // don't need to create folders if they don't exist, One Drive does that
     // for us
     // Get the mime type of the file
-    const mimeType = ((await fileTypes.fromFile(fileMeta.path)) || {}).mime
+    const mimeType = ((await fileTypes.fromFile(fileMeta.path)) || {})
+      .mime
 
     // Upload the file
     result = await instance.put(
@@ -323,7 +341,9 @@ class OneDriveDataProvider extends Provider {
 
     // If there is a createdAtTime present, set the file's createdAtTime to that
     if (body['createdAtTime']) {
-      meta['createdAtTime'] = new Date(body['createdAtTime']).toISOString()
+      meta['createdAtTime'] = new Date(
+        body['createdAtTime']
+      ).toISOString()
     }
 
     // Update the files metadata with the given fields
@@ -333,7 +353,9 @@ class OneDriveDataProvider extends Provider {
         `/me/drive/root:${diskPath(folderPath, fileName)}:/`,
         {
           fileSystemInfo: {
-            createdDateTime: new Date(meta['createdAtTime']).toISOString(),
+            createdDateTime: new Date(
+              meta['createdAtTime']
+            ).toISOString(),
             lastModifiedDateTime: new Date(
               meta['lastModifiedTime']
             ).toISOString(),
@@ -357,7 +379,8 @@ class OneDriveDataProvider extends Provider {
           : null // Mime type
       const size = fileObj.size // Size in bytes, let clients convert to whatever unit they want
       const createdAtTime = fileObj.fileSystemInfo.createdDateTime // When it was created
-      const lastModifiedTime = fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
+      const lastModifiedTime =
+        fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
       let contentURI = null
       // If the export type is media, then return a googleapis.com link
       if (exportType === 'view') {
@@ -392,7 +415,8 @@ class OneDriveDataProvider extends Provider {
   // Update the file at the specified location with the file provided
   async update(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -415,7 +439,9 @@ class OneDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // The result of the operation
@@ -427,7 +453,8 @@ class OneDriveDataProvider extends Provider {
       // don't need to create folders if they don't exist, One Drive does that
       // for us
       // Get the mime type of the file
-      const mimeType = ((await fileTypes.fromFile(fileMeta.path)) || {}).mime
+      const mimeType = ((await fileTypes.fromFile(fileMeta.path)) || {})
+        .mime
 
       // Upload the file
       result = await instance.put(
@@ -462,7 +489,9 @@ class OneDriveDataProvider extends Provider {
       }
       // Set the new parent on the file
       // First get the ID of the new folder
-      result = await instance.get(`/me/drive/root:${diskPath(body['path'])}:/`)
+      result = await instance.get(
+        `/me/drive/root:${diskPath(body['path'])}:/`
+      )
       // Then set it on the file
       result = await instance.patch(
         `/me/drive/root:${diskPath(folderPath, fileName)}:/`,
@@ -476,7 +505,9 @@ class OneDriveDataProvider extends Provider {
     }
     if (body['lastModifiedTime']) {
       // Turn it into a ISO string
-      const modifiedDate = new Date(body['lastModifiedTime']).toISOString()
+      const modifiedDate = new Date(
+        body['lastModifiedTime']
+      ).toISOString()
       // Set the lastModifiedTime by sending a patch request
       result = await instance.patch(
         `/me/drive/root:${diskPath(folderPath, fileName)}:/`,
@@ -516,7 +547,8 @@ class OneDriveDataProvider extends Provider {
           : null // Mime type
       const size = fileObj.size // Size in bytes, let clients convert to whatever unit they want
       const createdAtTime = fileObj.fileSystemInfo.createdDateTime // When it was created
-      const lastModifiedTime = fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
+      const lastModifiedTime =
+        fileObj.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
       let contentURI = null
       // If the export type is media, then return a googleapis.com link
       if (exportType === 'view') {
@@ -551,7 +583,8 @@ class OneDriveDataProvider extends Provider {
   // Delete the file or folder at the specified location
   async delete(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -570,7 +603,9 @@ class OneDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if (folderPath.indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     if (folderPath && fileName) {
@@ -580,7 +615,9 @@ class OneDriveDataProvider extends Provider {
       )
     } else if (folderPath && !fileName) {
       // If there is only a folder name provided, delete the folder
-      return await instance.delete(`/me/drive/root:${diskPath(folderPath)}`)
+      return await instance.delete(
+        `/me/drive/root:${diskPath(folderPath)}`
+      )
     } else {
       // Else error out
       throw new BadRequestError(

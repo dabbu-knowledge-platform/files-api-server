@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - server.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -50,7 +50,12 @@ const dataRoutes = require('./routes/data.js').router
 // The port to run the server on (also check for env variables for port)
 let port = process.env.PORT || process.env.port || 8080
 // The providers enabled by default (all)
-let enabledProviders = ['hard_drive', 'one_drive', 'google_drive', 'gmail']
+let enabledProviders = [
+  'hard_drive',
+  'one_drive',
+  'google_drive',
+  'gmail',
+]
 
 // Get the command line args
 const args = process.argv.slice(2)
@@ -78,10 +83,19 @@ const server = app.listen(port, () => {
   //info(`Dabbu  Copyright (C) 2021  gamemaker1\n      This program comes with ABSOLUTELY NO WARRANTY.\n      This is free software, and you are welcome to\n      redistribute it under certain conditions; look\n      at the LICENSE file for more details.`)
   // Print out the server version and the port it's running on
   info(`===============================`)
-  info(`Dabbu Server v${require('../package.json').version}`)
+  info(`Dabbu Files API Server v${require('../package.json').version}`)
   info(`Server listening on port ${port}`)
   info(`Enabled providers include ${enabledProviders.join(', ')}`)
 })
+
+// Display the port we are running on if they come to /
+app.get(`/`, (req, res) =>
+  res.send(
+    `Dabbu Files API Server v${
+      require('../package.json').version
+    } running on port ${port}`
+  )
+)
 
 // Route calls about internal apis like cache to the internal route
 app.use(`${rootURL}/internal/`, internalRoutes)
@@ -97,7 +111,7 @@ app.use(errorHandler)
 
 // When the user presses CTRL+C, gracefully exit
 process.on('SIGINT', () => {
-  info('SIGINT signal received: closing Dabbu server')
+  info('SIGINT signal received: closing Dabbu Files API Server')
   // Delete the .cache directory
   fs.remove(`./.cache/_server/`) // Delete the .cache directory
     .then(() => info('Removed cache. Exiting..'))

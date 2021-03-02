@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - internal.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,9 @@ router.get(`/cache/:filePath`, (req, res, next) => {
 
   // Don't allow relative paths, else they will be able to access the rest of the file system
   if (req.params.filePath.includes('/..')) {
-    throw new BadRequestError('File paths must not contain relative paths')
+    throw new BadRequestError(
+      'File paths must not contain relative paths'
+    )
   }
 
   // Stream the file back

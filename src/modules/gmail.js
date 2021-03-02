@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - gmail.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -155,20 +155,24 @@ function parseGmailMessage(message) {
     }
 
     // Is the part made up of html
-    let isHtml = part.mimeType && part.mimeType.indexOf('text/html') !== -1
+    let isHtml =
+      part.mimeType && part.mimeType.indexOf('text/html') !== -1
     // Is the part made up of plain text
-    let isPlain = part.mimeType && part.mimeType.indexOf('text/plain') !== -1
+    let isPlain =
+      part.mimeType && part.mimeType.indexOf('text/plain') !== -1
     // Does the part point to an attachment
     let isAttachment = Boolean(
       part.body.attachmentId ||
         (headers['content-disposition'] &&
-          headers['content-disposition'].toLowerCase().indexOf('attachment') !==
-            -1)
+          headers['content-disposition']
+            .toLowerCase()
+            .indexOf('attachment') !== -1)
     )
     // Is the part an inline attachment
     let isInline =
       headers['content-disposition'] &&
-      headers['content-disposition'].toLowerCase().indexOf('inline') !== -1
+      headers['content-disposition'].toLowerCase().indexOf('inline') !==
+        -1
 
     if (isHtml && !isAttachment) {
       // Convert the html to markdown and add it to the result
@@ -177,7 +181,9 @@ function parseGmailMessage(message) {
       )
     } else if (isPlain && !isAttachment) {
       // Add the plain text to the result
-      result.text = Buffer.from(part.body.data, 'base64').toString('ascii')
+      result.text = Buffer.from(part.body.data, 'base64').toString(
+        'ascii'
+      )
     } else if (isAttachment) {
       // If it is an attachment, return the metadata so we can
       // fetch the attachment
@@ -229,7 +235,11 @@ async function createMailDataURI(instance, threadData) {
   // The final archive name
   let archiveName = ''
   // Loop through the messages
-  for (let i = 0, length = threadData.messages.length; i < length; i++) {
+  for (
+    let i = 0, length = threadData.messages.length;
+    i < length;
+    i++
+  ) {
     // Parse the message
     const message = parseGmailMessage(threadData.messages[i])
 
@@ -246,7 +256,11 @@ async function createMailDataURI(instance, threadData) {
     if (!message.attachments) {
       attachmentsText = 'No attachments found'
     } else {
-      for (let j = 0, length = message.attachments.length; j < length; j++) {
+      for (
+        let j = 0, length = message.attachments.length;
+        j < length;
+        j++
+      ) {
         let attachment = message.attachments[j]
         // First add the text to the message file
         attachmentsText += [
@@ -312,7 +326,9 @@ async function createMailDataURI(instance, threadData) {
             )
             // Add the file path and name to the array
             attachmentPaths.push({
-              name: `${messageFileName} - ${i + 1} - ${attachment.filename}`,
+              name: `${messageFileName} - ${i + 1} - ${
+                attachment.filename
+              }`,
               path: `./.cache/_server/${messageFileName} - ${i + 1} - ${
                 attachment.filename
               }`,
@@ -357,7 +373,9 @@ async function createMailDataURI(instance, threadData) {
   }
 
   // Pack it all in a zip file
-  const output = fs.createWriteStream(`./.cache/_server/${archiveName}.zip`)
+  const output = fs.createWriteStream(
+    `./.cache/_server/${archiveName}.zip`
+  )
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
   })
@@ -409,7 +427,8 @@ class GmailProvider extends Provider {
 
   async list(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -422,7 +441,10 @@ class GmailProvider extends Provider {
     })
 
     // Folder path for threads are treated as space separated labels
-    const labelIds = await getLabelsFromName(instance, params['folderPath'])
+    const labelIds = await getLabelsFromName(
+      instance,
+      params['folderPath']
+    )
 
     // Get the export type and compare/sort params from the query parameters
     let { compareWith, operator, value, orderBy, direction } = queries
@@ -484,7 +506,8 @@ class GmailProvider extends Provider {
               const subjectHeaders = lastHeaders.filter(
                 (header) => header.name.toLowerCase() === 'subject'
               )
-              if (subjectHeaders.length > 0) subject = subjectHeaders[0].value
+              if (subjectHeaders.length > 0)
+                subject = subjectHeaders[0].value
 
               // The created at time is when the first message was sent
               let createdAtDate
@@ -538,7 +561,9 @@ class GmailProvider extends Provider {
       }
     } else {
       // Return all the labels the user or Gmail has created
-      const labelsResult = await instance.get(`/gmail/v1/users/me/labels`)
+      const labelsResult = await instance.get(
+        `/gmail/v1/users/me/labels`
+      )
 
       // If there is a result, parse it
       if (labelsResult.data && labelsResult.data.labels) {
@@ -577,7 +602,8 @@ class GmailProvider extends Provider {
 
   async read(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -623,7 +649,8 @@ class GmailProvider extends Provider {
         const subjectHeaders = lastHeaders.filter(
           (header) => header.name.toLowerCase() === 'subject'
         )
-        if (subjectHeaders.length > 0) subject = (subjectHeaders[0] || {}).value
+        if (subjectHeaders.length > 0)
+          subject = (subjectHeaders[0] || {}).value
 
         // The created at time is when the first message was sent
         let createdAtDate
@@ -650,7 +677,10 @@ class GmailProvider extends Provider {
           contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
         } else {
           // Else return the data URI created specially by Dabbu
-          contentURI = await createMailDataURI(instance, threadResult.data)
+          contentURI = await createMailDataURI(
+            instance,
+            threadResult.data
+          )
         }
 
         // Add this to the results
@@ -660,9 +690,9 @@ class GmailProvider extends Provider {
           }`,
           path: diskPath(
             params['folderPath'],
-            `${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${
-              subject || '(No subject)'
-            }`
+            `${formatDate(lastModifiedDate)} - ${
+              threadResult.data.id
+            } - ${subject || '(No subject)'}`
           ),
           kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
           provider: 'gmail',
@@ -699,7 +729,8 @@ class GmailProvider extends Provider {
   // Trash a thread
   async delete(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -721,7 +752,9 @@ class GmailProvider extends Provider {
     }
 
     // Trash the thread, don't delete it permanently
-    return await instance.post(`/gmail/v1/users/me/threads/${threadId}/trash`)
+    return await instance.post(
+      `/gmail/v1/users/me/threads/${threadId}/trash`
+    )
   }
 }
 

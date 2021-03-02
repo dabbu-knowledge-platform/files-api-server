@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - errors.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,19 +29,25 @@ exports.GeneralError = class GeneralError extends Error {
 }
 
 // Bad request; returned if the URL has any typos or mistakes
-exports.BadRequestError = class BadRequestError extends this.GeneralError {
+exports.BadRequestError = class BadRequestError extends (
+  this.GeneralError
+) {
   constructor(message) {
     super(400, message, 'malformedURL')
   }
 }
 // Missing provider specific variable in the request body; but returns a 400 Malformed URL code
-exports.MissingParamError = class MissingParamError extends this.GeneralError {
+exports.MissingParamError = class MissingParamError extends (
+  this.GeneralError
+) {
   constructor(message) {
     super(400, message, 'missingParam')
   }
 }
 // Missing access token in the request header
-exports.UnauthorizedError = class UnauthorizedError extends this.GeneralError {
+exports.UnauthorizedError = class UnauthorizedError extends (
+  this.GeneralError
+) {
   constructor(message) {
     super(403, message, 'unauthorized')
   }
@@ -61,7 +67,9 @@ exports.NotImplementedError = class NotImplementedError extends (
   }
 }
 // Conflict; used when a file already exists and you try to create it instead of update it
-exports.FileExistsError = class FileExistsError extends this.GeneralError {
+exports.FileExistsError = class FileExistsError extends (
+  this.GeneralError
+) {
   constructor(message) {
     super(409, message, 'conflict')
   }

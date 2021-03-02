@@ -1,4 +1,4 @@
-/* Dabbu Server - a unified API to retrieve your files and folders stored online
+/* Dabbu Files API Server - google_drive.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -198,7 +198,11 @@ async function getFileId(
 }
 
 // Get the file ID of a file with a folder path before it
-async function getFileWithParents(instance, filePath, isShared = false) {
+async function getFileWithParents(
+  instance,
+  filePath,
+  isShared = false
+) {
   // Parse the path
   let folderNames = filePath.split('/')
   // Get the file name and remove it from the folder path
@@ -307,7 +311,8 @@ class GoogleDriveDataProvider extends Provider {
   // List files and folders at a particular location
   async list(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -341,11 +346,17 @@ class GoogleDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do th
     if (folderPath.indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Get the folder ID (exception is if the folder is shared)
-    const folderId = await getFolderWithParents(instance, folderPath, isShared)
+    const folderId = await getFolderWithParents(
+      instance,
+      folderPath,
+      isShared
+    )
 
     // Construct the query
     let q
@@ -459,7 +470,8 @@ class GoogleDriveDataProvider extends Provider {
   // Return a file obj at a specified location
   async read(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -472,7 +484,9 @@ class GoogleDriveDataProvider extends Provider {
     })
 
     // Get the folder path from the URL
-    const folderPath = diskPath(params['folderPath'].replace('Shared', ''))
+    const folderPath = diskPath(
+      params['folderPath'].replace('Shared', '')
+    )
     // Get the file path from the URL
     const fileName = params['fileName']
     // Get the export type from the query parameters
@@ -484,11 +498,17 @@ class GoogleDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Get the parent folder ID
-    const folderId = await getFolderWithParents(instance, folderPath, isShared)
+    const folderId = await getFolderWithParents(
+      instance,
+      folderPath,
+      isShared
+    )
 
     // Construct the query
     let q
@@ -578,7 +598,8 @@ class GoogleDriveDataProvider extends Provider {
   // Create a file at a specified location
   async create(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -601,7 +622,9 @@ class GoogleDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Check if there is a file uploaded
@@ -632,7 +655,9 @@ class GoogleDriveDataProvider extends Provider {
 
     // If there is a lastModifiedTime present, set the file's lastModifiedTime to that
     if (body['lastModifiedTime']) {
-      meta['modifiedDate'] = new Date(body['lastModifiedTime']).toISOString()
+      meta['modifiedDate'] = new Date(
+        body['lastModifiedTime']
+      ).toISOString()
     }
 
     // First, post the file meta data to let Google Drive know we are posting the file's contents too
@@ -730,7 +755,8 @@ class GoogleDriveDataProvider extends Provider {
   // Update the file at the specified location with the file provided
   async update(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -749,7 +775,9 @@ class GoogleDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if ([folderPath, fileName].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     // Get the folder and file ID
@@ -759,7 +787,13 @@ class GoogleDriveDataProvider extends Provider {
       false,
       false
     )
-    const fileId = await getFileId(instance, fileName, folderId, false, false)
+    const fileId = await getFileId(
+      instance,
+      fileName,
+      folderId,
+      false,
+      false
+    )
 
     // The result of the operation
     let result
@@ -802,7 +836,9 @@ class GoogleDriveDataProvider extends Provider {
       folderPath = body['path']
     }
     if (body['lastModifiedTime']) {
-      const modifiedDate = new Date(body['lastModifiedTime']).toISOString()
+      const modifiedDate = new Date(
+        body['lastModifiedTime']
+      ).toISOString()
       // Set the lastModifiedTime by sending a patch request
       result = await instance.patch(
         `/drive/v2/files/${fileId}?modifiedDateBehavior=fromBody`,
@@ -870,7 +906,8 @@ class GoogleDriveDataProvider extends Provider {
   // Delete the file or folder at the specified location
   async delete(body, headers, params, queries) {
     // Get the access token from the header
-    const accessToken = headers['Authorization'] || headers['authorization']
+    const accessToken =
+      headers['Authorization'] || headers['authorization']
     // If there is no access token, return a 401 Unauthorised error
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
@@ -889,7 +926,9 @@ class GoogleDriveDataProvider extends Provider {
 
     // Don't allow relative paths, let clients do that
     if (folderPath.indexOf('/..') !== -1) {
-      throw new BadRequestError(`Folder paths must not contain relative paths`)
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
     }
 
     if (folderPath && fileName) {
