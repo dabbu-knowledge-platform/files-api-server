@@ -1,8 +1,6 @@
 node_modules/
 creds/
 dist/
-docs/_site/
-docs/.sass-cache/
 .cache/
 .git/
 .heroku*
