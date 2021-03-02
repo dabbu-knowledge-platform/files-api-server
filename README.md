@@ -2,7 +2,7 @@
 
 [![Code Style and Build Check](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/style_and_build_check.yml/badge.svg)](https://github.comdabbu-knowledge-platform/files-api-server/actions/workflows/style_and_build_check.yml)
 
-A unified API platform to access your emails, photos, and chats as simple files and folders.
+An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!
 
 ## Intro
 
