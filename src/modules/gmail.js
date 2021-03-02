@@ -35,7 +35,7 @@ const {
   MissingParamError,
 } = require('../errors.js')
 // Used sort the files retrieved based on query parameters
-const { sortFiles, diskPath } = require('../utils.js')
+const { sortFiles, diskPath, cachePath } = require('../utils.js')
 
 // Import the default Provider class we need to extend
 const Provider = require('./provider.js').default
@@ -384,11 +384,7 @@ async function createMailDataURI(instance, threadData) {
   return await new Promise((resolve, reject) => {
     // Once the file is written, return
     output.on('close', () => {
-      resolve(
-        `http://localhost:${
-          process.argv.slice(2)[1] || 8080
-        }/dabbu/v1/api/cache/${encodeURIComponent(`${archiveName}.zip`)}`
-      )
+      resolve(cachePath(`${archiveName}.zip`))
     })
 
     // Catch errors

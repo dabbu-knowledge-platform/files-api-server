@@ -219,3 +219,9 @@ exports.sortFiles = (
   // Return the filtered and sorted files
   return sortedFiles
 }
+
+exports.cachePath = (filePath) => {
+  return `http://localhost:${
+    process.argv.slice(2)[1] || 8080
+  }/dabbu/v1/api/cache/${encodeURIComponent(filePath)}`
+}
