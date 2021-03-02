@@ -25,6 +25,8 @@ const multer = require('multer')
 // Path library
 const path = require('path')
 
+// Custom errors we throw
+const { ProviderNotEnabledError } = require('../errors.js')
 // Logging methods and utils
 const { info, error, json } = require('../utils.js')
 

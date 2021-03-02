@@ -20,6 +20,8 @@
 // Express JS, the library used to run the server and respond to HTTP requests
 const express = require('express')
 
+// Custom errors we throw
+const { BadRequestError } = require('../errors.js')
 // Logging methods and utils
 const { info, json } = require('../utils.js')
 
