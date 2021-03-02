@@ -17,7 +17,7 @@
 
 // MARK: Errors
 
-// The superclass for custom errors that Dabbu Server can throw
+// The superclass for custom errors that Dabbu Files API Server can throw
 exports.GeneralError = class GeneralError extends Error {
   // It must have an HTTP response code, a user-friendly message and a computer-friendly reason
   constructor(code, message, reason) {
@@ -38,6 +38,12 @@ exports.BadRequestError = class BadRequestError extends this.GeneralError {
 exports.MissingParamError = class MissingParamError extends this.GeneralError {
   constructor(message) {
     super(400, message, 'missingParam')
+  }
+}
+// Missing access token in the request header
+exports.UnauthorizedError = class UnauthorizedError extends this.GeneralError {
+  constructor(message) {
+    super(403, message, 'unauthorized')
   }
 }
 // 404 not found

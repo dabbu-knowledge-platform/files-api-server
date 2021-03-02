@@ -25,7 +25,7 @@ const fileTypes = require('file-type')
 const axios = require('axios')
 
 // Custom errors we throw
-const { BadRequestError } = require('../errors.js')
+const { BadRequestError, UnauthorizedError } = require('../errors.js')
 // Used to generate platform-independent file/folder paths
 const { diskPath, sortFiles } = require('../utils.js')
 
@@ -43,6 +43,10 @@ class OneDriveDataProvider extends Provider {
   async list(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -166,6 +170,10 @@ class OneDriveDataProvider extends Provider {
   async read(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -252,6 +260,10 @@ class OneDriveDataProvider extends Provider {
   async create(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -381,6 +393,10 @@ class OneDriveDataProvider extends Provider {
   async update(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -536,6 +552,10 @@ class OneDriveDataProvider extends Provider {
   async delete(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({

@@ -19,32 +19,30 @@
 
 // Express JS, the library used to run the server and respond to HTTP requests
 const express = require('express')
-// Multer, the library used to handle file upload for POST and PUT requests
-const multer = require('multer')
 
 // Extended file system library
 const fs = require('fs-extra')
-// Path library
-const path = require('path')
 
 // Custom error handler used to send back user and computer friendly messages to clients.
-const {
-  ProviderNotEnabledError,
-  errorHandler,
-  BadRequestError,
-} = require('./errors.js')
+const { errorHandler } = require('./errors.js')
 // Logging methods and utils
-const { info, error, json } = require('./utils.js')
+const { info } = require('./utils.js')
 
-// MARK - Config and Globals
+// MARK: Config and Globals
 
 // The prefix to all requests
-const rootURL = '/dabbu/v1/api'
+const rootURL = '/files-api/v1'
 
 // Create an express server
 const app = express()
-// Define where multer should store the uploaded files
-const upload = multer({ dest: path.normalize(`./.cache/_server/`) })
+
+// Initialise the routes
+// Provider-related operations
+const providerRoutes = require('./routes/provider.js').router
+// Internal APIs like cache
+const internalRoutes = require('./routes/internal.js').router
+// Data related APIs
+const dataRoutes = require('./routes/data.js').router
 
 // MARK: Input processing
 
@@ -69,6 +67,12 @@ if (args.length > 0) {
 // Tell the server to accept JSON in the HTTP request body
 app.use(express.json())
 
+// Add the enabledProviders to the request every time
+app.use((req, res, next) => {
+  req.enabledProviders = enabledProviders
+  next()
+})
+
 // Initialise the server on the given port
 const server = app.listen(port, () => {
   //info(`Dabbu  Copyright (C) 2021  gamemaker1\n      This program comes with ABSOLUTELY NO WARRANTY.\n      This is free software, and you are welcome to\n      redistribute it under certain conditions; look\n      at the LICENSE file for more details.`)
@@ -79,242 +83,14 @@ const server = app.listen(port, () => {
   info(`Enabled providers include ${enabledProviders.join(', ')}`)
 })
 
-// HTTP GET request to `/` will return text
-app.get(`/`, (req, res, next) => {
-  info(
-    `(Root) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
+// Route calls about internal apis like cache to the internal route
+app.use(`${rootURL}/internal/`, internalRoutes)
 
-  // Send back a successfull response.
-  res.status(200).send(`Dabbu Server running on port ${port}`)
-})
+// Route calls about providers to the provider route
+app.use(`${rootURL}/providers/`, providerRoutes)
 
-// HTTP GET request to `/providers` will return all enabled providers
-app.get(`${rootURL}/providers`, (req, res, next) => {
-  info(
-    `(List providers) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
-
-  // Send back a successfull response code (200) and the enabled providers.
-  res.status(200).json({
-    code: 200,
-    content: {
-      providers: enabledProviders, // Can be accessed using `response.data.content.providers` if using axios.
-    },
-  })
-})
-
-// HTTP GET request to /providers/:providerId will return status code 200 if the provider is enabled, else 501
-app.get(`${rootURL}/providers/:providerId`, (req, res, next) => {
-  info(
-    `(Check provider) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
-
-  // Return the response accordingly
-  // Throw an error if the provider isn't enabled
-  if (enabledProviders.indexOf(req.params.providerId) === -1) {
-    res.sendStatus(501) // Not enabled
-  } else {
-    res.sendStatus(200) // Enabled
-  }
-})
-
-// HTTP GET request to /data/:providerId/:folderPath will list files and folders in that folder
-app.get(`${rootURL}/data/:providerId/:folderPath`, (req, res, next) => {
-  info(
-    `(List) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
-
-  // Throw an error if the provider isn't enabled
-  if (enabledProviders.indexOf(req.params.providerId) === -1) {
-    throw new ProviderNotEnabledError(
-      `The provider ${req.params.providerId} has not been enabled.`
-    )
-  }
-
-  // Any JS file stored in the src/modules folder is considered a provider.
-  const Module = require(`./modules/${req.params.providerId}.js`).default
-
-  // Execute the list function of the provider and return the response or error.
-  new Module()
-    .list(req.body, req.headers, req.params, req.query) // Pass the request body, headers, URL parameters and query parameters
-    .then((result) => {
-      res.status(200).json({
-        code: 200,
-        content: result, // Send it back with a 200 response code
-      })
-    })
-    .catch((err) => {
-      error(err)
-      next(err) // Forward the error to our error handler
-    })
-})
-
-// HTTP GET request to /data/:providerId/:folderPath/:fileName will return the file
-app.get(
-  `${rootURL}/data/:providerId/:folderPath/:fileName`,
-  (req, res, next) => {
-    info(
-      `(Read) Get request called with params: ${json(
-        req.params
-      )} and queries: ${json(req.query)}`
-    )
-
-    // Throw an error if the provider isn't enabled
-    if (enabledProviders.indexOf(req.params.providerId) === -1) {
-      throw new ProviderNotEnabledError(
-        `The provider ${req.params.providerId} has not been enabled.`
-      )
-    }
-
-    // Any JS file stored in the src/modules folder is considered a provider.
-    const Module = require(`./modules/${req.params.providerId}.js`).default
-
-    // Execute the read function of the provider and return the response or error.
-    new Module()
-      .read(req.body, req.headers, req.params, req.query)
-      .then((result) => {
-        res.status(200).json({
-          code: 200,
-          content: result, // Send it back with a 200 response code
-        })
-      })
-      .catch((err) => {
-        error(err)
-        next(err) // Forward the error to our error handler
-      })
-  }
-)
-
-// Create a file
-app.post(
-  `${rootURL}/data/:providerId/:folderPath/:fileName`,
-  upload.single('content'),
-  (req, res, next) => {
-    info(
-      `(Create) Post request called with params: ${json(
-        req.params
-      )} and queries: ${json(req.query)}`
-    )
-
-    // Throw an error if the provider isn't enabled
-    if (enabledProviders.indexOf(req.params.providerId) === -1) {
-      throw new ProviderNotEnabledError(
-        `The provider ${req.params.providerId} has not been enabled.`
-      )
-    }
-
-    // Any JS file stored in the src/modules folder is considered a provider.
-    const Module = require(`./modules/${req.params.providerId}.js`).default
-
-    // Execute the create function of the provider and return the response or error.
-    new Module()
-      .create(req.body, req.headers, req.params, req.query, req.file)
-      .then((result) => {
-        res.status(200).json({
-          code: 200,
-          content: result, // Send it back with a 200 response code
-        })
-      })
-      .catch((err) => {
-        error(err)
-        next(err) // Forward the error to our error handler
-      })
-  }
-)
-
-// Update a file
-app.put(
-  `${rootURL}/data/:providerId/:folderPath/:fileName`,
-  upload.single('content'),
-  (req, res, next) => {
-    info(
-      `(Update) Put request called with params: ${json(
-        req.params
-      )} and queries: ${json(req.query)}`
-    )
-
-    // Throw an error if the provider isn't enabled
-    if (enabledProviders.indexOf(req.params.providerId) === -1) {
-      throw new ProviderNotEnabledError(
-        `The provider ${req.params.providerId} has not been enabled.`
-      )
-    }
-
-    // Any JS file stored in the src/modules folder is considered a provider.
-    const Module = require(`./modules/${req.params.providerId}.js`).default
-
-    // Execute the update function of the provider and return the response or error.
-    new Module()
-      .update(req.body, req.headers, req.params, req.query, req.file)
-      .then((result) => {
-        res.status(200).json({
-          code: 200,
-          content: result, // Send it back with a 200 response code
-        })
-      })
-      .catch((err) => {
-        error(err)
-        next(err) // Forward the error to our error handler
-      })
-  }
-)
-
-// Delete a file/folder
-app.delete(
-  `${rootURL}/data/:providerId/:folderPath/:fileName?`,
-  (req, res, next) => {
-    info(
-      `(Delete) Delete request called with params: ${json(
-        req.params
-      )} and queries: ${json(req.query)}`
-    )
-
-    // Throw an error if the provider isn't enabled
-    if (enabledProviders.indexOf(req.params.providerId) === -1) {
-      throw new ProviderNotEnabledError(
-        `The provider ${req.params.providerId} has not been enabled.`
-      )
-    }
-
-    // Any JS file stored in the src/modules folder is considered a provider.
-    const Module = require(`./modules/${req.params.providerId}.js`).default
-
-    // Execute the delete function of the provider and return the response or error.
-    new Module()
-      .delete(req.body, req.headers, req.params, req.query)
-      .then((result) => {
-        res.sendStatus(200) // Send back a 200 response code
-      })
-      .catch((err) => {
-        error(err)
-        next(err) // Forward the error to our error handler
-      })
-  }
-)
-
-// Retrieve a file/folder from cache
-app.get(`${rootURL}/cache/:filePath`, (req, res, next) => {
-  info(
-    `(Cache) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
-
-  if (req.params.filePath.includes('/..')) {
-    throw new BadRequestError('File path may not contain ..')
-  }
-
-  res.download(`./.cache/_server/${req.params.filePath}`)
-})
+// Route calls about user data to the data route
+app.use(`${rootURL}/data/`, dataRoutes)
 
 // Use a custom error handler to return user and computer friendly responses
 app.use(errorHandler)

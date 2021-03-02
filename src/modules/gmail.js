@@ -31,7 +31,7 @@ const turndownService = new TurndownService()
 // Custom errors we throw
 const {
   NotFoundError,
-  NotImplementedError,
+  UnauthorizedError,
   MissingParamError,
 } = require('../errors.js')
 // Used sort the files retrieved based on query parameters
@@ -414,6 +414,10 @@ class GmailProvider extends Provider {
   async list(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -578,6 +582,10 @@ class GmailProvider extends Provider {
   async read(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -692,22 +700,14 @@ class GmailProvider extends Provider {
   // and folders, this feature (creating and replying to threads) stands
   // as one of the first to be added.
 
-  async create(body, headers, params, queries, fileMeta) {
-    throw new NotImplementedError(
-      "Dabbu's Gmail provider currently does not support the create method"
-    )
-  }
-
-  async update(body, headers, params, queries, fileMeta) {
-    throw new NotImplementedError(
-      "Dabbu's Gmail provider currently does not support the update method"
-    )
-  }
-
   // Trash a thread
   async delete(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({

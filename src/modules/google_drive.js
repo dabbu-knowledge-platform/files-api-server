@@ -29,6 +29,7 @@ const {
   NotFoundError,
   BadRequestError,
   FileExistsError,
+  UnauthorizedError,
   GeneralError,
 } = require('../errors.js')
 // Used to generate platform-independent file/folder paths
@@ -307,6 +308,10 @@ class GoogleDriveDataProvider extends Provider {
   async list(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -455,6 +460,10 @@ class GoogleDriveDataProvider extends Provider {
   async read(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -570,6 +579,10 @@ class GoogleDriveDataProvider extends Provider {
   async create(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -718,6 +731,10 @@ class GoogleDriveDataProvider extends Provider {
   async update(body, headers, params, queries, fileMeta) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
@@ -854,6 +871,10 @@ class GoogleDriveDataProvider extends Provider {
   async delete(body, headers, params, queries) {
     // Get the access token from the header
     const accessToken = headers['Authorization'] || headers['authorization']
+    // If there is no access token, return a 401 Unauthorised error
+    if (!accessToken) {
+      throw new UnauthorizedError(`No access token specified`)
+    }
     // Create an axios instance with the header. All requests will be made with this
     // instance so the headers will be present everywhere
     const instance = axios.create({
