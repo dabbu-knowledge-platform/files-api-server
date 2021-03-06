@@ -25,8 +25,7 @@ const axios = require('axios')
 const archiver = require('archiver')
 
 // To convert html to markdown
-const TurndownService = require('turndown')
-const turndownService = new TurndownService()
+const breakdance = require('breakdance')
 
 // Custom errors we throw
 const {
@@ -176,9 +175,15 @@ function parseGmailMessage(message) {
 
     if (isHtml && !isAttachment) {
       // Convert the html to markdown and add it to the result
-      result.text = turndownService.turndown(
-        Buffer.from(part.body.data, 'base64').toString('ascii')
+      result.text = breakdance(
+        Buffer.from(part.body.data, 'base64').toString()
       )
+        // Replace br tags with a newline and u tags with underline, as
+        // breakdance doesn't do that
+        .replace(/<br>/g, '\n')
+        .replace(/<\/br>/g, '\n')
+        .replace(/<\/u>/g, '_')
+        .replace(/<\/u>/g, '_')
     } else if (isPlain && !isAttachment) {
       // Add the plain text to the result
       result.text = Buffer.from(part.body.data, 'base64').toString(

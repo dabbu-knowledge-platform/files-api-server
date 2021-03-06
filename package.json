@@ -29,7 +29,7 @@
     "archiver": "^5.2.0",
     "axios": "^0.21.1",
     "file-type": "16.2.0",
-    "turndown": "^7.0.0"
+    "breakdance": "3.0.1"
   },
   "devDependencies": {
     "pkg": "^4.4.9",
