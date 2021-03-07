@@ -42,7 +42,7 @@ router.get(`/`, (req, res, next) => {
   res.status(200).json({
     code: 200,
     content: {
-      providers: enabledProviders, // Can be accessed using `response.data.content.providers` if using axios.
+      providers: req.enabledProviders, // Can be accessed using `response.data.content.providers` if using axios.
     },
   })
 })
@@ -57,7 +57,7 @@ router.get(`/:providerId`, (req, res, next) => {
 
   // Return the response accordingly
   // Throw an error if the provider isn't enabled
-  if (enabledProviders.indexOf(req.params.providerId) === -1) {
+  if (req.enabledProviders.indexOf(req.params.providerId) === -1) {
     res.sendStatus(501) // Not enabled
   } else {
     res.sendStatus(200) // Enabled
