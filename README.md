@@ -18,27 +18,7 @@ What you just saw there was Dabbu CLI in action - a simple program in javascript
 
 The installation can be done manually on Linux, MacOS, Android (Requires Termux) and Windows.
 
-- First, download the proper executable for your platform from the [Releases page](https://github.com/dabbu-knowledge-platform/files-api-server/releases). (Caution: releases may not work on certain versions of Android, depending on the manafacturer and version.)
-
-> **Note**: It is **recommended** that you move the executable to a separate folder (the servers and CLI can be put in the same folder) and run it from there. This is because the server will create a folder `_dabbu` which contains several important files. When moving the executable anywhere else, make sure you move the `_dabbu` folder as well.
-
-- On Windows, simply double click on the file to run it.
-
-- On Linux/MacOS, run the following command in a terminal (assuming you have downloaded the executable to your Downloads folder):
-
-  - On MacOS:
-
-    ```sh
-    $ ~/Downloads/files-api-server-macos
-    ```
-
-  - On Linux:
-
-    ```sh
-    $ ~/Downloads/files-api-server-linux
-    ```
-
-- Your server is now running! To check, go to http://localhost:8080/. You will see the text `Dabbu Files API Server running on port 8080` on the page. If not, try running the server again or check if you have missed a step. If the problem persists, post a message on [Github discussions](https://github.comdabbu-knowledge-platform/files-api-server/discussions/categories/q-a) asking for help. We'll only be glad to help you :)
+Follow the instructions [here](https://dabbu-knowledge-platform.github.io/impls/server) to install it on your computer.
 
 ## Updating the server
 
