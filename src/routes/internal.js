@@ -48,7 +48,7 @@ router.get(`/cache/:filePath`, (req, res, next) => {
   }
 
   // Stream the file back
-  res.download(`./.cache/_server/${req.params.filePath}`)
+  res.download(`./_dabbu/_server/${req.params.filePath}`)
 })
 
 // MARK: Exports

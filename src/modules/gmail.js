@@ -284,13 +284,13 @@ async function createMailDataURI(instance, threadData) {
           if (attachmentResult.data && attachmentResult.data.data) {
             // Write the attachment data to a file
             await fs.writeFile(
-              `./.cache/_server/${messageFileName} - ${attachment.filename}`,
+              `./_dabbu/_server/${messageFileName} - ${attachment.filename}`,
               Buffer.from(attachmentResult.data.data, 'base64')
             )
             // Add the file path and name to the array
             attachmentPaths.push({
               name: `${messageFileName} - ${attachment.filename}`,
-              path: `./.cache/_server/${messageFileName} - ${attachment.filename}`,
+              path: `./_dabbu/_server/${messageFileName} - ${attachment.filename}`,
             })
           } else {
             // No data
@@ -324,7 +324,7 @@ async function createMailDataURI(instance, threadData) {
           if (attachmentResult.data && attachmentResult.data.data) {
             // Write the attachment data to a file
             await fs.writeFile(
-              `./.cache/_server/${messageFileName} - ${i + 1} - ${
+              `./_dabbu/_server/${messageFileName} - ${i + 1} - ${
                 attachment.filename
               }`,
               Buffer.from(attachmentResult.data.data, 'base64')
@@ -334,7 +334,7 @@ async function createMailDataURI(instance, threadData) {
               name: `${messageFileName} - ${i + 1} - ${
                 attachment.filename
               }`,
-              path: `./.cache/_server/${messageFileName} - ${i + 1} - ${
+              path: `./_dabbu/_server/${messageFileName} - ${i + 1} - ${
                 attachment.filename
               }`,
             })
@@ -351,7 +351,7 @@ async function createMailDataURI(instance, threadData) {
 
     // Write the data to the file
     await fs.writeFile(
-      `./.cache/_server/${messageFileName} - ${i + 1}.md`,
+      `./_dabbu/_server/${messageFileName} - ${i + 1}.md`,
       [
         `---`,
         `subject: ${message.subject}`,
@@ -373,13 +373,13 @@ async function createMailDataURI(instance, threadData) {
 
     messagePaths.push({
       name: `${messageFileName} - ${i + 1}.md`,
-      path: `./.cache/_server/${messageFileName} - ${i + 1}.md`,
+      path: `./_dabbu/_server/${messageFileName} - ${i + 1}.md`,
     })
   }
 
   // Pack it all in a zip file
   const output = fs.createWriteStream(
-    `./.cache/_server/${archiveName}.zip`
+    `./_dabbu/_server/${archiveName}.zip`
   )
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
