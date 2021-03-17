@@ -54,8 +54,9 @@ async function getLabelsFromName(instance, name) {
   if (name.toLowerCase() == 'null' || name.toLowerCase() == '/') {
     return null
   } else {
-    // Loop through space separated labels
-    const labelNames = name.replace(/\//g, '').split(',')
+    // Each folder name is a label. Multiple folder names are interpreted
+    // as an AND query
+    const labelNames = name.split('/')
     let labels = []
 
     const labelsResult = await instance.get(`/gmail/v1/users/me/labels`)
