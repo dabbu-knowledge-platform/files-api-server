@@ -255,6 +255,10 @@ async function createMailDataURI(instance, threadData) {
     } - ${message.subject}`
     archiveName = messageFileName
 
+    // Create the directories which contain the generated and zip files
+    await fs.ensureDir(`./_dabbu/_server/_gmail/generated/`)
+    await fs.ensureDir(`./_dabbu/_server/_gmail/zips/`)
+
     // Show the attachments and inline stuff in a nice way at the
     // end of the file
     let attachmentsText = ''
@@ -285,13 +289,13 @@ async function createMailDataURI(instance, threadData) {
           if (attachmentResult.data && attachmentResult.data.data) {
             // Write the attachment data to a file
             await fs.writeFile(
-              `./_dabbu/_server/${messageFileName} - ${attachment.filename}`,
+              `./_dabbu/_server/_gmail/generated/${messageFileName} - ${attachment.filename}`,
               Buffer.from(attachmentResult.data.data, 'base64')
             )
             // Add the file path and name to the array
             attachmentPaths.push({
               name: `${messageFileName} - ${attachment.filename}`,
-              path: `./_dabbu/_server/${messageFileName} - ${attachment.filename}`,
+              path: `./_dabbu/_server/_gmail/generated/${messageFileName} - ${attachment.filename}`,
             })
           } else {
             // No data
@@ -325,9 +329,9 @@ async function createMailDataURI(instance, threadData) {
           if (attachmentResult.data && attachmentResult.data.data) {
             // Write the attachment data to a file
             await fs.writeFile(
-              `./_dabbu/_server/${messageFileName} - ${i + 1} - ${
-                attachment.filename
-              }`,
+              `./_dabbu/_server/_gmail/generated/${messageFileName} - ${
+                i + 1
+              } - ${attachment.filename}`,
               Buffer.from(attachmentResult.data.data, 'base64')
             )
             // Add the file path and name to the array
@@ -335,9 +339,9 @@ async function createMailDataURI(instance, threadData) {
               name: `${messageFileName} - ${i + 1} - ${
                 attachment.filename
               }`,
-              path: `./_dabbu/_server/${messageFileName} - ${i + 1} - ${
-                attachment.filename
-              }`,
+              path: `./_dabbu/_server/_gmail/generated/${messageFileName} - ${
+                i + 1
+              } - ${attachment.filename}`,
             })
           } else {
             // No data
@@ -352,7 +356,9 @@ async function createMailDataURI(instance, threadData) {
 
     // Write the data to the file
     await fs.writeFile(
-      `./_dabbu/_server/${messageFileName} - ${i + 1}.md`,
+      `./_dabbu/_server/_gmail/generated/${messageFileName} - ${
+        i + 1
+      }.md`,
       [
         `---`,
         `subject: ${message.subject}`,
@@ -374,13 +380,16 @@ async function createMailDataURI(instance, threadData) {
 
     messagePaths.push({
       name: `${messageFileName} - ${i + 1}.md`,
-      path: `./_dabbu/_server/${messageFileName} - ${i + 1}.md`,
+      path: `./_dabbu/_server/_gmail/generated/${messageFileName} - ${
+        i + 1
+      }.md`,
     })
   }
 
   // Pack it all in a zip file
+  await fs.createFile(`./_dabbu/_server/_gmail/zips/${archiveName}.zip`)
   const output = fs.createWriteStream(
-    `./_dabbu/_server/${archiveName}.zip`
+    `./_dabbu/_server/_gmail/zips/${archiveName}.zip`
   )
   const archive = archiver('zip', {
     zlib: { level: 9 }, // Sets the compression level.
@@ -408,7 +417,7 @@ async function createMailDataURI(instance, threadData) {
   return await new Promise((resolve, reject) => {
     // Once the file is written, return
     output.on('close', () => {
-      resolve(cachePath(`${archiveName}.zip`))
+      resolve(cachePath(`/_gmail/zips/${archiveName}.zip`))
     })
 
     // Catch errors
@@ -540,12 +549,12 @@ class GmailProvider extends Provider {
               results.push({
                 name: `${formatDate(lastModifiedDate)} - ${
                   threadResult.data.id
-                } - ${subject || '(No subject)'}`,
+                } - ${subject || '(No subject)'}.zip`,
                 path: diskPath(
                   params['folderPath'],
                   `${formatDate(lastModifiedDate)} - ${
                     threadResult.data.id
-                  } - ${subject || '(No subject)'}`
+                  } - ${subject || '(No subject)'}.zip`
                 ),
                 kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
                 provider: 'gmail',
@@ -693,12 +702,12 @@ class GmailProvider extends Provider {
         return {
           name: `${formatDate(lastModifiedDate)} - ${threadId} - ${
             subject || '(No subject)'
-          }`,
+          }.zip`,
           path: diskPath(
             params['folderPath'],
             `${formatDate(lastModifiedDate)} - ${
               threadResult.data.id
-            } - ${subject || '(No subject)'}`
+            } - ${subject || '(No subject)'}.zip`
           ),
           kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
           provider: 'gmail',
@@ -719,12 +728,12 @@ class GmailProvider extends Provider {
     }
   }
 
-  // Ideally, the create method would create a new thread, while the update
-  // method would reply to a thread. This would have been possible except
-  // for the fact that an email must be sent to another person (person's
-  // email address). The addition of this field, as well as (possibly) a
-  // "reply to email address" would make it difficult to fit it within the
-  // file and folder paradigm with the current design we have, as it does
+  // NOTE: Ideally, the create() method would create a new thread, while the
+  // update() method would reply to a thread. This would have been possible
+  // except for the fact that an email must be sent to another person
+  // (person's email address). The addition of this field, as well as
+  // (possibly) a "reply to email address" would make it difficult to fit it
+  // within the file and folder paradigm we currently have, as it does
   // not take into account multiple people (another thing that is hit by
   // this shortcoming is shared files - though you might be able to view
   // them, you can't create shared files or share existing ones). If and
