@@ -1,6 +1,6 @@
 # Dabbu Files API Server
 
-[![Code Style and Build Check](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/style_and_build_check.yml/badge.svg)](https://github.comdabbu-knowledge-platform/files-api-server/actions/workflows/style_and_build_check.yml)
+[![NodeJS CI](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml/badge.svg)](https://github.comdabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml)
 
 An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!
 
@@ -10,13 +10,15 @@ Tired of having your files and folders randomly scattered about online with mult
 
 ![](./media/DabbuCLI.gif)
 
+<sub>Dabbu CLI retrieving files from Google Drive [Note: this GIF is outdated]</sub>
+
 What you just saw there was Dabbu CLI in action - a simple program in javascript that leverages the Dabbu API to bring your files and folders at your fingertips from all over the web.
 
 **This repo contains the server application that handles API calls from clients. The source for the CLI app demoed in the GIF above can be found [here](https://github.com/dabbu-knowledge-platform/cli).**
 
 ## Getting started
 
-The installation can be done manually on Linux, MacOS, Android (Requires Termux) and Windows.
+The installation can be done manually on Linux, Alpine Linux, MacOS, Android (Requires Termux) and Windows (Currently only 64-bit architectures are supported).
 
 Follow the instructions [here](https://dabbu-knowledge-platform.github.io/impls/server) to install it on your computer.
 
@@ -41,17 +43,21 @@ _And more to come...!_
 
 ### Creating a new provider
 
-**Note: If you want to create a new provider, please file an issue using the `New provider` template [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). This is only to let us know that you want to work on the provider and how you plan to go about it. Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/categories/want-to-contribute) Github discussion. We will only be glad to help :)**
+If you want to create a new provider, please file an issue using the `New provider` template [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). This is only to let us know that you want to work on the provider and how you plan to go about it.
+
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed guide to setting up your environment and making changes to the code.
+
+Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/categories/want-to-contribute) Github discussion. We will only be glad to help :)
 
 ## Docs
 
-The documentation for the server can be found [here](https://dabbu-knowledge-platform.github.io/impls/server).
+The documentation for the server can be found on the [website](https://dabbu-knowledge-platform.github.io/impls/server). The source can be found [here](https://github.com/dabbu-knowledge-platform/dabbu-knowledge-platform.github.io/blob/main/impls/server.md).
 
 ## Issues and pull requests
 
 You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and spreading the word! If you want to report a bug, create an issue by clicking [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). While creating an issue, try to follow the Bug report or Feature request template.
 
-To contribute code, have a look at [CONTRIBUTING.md](./CONTRIBUTING.md).
+Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed guide to setting up your environment and making changes to the code.
 
 ## Legal stuff
 
