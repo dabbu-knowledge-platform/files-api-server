@@ -26,9 +26,9 @@ A clear and concise description of what you expected to happen.
 
 If applicable, add screenshots to help explain your problem.
 
-**Desktop (please complete the following information):**
+**Versions (please complete the following information):**
 
-- Dabbu Version: (Current version, seen when server is run) e.g. 1.5.1
+- Dabbu Version: (Current version, seen when server is run) e.g. 1.8.0
 - OS Version: (Platform and Version) e.g. macOS 10.15.7 / Windows 10 (20H2) / Ubuntu 20.04.3 x64 / etc
 - Provider ID: hard_drive / google_drive / one_drive / gmail / etc
 
