@@ -10,7 +10,7 @@ You can contribute to Dabbu Files API Server by reporting bugs, fixing bugs, add
 
 ## Pull requests
 
-This guide assumes you are familiar with Github and the command line. If not, [here](https://guides.github.com/activities/hello-world/) is a guide to get started with Github. If you are stuck on something, feel free to ask on [Github Discussions](https://github.com/dabbu-knowledge-platform/cli/discussions/categories/want-to-contribute).
+This guide assumes you are familiar with Github and the command line. If not, [here](https://guides.github.com/activities/hello-world/) is a guide to get started with Github. If you are stuck on something, feel free to ask on [Github Discussions](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/categories/want-to-contribute).
 
 ### Step 0: Environment
 
@@ -45,7 +45,7 @@ $ git fetch upstream
 
 ### Step 2: Build
 
-All you need to do to build is run `npm run build`. If the command runs successfully, there should be 4 files (`dabbu-cli-alpine`, `dabbu-cli-linux`, `dabbu-cli-macos` and `dabbu-cli-win.exe`) in the `dist/` folder. These are the executables that can be run on alpine, linux, macos and windows respectively without installation of external dependencies.
+All you need to do to build is run `npm run build`. If the command runs successfully, there should be 4 files (`files-api-server-alpine`, `files-api-server-linux`, `files-api-server-macos` and `files-api-server-win.exe`) in the `dist/` folder. These are the executables that can be run on alpine, linux, macos and windows respectively without installation of external dependencies.
 
 Once you've built the project locally, you're ready to start making changes!
 
