@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/dabbu-knowledge-platform/files-api-server#readme",
   "dependencies": {
-    "archiver": "^5.2.0",
+    "archiver": "^5.3.0",
     "axios": "^0.21.1",
     "breakdance": "3.0.1",
     "express": "^4.17.1",
