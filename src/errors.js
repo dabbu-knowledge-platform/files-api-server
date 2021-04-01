@@ -33,7 +33,7 @@ exports.BadRequestError = class BadRequestError extends (
   this.GeneralError
 ) {
   constructor(message) {
-    super(400, message, 'malformedURL')
+    super(400, message, 'malformedUrl')
   }
 }
 // Missing provider specific variable in the request body; but returns a 400 Malformed URL code
