@@ -22,7 +22,7 @@ const fs = require('fs-extra')
 // Used to detect mime types based on file content
 const fileTypes = require('file-type')
 // Used to make HTTP request to the Google Drive API endpoints
-const axios = require('axios')
+const axios = require('axios').default
 
 // Custom errors we throw
 const {
@@ -127,7 +127,8 @@ async function getFolderWithParents(
     let prevFolderId = 'root'
     for (let j = 0, length = folderNames.length; j < length; j++) {
       // Don't set sharedWithMe here to true if this is not the first folder,
-      // because then the folder is implicitly shared as part of the first folder
+      // because then the folder is implicitly shared as part of the first
+      // folder
       prevFolderId = await getFolderId(
         instance,
         folderNames[j],
@@ -140,8 +141,8 @@ async function getFolderWithParents(
     return prevFolderId
   } else {
     // Return the last and only folder's ID
-    // Set sharedWithMe here to true (if passed on as true) as the
-    // folder will have been explicitly shared
+    // Set sharedWithMe here to true (if passed on as true) as the folder will
+    // have been explicitly shared
     const folderId = await getFolderId(
       instance,
       folderNames[folderNames.length - 1],
@@ -180,7 +181,8 @@ async function getFileId(
   if (result.data.items.length > 0) {
     // If there is a valid result:
     if (errorOutIfExists) {
-      // If the `errorOutIfExists` option is true (used when creating a file), error out
+      // If the `errorOutIfExists` option is true (used when creating a file),
+      // error out
       throw new FileExistsError(`File ${fileName} already exists`)
     } else {
       // Else return the file ID
@@ -190,7 +192,8 @@ async function getFileId(
   } else {
     // File doesn't exist
     if (!errorOutIfExists) {
-      // If the `errorOutIfExists` option is false (used when creating a file), error out
+      // If the `errorOutIfExists` option is false (used when creating a file),
+      // error out
       throw new NotFoundError(`File ${fileName} does not exist`)
     } else {
     }
@@ -223,7 +226,8 @@ async function getFileWithParents(
     let prevFolderId = 'root'
     for (let j = 0, length = folderNames.length; j < length; j++) {
       // Don't set sharedWithMe here to true if this is not the first folder,
-      // because then the folder is implicitly shared as part of the first folder
+      // because then the folder is implicitly shared as part of the first
+      // folder
       prevFolderId = await getFolderId(
         instance,
         folderNames[j],
@@ -317,8 +321,8 @@ class GoogleDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://www.googleapis.com/',
       headers: { Authorization: accessToken },
@@ -328,7 +332,8 @@ class GoogleDriveDataProvider extends Provider {
     const isShared =
       diskPath(params['folderPath']).startsWith('/Shared') ||
       diskPath(params['folderPath']).startsWith('Shared')
-    // Get the folder path from the URL and replace the /Shared part if it is in the beginning
+    // Get the folder path from the URL and replace the /Shared part if it is
+    // in the beginning
     const folderPath = diskPath(
       isShared
         ? params['folderPath'].replace('Shared', '')
@@ -361,7 +366,8 @@ class GoogleDriveDataProvider extends Provider {
     // Construct the query
     let q
     if (diskPath(params['folderPath']) === '/Shared') {
-      // If the folder path is /Shared, return all the files in the Shared Folder.
+      // If the folder path is /Shared, return all the files in the Shared
+      // Folder.
       q = `trashed = false and sharedWithMe = true`
     } else {
       // Else just do a normal list
@@ -382,7 +388,8 @@ class GoogleDriveDataProvider extends Provider {
         },
       })
 
-      // Get the next page token (incase Google Drive returned incomplete results)
+      // Get the next page token (incase Google Drive returned incomplete
+      // results)
       nextPageToken = listResult.data.nextPageToken
 
       // Add the files we got right now to the main list
@@ -393,7 +400,8 @@ class GoogleDriveDataProvider extends Provider {
 
     // Once we get everything, parse and print the files
     if (allFiles.length > 0) {
-      // If a valid result is returned, loop through all the files and folders there
+      // If a valid result is returned, loop through all the files and folders
+      // there
       let fileObjs = []
       for (let i = 0, length = allFiles.length; i < length; i++) {
         const fileObj = allFiles[i]
@@ -419,13 +427,16 @@ class GoogleDriveDataProvider extends Provider {
           contentURI = `https://drive.google.com/open?id=${fileObj.id}`
         } else {
           // Else:
-          // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+          // First check that it is not a Google Doc/Sheet/Slide/Drawing/App
+          // Script
           if (exportMimeType === 'auto') {
-            // If not, then give the web content link (only downloadable by browser)
+            // If not, then give the web content link (only downloadable by
+            // browser)
             contentURI = fileObj.webContentLink
           } else {
             // Else it is a Doc/Sheet/Slide/Drawing/App Script
-            // If the requested export type is in the exportLinks field, return that link
+            // If the requested export type is in the exportLinks field, return
+            // that link
             if (fileObj.exportLinks[exportType]) {
               contentURI = fileObj.exportLinks[exportType]
             } else {
@@ -476,8 +487,8 @@ class GoogleDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://www.googleapis.com/',
       headers: { Authorization: accessToken },
@@ -527,7 +538,8 @@ class GoogleDriveDataProvider extends Provider {
     }
 
     // Query the Drive API
-    // No need to do the pagination thing here, our query is specifically searching for a file
+    // No need to do the pagination thing here, our query is specifically
+    // searching for a file
     const listResult = await instance.get(`/drive/v2/files`, {
       params: {
         q: q,
@@ -553,7 +565,8 @@ class GoogleDriveDataProvider extends Provider {
       const lastModifiedTime = fileObj.modifiedDate // Last time the file or its metadata was changed
       const exportMimeType = getExportTypeForDoc(mimeType)
       let contentURI = null
-      // If the export type is media and it is not a Google Doc/Sheet/Slide/Drawing/App Script, then return a googleapis.com link
+      // If the export type is media and it is not a Google Doc/Sheet/Slide/
+      // Drawing/App Script, then return a googleapis.com link
       if (exportType === 'media' && exportMimeType === 'auto') {
         contentURI = `https://www.googleapis.com/drive/v3/files/${fileObj.id}?alt=media`
       } else if (exportType === 'view') {
@@ -567,7 +580,8 @@ class GoogleDriveDataProvider extends Provider {
           contentURI = fileObj.webContentLink
         } else {
           // Else it is a Doc/Sheet/Slide/Drawing/App Script
-          // If the requested export type is in the exportLinks field, return that link
+          // If the requested export type is in the exportLinks field, return
+          // that link
           if (fileObj.exportLinks[exportType]) {
             contentURI = fileObj.exportLinks[exportType]
           } else {
@@ -604,8 +618,8 @@ class GoogleDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://www.googleapis.com/',
       headers: { Authorization: accessToken },
@@ -653,14 +667,16 @@ class GoogleDriveDataProvider extends Provider {
       mimeType: ((await fileTypes.fromFile(fileMeta.path)) || {}).mime,
     }
 
-    // If there is a lastModifiedTime present, set the file's lastModifiedTime to that
+    // If there is a lastModifiedTime present, set the file's lastModifiedTime
+    // to that
     if (body['lastModifiedTime']) {
       meta['modifiedDate'] = new Date(
         body['lastModifiedTime']
       ).toISOString()
     }
 
-    // First, post the file meta data to let Google Drive know we are posting the file's contents too
+    // First, post the file meta data to let Google Drive know we are posting
+    // the file's contents too
     const driveMetaResult = await instance.post(`/drive/v2/files`, meta)
     // If the operation was successfull, upload the file too
     if (driveMetaResult.data) {
@@ -672,7 +688,8 @@ class GoogleDriveDataProvider extends Provider {
         fs.createReadStream(fileMeta.path)
       )
       if (result.data) {
-        // If the uploaded file is an MS Office file, convert it to a Google Doc/Sheet/Slide
+        // If the uploaded file is an MS Office file, convert it to a Google
+        // Doc/Sheet/Slide
         const importType = getImportTypeForDoc(result.data.mimeType)
         if (importType !== 'auto') {
           // Copy the file in a converted format
@@ -706,13 +723,16 @@ class GoogleDriveDataProvider extends Provider {
             contentURI = `https://drive.google.com/open?id=${fileObj.id}`
           } else {
             // Else:
-            // First check that it is not a Google Doc/Sheet/Slide/Drawing/App Script
+            // First check that it is not a Google Doc/Sheet/Slide/Drawing/App
+            // Script
             if (exportMimeType === 'auto') {
-              // If not, then give the web content link (only downloadable by browser)
+              // If not, then give the web content link (only downloadable by
+              // browser)
               contentURI = fileObj.webContentLink
             } else {
               // Else it is a Doc/Sheet/Slide/Drawing/App Script
-              // If the requested export type is in the exportLinks field, return that link
+              // If the requested export type is in the exportLinks field,
+              // return that link
               if (fileObj.exportLinks[exportType]) {
                 contentURI = fileObj.exportLinks[exportType]
               } else {
@@ -761,8 +781,8 @@ class GoogleDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://www.googleapis.com/',
       headers: { Authorization: accessToken },
@@ -912,8 +932,8 @@ class GoogleDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://www.googleapis.com/',
       headers: { Authorization: accessToken },
