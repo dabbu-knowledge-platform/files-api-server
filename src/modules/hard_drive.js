@@ -147,13 +147,6 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     const fileName = params['fileName']
 
-    // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(
-        `Folder paths must not contain relative paths`
-      )
-    }
-
     // Check if the base path was specified
     if (!basePath) {
       // If not, error out
@@ -162,10 +155,26 @@ class HardDriveDataProvider extends Provider {
       )
     }
 
+    // Don't allow relative paths, let clients do that
+    if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
+      )
+    }
+
     // Check if the folder exists
     if (!(await fs.pathExists(diskPath(basePath, folderPath)))) {
       throw new NotFoundError(
         `Folder ${diskPath(basePath, folderPath)} was not found`
+      )
+    }
+
+    // Check if the file exists
+    if (
+      !(await fs.pathExists(diskPath(basePath, folderPath, fileName)))
+    ) {
+      throw new NotFoundError(
+        `File ${diskPath(basePath, folderPath, fileName)} was not found`
       )
     }
 
@@ -220,18 +229,18 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     const fileName = params['fileName']
 
-    // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(
-        `Folder paths must not contain relative paths`
-      )
-    }
-
     // Check if the base path was specified
     if (!basePath) {
       // If not, error out
       throw new MissingParamError(
         'Expected base path to be part of request body'
+      )
+    }
+
+    // Don't allow relative paths, let clients do that
+    if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
       )
     }
 
@@ -325,18 +334,18 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     let fileName = params['fileName']
 
-    // Don't allow relative paths, let clients do that
-    if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
-      throw new BadRequestError(
-        `Folder paths must not contain relative paths`
-      )
-    }
-
     // Check if the base path was specified
     if (!basePath) {
       // If not, error out
       throw new MissingParamError(
         'Expected base path to be part of request body'
+      )
+    }
+
+    // Don't allow relative paths, let clients do that
+    if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
+      throw new BadRequestError(
+        `Folder paths must not contain relative paths`
       )
     }
 
