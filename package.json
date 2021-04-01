@@ -2,16 +2,16 @@
   "name": "dabbu-files-api-server",
   "version": "1.8.2",
   "description": "An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!",
-  "main": "src/server.js",
+  "main": "src/index.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node src/index.js",
     "clean": "rm -r dist/ && mkdir dist/",
     "format": "npx prettier --write .",
     "check-format": "npx prettier --check .",
-    "prebuild": "npm run check-format",
+    "prebuild": "npm run test",
     "build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
     "ci-build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
-    "test": "echo \"Error: no test specified\"; exit 1"
+    "test": "npm run check-format && ava"
   },
   "repository": {
     "type": "git",
@@ -33,20 +33,37 @@
     "multer": "^1.4.2"
   },
   "devDependencies": {
+    "ava": "^3.15.0",
     "pkg": "^4.5.1",
-    "prettier": "2.2.1"
+    "prettier": "2.2.1",
+    "form-data": "^4.0.0"
   },
-  "bin": "src/server.js",
+  "bin": "src/index.js",
   "pkg": {
     "scripts": [
       "src/**/*"
     ],
     "assets": [
-      "node_modules/**/*"
+      "node_modules/**/*",
+      "!node_modules/ava/**/*",
+      "!node_modules/pkg/**/*",
+      "!node_modules/pkg-fetch/**/*",
+      "!node_modules/prettier/**/*",
+      "!node_modules/form-data/**/*"
     ]
   },
   "engines": {
     "node": "14.16.0",
     "npm": "6.14.11"
+  },
+  "ava": {
+    "files": [
+      "tests/**/*"
+    ],
+    "verbose": true,
+    "nodeArguments": [
+      "--trace-deprecation",
+      "--napi-modules"
+    ]
   }
 }

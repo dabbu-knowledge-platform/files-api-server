@@ -51,7 +51,7 @@ Once you've built the project locally, you're ready to start making changes!
 
 ### Step 3: Branch
 
-To keep your development environment organized, create local branches to hold your work. These should be branched directly off of the `main` branch. While naming branches, try to name it according to the bug it fixes or the feature it adds. Also prefix the branch with the type of change it is making. Here is a list of common prefixes:
+To keep your development environment organized, create local branches to hold your work. These should be branched directly off of the `develop` branch. While naming branches, try to name it according to the bug it fixes or the feature it adds. Also prefix the branch with the type of change it is making. Here is a list of common prefixes:
 
 - `fix/`: A bug fix
 - `feature/`: A new feature
@@ -63,7 +63,7 @@ To keep your development environment organized, create local branches to hold yo
 - `build/`: Bumping a dependency like node or express
 
 ```sh
-$ git checkout -b feature/add-awesome-new-feature -t upstream/main
+$ git checkout -b feature/add-awesome-new-feature -t upstream/develop
 ```
 
 ### Step 4: Code
@@ -125,18 +125,22 @@ See [conventionalcommits.org](https://conventionalcommits.org) for more details.
 
 ### Step 6: Rebase
 
-Once you have committed your changes, it is a good idea to use `git rebase` (NOT `git merge`) to synchronize your work with the main repository.
+Once you have committed your changes, it is a good idea to use `git rebase` (NOT `git merge`) to synchronize your work with the develop branch.
 
 ```sh
 $ git fetch upstream
-$ git rebase upstream/main
+$ git rebase upstream/develop
 ```
 
-This ensures that your working branch has the latest changes from `dabbu-knowledge-platform/files-api-server` main.
+This ensures that your working branch has the latest changes from `dabbu-knowledge-platform/files-api-server` develop.
 
 ### Step 7: Test
 
-Bug fixes and features should always come with tests. Please test your own code adequately. Also, before finally pushing your code, clone it into a fresh environment (different user or maybe a different computer) and make sure it works just as fine. Make sure you test the executables in the `dist/` directory.
+Please ensure that all changes/additions come with tests. All PRs must have tests unless the maintainer says the PR is text-exempt.
+
+If you are adding a new module, add the tests for that module in the `tests/module_tests/<provider id>_test.js`. If you added a utility function, add a test for it in `tests/utils_test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server_test.js`.
+
+All existing and added tests **MUST** pass for the PR to land. If existing tests are already breaking on the `develop` branch, ensure that no additional tests break due to your changes. Note that **no PRs will be merged until the tests on the `develop` branch are fixed and all of them are passed**.
 
 ### Step 8: Document
 
@@ -174,12 +178,12 @@ Feel free to post a comment in the pull request to ping reviewers if you are awa
 
 **Approval and Request Changes Workflow**
 
-All pull requests require approval from contributors in order to land. Whenever a maintainer reviews a pull request they may request changes. These may be small, such as fixing a typo, or may involve substantive changes. Such requests are intended to be helpful, but at times may come across as abrupt or unhelpful, especially if they do not include concrete suggestions on _how_ to change them.
+All pull requests require approval from at least one maintainer in order to land. Whenever a maintainer reviews a pull request they may request changes. These may be small, such as fixing a typo, or may involve substantive changes. Such requests are intended to be helpful, but at times may come across as abrupt or unhelpful, especially if they do not include concrete suggestions on _how_ to change them.
 
 Try not to be discouraged. Try asking the maintainer for advice on how to implement it. If you feel that a review is unfair, say so or seek the input of another project contributor. Often such comments are the result of a reviewer having taken insufficient time to review and are not ill-intended. Such difficulties can often be resolved with a bit of patience. That said, reviewers should be expected to provide helpful feedback.
 
 ### Step 12: Landing
 
-In order to land, a pull request needs to be reviewed and approved by at least one contributor. After that, if there are no objections from other contributors, the pull request can be merged.
+In order to land, a pull request needs to be reviewed and approved by at least one maintainer. After that, if there are no objections from other contributors, the pull request can be merged.
 
 **Congratulations and thanks a lot for your contribution!**
