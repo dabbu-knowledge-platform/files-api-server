@@ -136,11 +136,11 @@ This ensures that your working branch has the latest changes from `dabbu-knowled
 
 ### Step 7: Test
 
-Bug fixes and features should always come with tests. Please ensure that all changes/additions come with tests. All PRs must have tests unless the maintainer says the PR is text-exempt.
+Please ensure that all changes/additions come with tests. All PRs must have tests unless the maintainer says the PR is text-exempt.
 
-If you are adding a new module, add the tests for that module in the `tests/module_tests/`. If you added a utility function, add a test for it in `tests/utils_test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server_test.js`.
+If you are adding a new module, add the tests for that module in the `tests/module_tests/<provider id>_test.js`. If you added a utility function, add a test for it in `tests/utils_test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server_test.js`.
 
-All existing and added tests **MUST** pass for the PR to land. If existing tests are already breaking on the `develop` branch, ensure that no additional tests break due to your changes. Note that **no PRs will be merged until the tests on the `develop` branch pass first**.
+All existing and added tests **MUST** pass for the PR to land. If existing tests are already breaking on the `develop` branch, ensure that no additional tests break due to your changes. Note that **no PRs will be merged until the tests on the `develop` branch are fixed and all of them are passed**.
 
 ### Step 8: Document
 
