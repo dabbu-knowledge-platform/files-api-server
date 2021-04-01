@@ -18,7 +18,7 @@
 // MARK: Imports
 
 // Import the functions
-const { cachePath, diskPath, sortFiles } = require('../src/utils.js')
+const {cachePath, diskPath, sortFiles} = require('../src/utils.js')
 // Library to run tests
 const test = require('ava')
 
@@ -26,30 +26,30 @@ const test = require('ava')
 
 // The actual tests using ava
 
-test('test cache path creation', async (t) => {
-  t.is(
-    cachePath('folder-name/new file:with weird-chars'),
-    `http://localhost:8080/files-api/v1/internal/cache/folder-name%2Fnew%20file%3Awith%20weird-chars`
-  )
+test('test cache path creation', t => {
+	t.is(
+		cachePath('folder-name/new file:with weird-chars'),
+		'http://localhost:8080/files-api/v1/internal/cache/folder-name%2Fnew%20file%3Awith%20weird-chars'
+	)
 })
 
-test('test path resolving function', async (t) => {
-  t.is(
-    diskPath(
-      '/',
-      'folder 1',
-      '..',
-      'folder-2',
-      '.',
-      '..',
-      'one to go folder',
-      'final-folder'
-    ),
-    '/one to go folder/final-folder'
-  )
+test('test path resolving function', t => {
+	t.is(
+		diskPath(
+			'/',
+			'folder 1',
+			'..',
+			'folder-2',
+			'.',
+			'..',
+			'one to go folder',
+			'final-folder'
+		),
+		'/one to go folder/final-folder'
+	)
 })
 
-test('test sorting function', async (t) => {
-  // TODO: Test sorting function
-  t.pass()
+test('test sorting function', t => {
+	// TODO: Test sorting function
+	t.pass()
 })

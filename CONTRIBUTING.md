@@ -68,11 +68,11 @@ $ git checkout -b feature/add-awesome-new-feature -t upstream/develop
 
 ### Step 4: Code
 
-To get a decent idea of how the code is organised and what happens where, the code is heavily commented to allow you to understand exactly what happens. Remember to always format the code using `prettier` once you're done.
+To get a decent idea of how the code is organised and what happens where, the code is heavily commented to allow you to understand exactly what happens. Remember to always format the code using `xo` once you're done.
 
 To test a change without building the executables, you can type `npm start` and it will run the server directly. Use an HTTP client like `httpie` or `postman` to test the API.
 
-To check if the code is formatted correctly, run `npm run check-format`. To format the code using prettier, run `npm run format`.
+To check if the code is formatted correctly, run `npm test`. To format the code using `xo`, run `npm run format`.
 
 ### Step 5: Commit
 
