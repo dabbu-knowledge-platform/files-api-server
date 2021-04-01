@@ -22,7 +22,7 @@ const fs = require('fs-extra')
 // Used to detect mime types based on file content
 const fileTypes = require('file-type')
 // Used to make HTTP request to the Google Drive API endpoints
-const axios = require('axios')
+const axios = require('axios').default
 
 // Custom errors we throw
 const { BadRequestError, UnauthorizedError } = require('../errors.js')
@@ -48,8 +48,8 @@ class OneDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://graph.microsoft.com/v1.0/',
       headers: { Authorization: accessToken },
@@ -183,8 +183,8 @@ class OneDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://graph.microsoft.com/v1.0/',
       headers: { Authorization: accessToken },
@@ -279,8 +279,8 @@ class OneDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://graph.microsoft.com/v1.0/',
       headers: { Authorization: accessToken },
@@ -421,8 +421,8 @@ class OneDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://graph.microsoft.com/v1.0/',
       headers: { Authorization: accessToken },
@@ -589,8 +589,8 @@ class OneDriveDataProvider extends Provider {
     if (!accessToken) {
       throw new UnauthorizedError(`No access token specified`)
     }
-    // Create an axios instance with the header. All requests will be made with this
-    // instance so the headers will be present everywhere
+    // Create an axios instance with the header. All requests will be made with
+    // this instance so the headers will be present everywhere
     const instance = axios.create({
       baseURL: 'https://graph.microsoft.com/v1.0/',
       headers: { Authorization: accessToken },

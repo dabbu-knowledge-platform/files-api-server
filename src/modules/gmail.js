@@ -20,7 +20,7 @@
 // Used to store the files generated from a thread
 const fs = require('fs-extra')
 // Used to make HTTP request to the Google Drive API endpoints
-const axios = require('axios')
+const axios = require('axios').default
 // Used to bundle threads with attachments into zips
 const archiver = require('archiver')
 
@@ -279,8 +279,8 @@ async function createMailDataURI(instance, threadData) {
           ` - size: ${attachment.size}\n`,
         ].join('\n')
         // Then fetch the attachment
-        // Surround in try-catch block as we don't want one failed result to kill
-        // the entire operation
+        // Surround in try-catch block as we don't want one failed result to
+        // kill the entire operation
         try {
           // Get the attachment as a base64 encoded string
           const attachmentResult = await instance.get(
@@ -319,8 +319,8 @@ async function createMailDataURI(instance, threadData) {
           ` - size: ${attachment.size}\n`,
         ].join('\n')
         // Then fetch the attachment
-        // Surround in try-catch block as we don't want one failed result to kill
-        // the entire operation
+        // Surround in try-catch block as we don't want one failed result to
+        // kill the entire operation
         try {
           // Get the attachment as a base64 encoded string
           const attachmentResult = await instance.get(

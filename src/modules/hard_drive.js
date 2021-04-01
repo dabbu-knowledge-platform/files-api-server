@@ -46,6 +46,7 @@ class HardDriveDataProvider extends Provider {
   async list(body, headers, params, queries) {
     // Get the base path provided in the request body
     const basePath = body['base_path']
+    // Check if the base path exists
     if (!basePath) {
       // If it doesn't exist, error out
       throw new MissingParamError(
@@ -146,6 +147,14 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     const fileName = params['fileName']
 
+    // Check if the base path was specified
+    if (!basePath) {
+      // If not, error out
+      throw new MissingParamError(
+        'Expected base path to be part of request body'
+      )
+    }
+
     // Don't allow relative paths, let clients do that
     if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
       throw new BadRequestError(
@@ -157,6 +166,15 @@ class HardDriveDataProvider extends Provider {
     if (!(await fs.pathExists(diskPath(basePath, folderPath)))) {
       throw new NotFoundError(
         `Folder ${diskPath(basePath, folderPath)} was not found`
+      )
+    }
+
+    // Check if the file exists
+    if (
+      !(await fs.pathExists(diskPath(basePath, folderPath, fileName)))
+    ) {
+      throw new NotFoundError(
+        `File ${diskPath(basePath, folderPath, fileName)} was not found`
       )
     }
 
@@ -211,6 +229,14 @@ class HardDriveDataProvider extends Provider {
     // Get the file name in the URL
     const fileName = params['fileName']
 
+    // Check if the base path was specified
+    if (!basePath) {
+      // If not, error out
+      throw new MissingParamError(
+        'Expected base path to be part of request body'
+      )
+    }
+
     // Don't allow relative paths, let clients do that
     if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
       throw new BadRequestError(
@@ -237,21 +263,25 @@ class HardDriveDataProvider extends Provider {
       )
     }
 
-    // `fileMeta` is passed to us by multer, and contains the path, size and mime type of the file
-    // uploaded. Move the file from that path to the specified one.
-    await fs.move(
-      fileMeta.path,
-      diskPath(basePath, folderPath, fileName)
-    )
+    // `fileMeta` is passed to us by multer, and contains the path, size and
+    // mime type of the file uploaded.
 
-    // Check if the user passed fields to set values in
+    // First check if the user passed fields to set values in
     // We can only set lastModifiedTime (mtime), not createAtTime
+    // We do this before moving the file as we don't know what permissions are
+    // required to change file metadata in the location specified
     if (body['lastModifiedTime']) {
       // Convert it to a date object
       const mtime = new Date(body['lastModifiedTime'])
       // Set the lastModifiedTime
       await fs.utimes(fileMeta.path, mtime, mtime)
     }
+
+    // Move the file from that path to the specified one.
+    await fs.move(
+      fileMeta.path,
+      diskPath(basePath, folderPath, fileName)
+    )
 
     // Now return a file object for the newly created file
     const statistics = await fs.stat(
@@ -303,6 +333,14 @@ class HardDriveDataProvider extends Provider {
     let folderPath = params['folderPath'].replace(basePath, '')
     // Get the file name in the URL
     let fileName = params['fileName']
+
+    // Check if the base path was specified
+    if (!basePath) {
+      // If not, error out
+      throw new MissingParamError(
+        'Expected base path to be part of request body'
+      )
+    }
 
     // Don't allow relative paths, let clients do that
     if ([basePath, folderPath].join('/').indexOf('/..') !== -1) {
@@ -416,6 +454,14 @@ class HardDriveDataProvider extends Provider {
     const folderPath = params['folderPath'].replace(basePath, '')
     // Get the file name in the URL
     const fileName = params['fileName']
+
+    // Check if the base path was specified
+    if (!basePath) {
+      // If not, error out
+      throw new MissingParamError(
+        'Expected base path to be part of request body'
+      )
+    }
 
     if (folderPath && fileName) {
       // If there is a file name provided, delete the file

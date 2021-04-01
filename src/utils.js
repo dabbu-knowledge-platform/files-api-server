@@ -28,7 +28,8 @@ const { BadRequestError } = require('./errors.js')
 // Print out an informational message
 exports.info = (message) => {
   const date = new Date().toISOString()
-  console.log(` INFO  | ${date} | ${message}`)
+  if (!process.env.DO_NOT_LOG_TO_CONSOLE)
+    console.log(` INFO  | ${date} | ${message}`)
   let stream = fs.createWriteStream(`./_dabbu/files_api_server.log`, {
     flags: 'a',
   })
@@ -37,10 +38,11 @@ exports.info = (message) => {
 }
 
 // Print out a provider log
-exports.log = (provider, message) => {
+exports.debug = (provider, message) => {
   if (process.env.debug || process.env.DEBUG) {
     const date = new Date().toISOString()
-    console.log(` DEBUG  | ${date} | ${provider} | ${message}`)
+    if (!process.env.DO_NOT_LOG_TO_CONSOLE)
+      console.log(` DEBUG  | ${date} | ${provider} | ${message}`)
     let stream = fs.createWriteStream(`./_dabbu/files_api_server.log`, {
       flags: 'a',
     })
@@ -52,7 +54,8 @@ exports.log = (provider, message) => {
 // Print out an error
 exports.error = (err) => {
   const date = new Date().toISOString()
-  console.log(` ERROR | ${date} | ${this.json(err)}`)
+  if (!process.env.DO_NOT_LOG_TO_CONSOLE)
+    console.log(` ERROR | ${date} | ${this.json(err, true)}`)
   let stream = fs.createWriteStream(`./_dabbu/files_api_server.log`, {
     flags: 'a',
   })
@@ -238,6 +241,6 @@ exports.sortFiles = (
 
 exports.cachePath = (filePath) => {
   return `http://localhost:${
-    process.argv.slice(2)[1] || 8080
+    process.argv.DABBU_FILES_API_SERVER_PORT || 8080
   }/files-api/v1/internal/cache/${encodeURIComponent(filePath)}`
 }
