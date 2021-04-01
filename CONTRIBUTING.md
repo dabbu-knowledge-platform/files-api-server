@@ -51,10 +51,19 @@ Once you've built the project locally, you're ready to start making changes!
 
 ### Step 3: Branch
 
-To keep your development environment organized, create local branches to hold your work. These should be branched directly off of the `main` branch. While naming branches, try to name it according to the bug it fixes or the feature it adds.
+To keep your development environment organized, create local branches to hold your work. These should be branched directly off of the `main` branch. While naming branches, try to name it according to the bug it fixes or the feature it adds. Also prefix the branch with the type of change it is making. Here is a list of common prefixes:
+
+- `fix/`: A bug fix
+- `feature/`: A new feature
+- `docs/`: Documentation changes
+- `perf/`: A code change that improves performance
+- `refactor/`: A code change that neither fixes a bug nor adds a feature
+- `test/`: A change to the tests
+- `style/`: Changes that do not affect the meaning of the code (linting)
+- `build/`: Bumping a dependency like node or express
 
 ```sh
-$ git checkout -b add-awesome-new-feature -t upstream/main
+$ git checkout -b feature/add-awesome-new-feature -t upstream/main
 ```
 
 ### Step 4: Code
@@ -96,8 +105,9 @@ Common prefixes:
 - `docs`: Documentation changes
 - `perf`: A code change that improves performance
 - `refactor`: A code change that neither fixes a bug nor adds a feature
+- `test`: A change to the tests
 - `style`: Changes that do not affect the meaning of the code (linting)
-- `vendor`: Bumping a dependency like node or express
+- `build`: Bumping a dependency like node or express
 
 Other things to keep in mind when writing a commit message:
 
@@ -115,7 +125,7 @@ See [conventionalcommits.org](https://conventionalcommits.org) for more details.
 
 ### Step 6: Rebase
 
-Once you have committed your changes, it is a good idea to use `git rebase` (_NOT `git merge`_) to synchronize your work with the main repository.
+Once you have committed your changes, it is a good idea to use `git rebase` (NOT `git merge`) to synchronize your work with the main repository.
 
 ```sh
 $ git fetch upstream
@@ -139,7 +149,7 @@ Make sure all the changes you make are in accordance with the [Files API Specifi
 Once you have documented your code as required, begin the process of opening a pull request by pushing your working branch to your fork on GitHub.
 
 ```sh
-$ git push origin add-awesome-new-feature
+$ git push origin feature/add-awesome-new-feature
 ```
 
 ### Step 10: Opening the Pull Request
@@ -155,10 +165,10 @@ To make changes to an existing pull request, make the changes to your local bran
 ```sh
 $ git add my/changed/files
 $ git commit
-$ git push origin add-awesome-new-feature
+$ git push origin feature/add-awesome-new-feature
 ```
 
-There are a number of more advanced mechanisms for managing commits using `git rebase` that can be used, but are beyond the scope of this guide.
+There are a number of more advanced mechanisms for managing commits using `git rebase` that can be used, but are beyond the scope of this guide. Also, any branch that is being merged must be merged without fast forward, i.e., `git merge --no-ff ...`.
 
 Feel free to post a comment in the pull request to ping reviewers if you are awaiting an answer on something.
 
