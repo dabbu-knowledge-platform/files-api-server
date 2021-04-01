@@ -49,7 +49,7 @@ exports.UnauthorizedError = class UnauthorizedError extends (
   this.GeneralError
 ) {
   constructor(message) {
-    super(403, message, 'unauthorized')
+    super(401, message, 'unauthorized')
   }
 }
 // 404 not found
