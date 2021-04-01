@@ -3,4 +3,4 @@ creds/
 dist/
 _dabbu/
 .git/
-.heroku*
+.heroku/

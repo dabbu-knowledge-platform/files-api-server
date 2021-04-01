@@ -23,40 +23,50 @@ const app = require('./app.js')
 // Extended file system library
 const fs = require('fs-extra')
 // Logging methods and utils
-const { info } = require('./utils.js')
+const {info} = require('./utils.js')
 
 // Parse the command line arguments and run the server
 async function main() {
-  let port = 8080
-  let enabledProviders = []
-  // Get the command line args
-  const args = process.argv.slice(2)
-  // Check if there are any command line options the user has given
-  if (args.length > 0) {
-    // Check if the port has been mentioned
-    if (args[0]) port = args[0]
-    // If there are any more, take them as providers
-    if (args.length > 1) enabledProviders = args.slice(1)
-  }
+	let port = 8080
+	let enabledProviders = []
+	// Get the command line args
+	const args = process.argv.slice(2)
+	// Check if there are any command line options the user has given
+	if (args.length > 0) {
+		// Check if the port has been mentioned
+		if (args[0]) {
+			port = args[0]
+		}
 
-  // Initialise the server on the given port with the specified providers
-  const server = await app(port, enabledProviders)
-  // Allow server ouput
-  process.env.DO_NOT_LOG_TO_CONSOLE = false
-  // Once it starts, print out the server version and the port it's running on
-  info(`Dabbu Files API Server v${require('../package.json').version}`)
-  info(`Server listening on port ${port}`)
+		// If there are any more, take them as providers
+		if (args.length > 1) {
+			enabledProviders = args.slice(1)
+		}
+	}
 
-  // When the user presses CTRL+C, gracefully exit
-  process.on('SIGINT', () => {
-    info('SIGINT signal received: closing Dabbu Files API Server')
-    // Delete the .cache directory
-    fs.remove(`./_dabbu/_server/`) // Delete the .cache directory
-      .then(() => info('Removed cache. Exiting..'))
-      .then(() => server.close()) // Call close on the server created when we called app.listen
-      .then(() => info('Server closed'))
-      .finally(() => process.exit(0))
-  })
+	// Initialise the server on the given port with the specified providers
+	const server = await app(port, enabledProviders)
+	// Allow server ouput
+	process.env.DO_NOT_LOG_TO_CONSOLE = false
+	// Once it starts, print out the server version and the port it's running on
+	info(`Dabbu Files API Server v${require('../package.json').version}`)
+	info(`Server listening on port ${port}`)
+
+	// When the user presses CTRL+C, gracefully exit
+	process.on('SIGINT', async () => {
+		// Acknowledge the SIGINT
+		info('SIGINT signal received: closing Dabbu Files API Server')
+		// Delete the .cache directory
+		await fs.remove('./_dabbu/_server/')
+		// Tell the user
+		info('Removed cache. Exiting..')
+		// Call close on the server created when we called app.listen
+		server.close()
+		// Tell the user
+		info('Server closed')
+		// Exit
+		process.exit(0)
+	})
 }
 
 main()

@@ -31,23 +31,23 @@ const FormData = require('form-data')
 // MARK: Environment setup
 
 // Initialise the server before running the tests
-test.before(async (t) => {
-  // Disable server output
-  process.env.DO_NOT_LOG_TO_CONSOLE = true
-  // Specify the enabled providers and then create the server
-  const server = await app(
-    0 /* 0 means it will assign a random port */,
-    ['gmail'] /* enable only gmail */
-  )
+test.before(async t => {
+	// Disable server output
+	process.env.DO_NOT_LOG_TO_CONSOLE = true
+	// Specify the enabled providers and then create the server
+	const server = await app(
+		0 /* 0 means it will assign a random port */,
+		['gmail'] /* Enable only gmail */
+	)
 
-  // Get the port the server was assigned to
-  let port = server.address().port
-  // The server URL
-  t.context.serverUrl = `http://localhost:${port}`
-  // The API URL
-  t.context.apiUrl = `http://localhost:${port}/files-api/v1`
+	// Get the port the server was assigned to
+	const {port} = server.address()
+	// The server URL
+	t.context.serverUrl = `http://localhost:${port}`
+	// The API URL
+	t.context.apiUrl = `http://localhost:${port}/files-api/v1`
 
-  // TODO: Get access token
+	// TODO: Get access token
 })
 
 // MARK: Tests
@@ -55,33 +55,33 @@ test.before(async (t) => {
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
 
-test('making a request without authorization header should throw an error', async (t) => {
-  // List request
-  const listError = await t.throwsAsync(
-    axios.get(`${t.context.apiUrl}/data/gmail/%2Funknown-label/`)
-  )
-  t.is(listError?.response?.data?.code, 401)
-  t.is(listError?.response?.data?.error?.reason, 'unauthorized')
+test('making a request without authorization header should throw an error', async t => {
+	// List request
+	const listError = await t.throwsAsync(
+		axios.get(`${t.context.apiUrl}/data/gmail/%2Funknown-label/`)
+	)
+	t.is(listError?.response?.data?.code, 401)
+	t.is(listError?.response?.data?.error?.reason, 'unauthorized')
 
-  // Read request
-  const getError = await t.throwsAsync(
-    axios.get(
-      `${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`
-    )
-  )
-  t.is(getError?.response?.data?.code, 401)
-  t.is(getError?.response?.data?.error?.reason, 'unauthorized')
+	// Read request
+	const getError = await t.throwsAsync(
+		axios.get(
+			`${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`
+		)
+	)
+	t.is(getError?.response?.data?.code, 401)
+	t.is(getError?.response?.data?.error?.reason, 'unauthorized')
 
-  // NOTE: The gmail provider does not yet support create and update requests
+	// NOTE: The gmail provider does not yet support create and update requests
 
-  // Delete request
-  const deleteError = await t.throwsAsync(
-    axios.delete(
-      `${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`
-    )
-  )
-  t.is(deleteError?.response?.data?.code, 401)
-  t.is(deleteError?.response?.data?.error?.reason, 'unauthorized')
+	// Delete request
+	const deleteError = await t.throwsAsync(
+		axios.delete(
+			`${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`
+		)
+	)
+	t.is(deleteError?.response?.data?.code, 401)
+	t.is(deleteError?.response?.data?.error?.reason, 'unauthorized')
 })
 
 // TODO: Add more tests for LIST, GET and DELETE

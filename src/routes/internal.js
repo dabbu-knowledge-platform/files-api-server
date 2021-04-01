@@ -15,40 +15,43 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* eslint promise/prefer-await-to-then: 0 */
+
 // MARK: Imports
 
 // Express JS, the library used to run the server and respond to HTTP requests
 const express = require('express')
 
 // Custom errors we throw
-const { BadRequestError } = require('../errors.js')
+const {BadRequestError} = require('../errors.js')
 // Logging methods and utils
-const { info, json } = require('../utils.js')
+const {info, json} = require('../utils.js')
 
 // MARK: Config and Globals
 
 // Define the router object, which we will add our routes to
+// eslint-disable-next-line new-cap
 const router = express.Router()
 
 // MARK: Routes
 
 // Retrieve a file/folder from cache
-router.get(`/cache/:filePath`, (req, res, next) => {
-  info(
-    `(Cache) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
+router.get('/cache/:filePath', (request, response, next) => {
+	info(
+		`(Cache) Get request called with params: ${json(
+			request.params
+		)} and queries: ${json(request.query)}`
+	)
 
-  // Don't allow relative paths, else they will be able to access the rest of the file system
-  if (req.params.filePath.includes('/..')) {
-    throw new BadRequestError(
-      'File paths must not contain relative paths'
-    )
-  }
+	// Don't allow relative paths, else they will be able to access the rest of the file system
+	if (request.params.filePath.includes('/..')) {
+		throw new BadRequestError(
+			'File paths must not contain relative paths'
+		)
+	}
 
-  // Stream the file back
-  res.download(`./_dabbu/_server/${req.params.filePath}`)
+	// Stream the file back
+	response.download(`./_dabbu/_server/${request.params.filePath}`)
 })
 
 // MARK: Exports

@@ -18,46 +18,46 @@
 // MARK: Imports
 
 // Custom error to return
-const { NotImplementedError } = require('../errors.js')
+const {NotImplementedError} = require('../errors.js')
 
 // MARK: Provider
 
 // Default Provider class to be extended by all custom providers
 class Provider {
-  // Default list function, throws a NotImplementedError
-  async list(body, headers, params, queries) {
-    throw new NotImplementedError(
-      `The provider ${params['providerId']} does not support LIST requests`
-    )
-  }
+	// Default list function, throws a NotImplementedError
+	async list(body, headers, parameters, queries) {
+		throw new NotImplementedError(
+			`The provider ${parameters.providerId} does not support LIST requests`
+		)
+	}
 
-  // Default read function, throws a NotImplementedError
-  async read(body, headers, params, queries) {
-    throw new NotImplementedError(
-      `The provider ${params['providerId']} does not support GET requests`
-    )
-  }
+	// Default read function, throws a NotImplementedError
+	async read(body, headers, parameters, queries) {
+		throw new NotImplementedError(
+			`The provider ${parameters.providerId} does not support GET requests`
+		)
+	}
 
-  // Default create function, throws a NotImplementedError
-  async create(body, headers, params, queries, fileMeta) {
-    throw new NotImplementedError(
-      `The provider ${params['providerId']} does not support CREATE requests`
-    )
-  }
+	// Default create function, throws a NotImplementedError
+	async create(body, headers, parameters, queries, fileMeta) {
+		throw new NotImplementedError(
+			`The provider ${parameters.providerId} does not support CREATE requests`
+		)
+	}
 
-  // Default update function, throws a NotImplementedError
-  async update(body, headers, params, queries, fileMeta) {
-    throw new NotImplementedError(
-      `The provider ${params['providerId']} does not support UPDATE requests`
-    )
-  }
+	// Default update function, throws a NotImplementedError
+	async update(body, headers, parameters, queries, fileMeta) {
+		throw new NotImplementedError(
+			`The provider ${parameters.providerId} does not support UPDATE requests`
+		)
+	}
 
-  // Default delete function, throws a NotImplementedError
-  async delete(body, headers, params, queries) {
-    throw new NotImplementedError(
-      `The provider ${params['providerId']} does not support DELETE requests`
-    )
-  }
+	// Default delete function, throws a NotImplementedError
+	async delete(body, headers, parameters, queries) {
+		throw new NotImplementedError(
+			`The provider ${parameters.providerId} does not support DELETE requests`
+		)
+	}
 }
 
 // MARK: Export
