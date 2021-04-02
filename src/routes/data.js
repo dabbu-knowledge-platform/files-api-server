@@ -63,10 +63,10 @@ router.get('/:providerId/:folderPath', (request, response, next) => {
 	// Execute the list function of the provider and return the response or error.
 	new Module()
 		.list(request.body, request.headers, request.params, request.query)
-		.then((response) => {
+		.then((result) => {
 			response.status(200).json({
 				code: 200,
-				content: response // Send it back with a 200 response code
+				content: result // Send it back with a 200 response code
 			})
 		})
 		.catch((error_) => {
@@ -96,10 +96,10 @@ router.get('/:providerId/:folderPath/:fileName', (request, response, next) => {
 	// Execute the read function of the provider and return the response or error.
 	new Module()
 		.read(request.body, request.headers, request.params, request.query)
-		.then((response) => {
+		.then((result) => {
 			response.status(200).json({
 				code: 200,
-				content: response // Send it back with a 200 response code
+				content: result // Send it back with a 200 response code
 			})
 		})
 		.catch((error_) => {
@@ -138,10 +138,10 @@ router.post(
 				request.query,
 				request.file
 			)
-			.then((response) => {
+			.then((result) => {
 				response.status(201).json({
 					code: 201,
-					content: response // Send it back with a 200 response code
+					content: result // Send it back with a 200 response code
 				})
 			})
 			.catch((error_) => {
@@ -181,10 +181,10 @@ router.put(
 				request.query,
 				request.file
 			)
-			.then((response) => {
+			.then((result) => {
 				response.status(200).json({
 					code: 200,
-					content: response // Send it back with a 200 response code
+					content: result // Send it back with a 200 response code
 				})
 			})
 			.catch((error_) => {
@@ -217,7 +217,7 @@ router.delete(
 		// Execute the delete function of the provider and return the response or error.
 		new Module()
 			.delete(request.body, request.headers, request.params, request.query)
-			.then((response) => {
+			.then((result) => {
 				response.sendStatus(204) // Send back a 200 response code
 			})
 			.catch((error_) => {
