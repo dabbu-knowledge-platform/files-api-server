@@ -133,6 +133,7 @@ jobs:
         with:
           body_path: CHANGELOG.md
           tag_name: ${{ steps.generate-changelog.outputs.version }}
+          prerelease: ${{ startsWith(github.ref, 'refs/head/develop') }}
           name: Dabbu Files API Server ${{ steps.generate-changelog.outputs.version }}
           files: |
             files-api-server-alpine
