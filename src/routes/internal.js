@@ -45,9 +45,7 @@ router.get('/cache/:filePath', (request, response, next) => {
 
 	// Don't allow relative paths, else they will be able to access the rest of the file system
 	if (request.params.filePath.includes('/..')) {
-		throw new BadRequestError(
-			'File paths must not contain relative paths'
-		)
+		throw new BadRequestError('File paths must not contain relative paths')
 	}
 
 	// Stream the file back

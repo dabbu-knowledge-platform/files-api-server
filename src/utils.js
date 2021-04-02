@@ -26,7 +26,7 @@ const {BadRequestError} = require('./errors.js')
 // MARK: Functions
 
 // Print out an informational message
-exports.info = message => {
+exports.info = (message) => {
 	const date = new Date().toISOString()
 	if (!process.env.DO_NOT_LOG_TO_CONSOLE) {
 		console.log(` INFO  | ${date} | ${message}`)
@@ -56,7 +56,7 @@ exports.debug = (provider, message) => {
 }
 
 // Print out an error
-exports.error = error => {
+exports.error = (error) => {
 	const date = new Date().toISOString()
 	if (!process.env.DO_NOT_LOG_TO_CONSOLE) {
 		console.log(` ERROR | ${date} | ${this.json(error, true)}`)
@@ -116,9 +116,7 @@ exports.sortFiles = (
 	}
 
 	if (operator && !possibleOps.includes(operator)) {
-		throw new BadRequestError(
-			`Operator ${operator} is not a valid operator`
-		)
+		throw new BadRequestError(`Operator ${operator} is not a valid operator`)
 	}
 
 	if (orderBy && !possibleFields.has(orderBy)) {
@@ -128,9 +126,7 @@ exports.sortFiles = (
 	}
 
 	if (direction && !possibleDirs.includes(direction)) {
-		throw new BadRequestError(
-			`Direction ${direction} is not a valid direction`
-		)
+		throw new BadRequestError(`Direction ${direction} is not a valid direction`)
 	}
 
 	// Create a new array in which to store the filtered and sorted array
@@ -139,7 +135,7 @@ exports.sortFiles = (
 	// Check if we have to compare something
 	if (compareWith) {
 		if (value && operator) {
-			sortedFiles = sortedFiles.filter(file => {
+			sortedFiles = sortedFiles.filter((file) => {
 				// Cast the value and field appropriately
 				let autoCastField = file[compareWith]
 				let autoCastValue = value
@@ -148,11 +144,9 @@ exports.sortFiles = (
 				// is < or >
 				// For path, convert it to length of the path
 				if (compareWith === 'path') {
-					autoCastField = this.diskPath(
-						file[compareWith].split('/')
-					).split('/').length
-					autoCastValue = this.diskPath(value.split('/')).split('/')
+					autoCastField = this.diskPath(file[compareWith].split('/')).split('/')
 						.length
+					autoCastValue = this.diskPath(value.split('/')).split('/').length
 				}
 
 				// For mime type, ideally should check only for equality, but leaving it
@@ -202,50 +196,46 @@ exports.sortFiles = (
 			// If it is a name or kind, compare it lexographically
 			// Use the same for mimeType and contentURI, even
 			// though they are fields that shouldn't be used to order
-			if (
-				orderBy === 'name' ||
-        orderBy === 'kind' ||
-        orderBy === 'mimeType'
-			) {
-				return direction === 'desc' ?
-					file1[orderBy].localeCompare(file2[orderBy]) :
-					file2[orderBy].localeCompare(file1[orderBy])
+			if (orderBy === 'name' || orderBy === 'kind' || orderBy === 'mimeType') {
+				return direction === 'desc'
+					? file1[orderBy].localeCompare(file2[orderBy])
+					: file2[orderBy].localeCompare(file1[orderBy])
 			}
 
 			if (orderBy === 'path') {
 				// For path, convert it to length of the path
-				return direction === 'desc' ?
-					(this.diskPath(file1[orderBy].split('/')).split('/').length >
-            this.diskPath(file2[orderBy].split('/')).split('/').length ?
-						-1 :
-						1) :
-					(this.diskPath(file2[orderBy].split('/')).split('/').length >
-            this.diskPath(file1[orderBy].split('/')).split('/').length ?
-						-1 :
-						1)
+				return direction === 'desc'
+					? this.diskPath(file1[orderBy].split('/')).split('/').length >
+					  this.diskPath(file2[orderBy].split('/')).split('/').length
+						? -1
+						: 1
+					: this.diskPath(file2[orderBy].split('/')).split('/').length >
+					  this.diskPath(file1[orderBy].split('/')).split('/').length
+					? -1
+					: 1
 			}
 
 			if (orderBy === 'size') {
 				// For size, make both numbers
 				// Use Number() instead of parseInt(), it's faster
-				return direction === 'desc' ?
-					(Number(file1[orderBy]) > Number(file2[orderBy]) ?
-						-1 :
-						1) :
-					(Number(file2[orderBy]) > Number(file1[orderBy]) ?
-						-1 :
-						1)
+				return direction === 'desc'
+					? Number(file1[orderBy]) > Number(file2[orderBy])
+						? -1
+						: 1
+					: Number(file2[orderBy]) > Number(file1[orderBy])
+					? -1
+					: 1
 			}
 
 			if (orderBy.endsWith('Time')) {
 				// Cast to date if it is createdAtTime or lastModifiedTime
-				return direction === 'desc' ?
-					(new Date(file1[orderBy]) > new Date(file2[orderBy]) ?
-						-1 :
-						1) :
-					(new Date(file2[orderBy]) > new Date(file1[orderBy]) ?
-						-1 :
-						1)
+				return direction === 'desc'
+					? new Date(file1[orderBy]) > new Date(file2[orderBy])
+						? -1
+						: 1
+					: new Date(file2[orderBy]) > new Date(file1[orderBy])
+					? -1
+					: 1
 			}
 
 			return undefined
@@ -256,7 +246,7 @@ exports.sortFiles = (
 	return sortedFiles
 }
 
-exports.cachePath = filePath => {
+exports.cachePath = (filePath) => {
 	return `http://localhost:${
 		process.argv.DABBU_FILES_API_SERVER_PORT || 8080
 	}/files-api/v1/internal/cache/${encodeURIComponent(filePath)}`

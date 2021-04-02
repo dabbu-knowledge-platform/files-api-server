@@ -31,7 +31,7 @@ const FormData = require('form-data')
 // MARK: Environment setup
 
 // Initialise the server before running the tests
-test.before(async t => {
+test.before(async (t) => {
 	// Disable server output
 	process.env.DO_NOT_LOG_TO_CONSOLE = true
 	// Specify the enabled providers and then create the server
@@ -57,7 +57,7 @@ test.before(async t => {
 
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
-test('making a request without base_path should throw an error', async t => {
+test('making a request without base_path should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/`)
@@ -67,9 +67,7 @@ test('making a request without base_path should throw an error', async t => {
 
 	// Read request
 	const getError = await t.throwsAsync(
-		axios.get(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`
-		)
+		axios.get(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`)
 	)
 	t.is(getError?.response?.data?.code, 400)
 	t.is(getError?.response?.data?.error?.reason, 'missingParam')
@@ -85,9 +83,7 @@ test('making a request without base_path should throw an error', async t => {
 
 	// Update request
 	const putError = await t.throwsAsync(
-		axios.put(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`
-		)
+		axios.put(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`)
 	)
 	t.is(putError?.response?.data?.code, 400)
 	t.is(putError?.response?.data?.error?.reason, 'missingParam')
@@ -102,17 +98,14 @@ test('making a request without base_path should throw an error', async t => {
 	t.is(deleteError?.response?.data?.error?.reason, 'missingParam')
 })
 
-test('making a request with a relative folder path should throw an error', async t => {
+test('making a request with a relative folder path should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
-		axios.get(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../`,
-			{
-				data: {
-					base_path: '/' // eslint-disable-line camelcase
-				}
+		axios.get(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../`, {
+			data: {
+				base_path: '/' // eslint-disable-line camelcase
 			}
-		)
+		})
 	)
 	t.is(listError?.response?.data?.code, 400)
 	t.is(listError?.response?.data?.error?.reason, 'malformedUrl')
@@ -184,7 +177,7 @@ test('making a request with a relative folder path should throw an error', async
 	t.is(deleteError?.response?.data?.error?.reason, 'malformedUrl')
 })
 
-test('listing files in a non-existent folder should throw an error', async t => {
+test('listing files in a non-existent folder should throw an error', async (t) => {
 	const error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard_drive/unknown-folder`, {
 			data: {
@@ -195,7 +188,7 @@ test('listing files in a non-existent folder should throw an error', async t => 
 	t.is(error?.response?.data?.code, 404)
 })
 
-test('fetching a non-existent file should throw an error', async t => {
+test('fetching a non-existent file should throw an error', async (t) => {
 	const error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard_drive/%2F/unknown-file`, {
 			data: {

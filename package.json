@@ -53,6 +53,7 @@
   },
   "xo": {
     "semicolon": false,
+    "prettier": true,
     "rules": {
       "complexity": 0,
       "no-unused-vars": 0,

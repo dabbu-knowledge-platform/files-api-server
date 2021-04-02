@@ -99,15 +99,10 @@ module.exports = async (
 	// If no specific providers are to be enabled, enable all
 	if (
 		enabledProviders === null ||
-    enabledProviders === undefined ||
-    enabledProviders.length === 0
+		enabledProviders === undefined ||
+		enabledProviders.length === 0
 	) {
-		enabledProviders = [
-			'hard_drive',
-			'one_drive',
-			'google_drive',
-			'gmail'
-		]
+		enabledProviders = ['hard_drive', 'one_drive', 'google_drive', 'gmail']
 	}
 
 	// Create the server

@@ -29,9 +29,7 @@ exports.GeneralError = class GeneralError extends Error {
 }
 
 // Bad request; returned if the URL has any typos or mistakes
-exports.BadRequestError = class BadRequestError extends (
-	this.GeneralError
-) {
+exports.BadRequestError = class BadRequestError extends this.GeneralError {
 	constructor(message) {
 		super(400, message, 'malformedUrl')
 	}
@@ -45,9 +43,7 @@ exports.MissingParamError = class MissingParameterError extends (
 	}
 }
 // Missing access token in the request header
-exports.UnauthorizedError = class UnauthorizedError extends (
-	this.GeneralError
-) {
+exports.UnauthorizedError = class UnauthorizedError extends this.GeneralError {
 	constructor(message) {
 		super(401, message, 'unauthorized')
 	}
@@ -67,9 +63,7 @@ exports.NotImplementedError = class NotImplementedError extends (
 	}
 }
 // Conflict; used when a file already exists and you try to create it instead of update it
-exports.FileExistsError = class FileExistsError extends (
-	this.GeneralError
-) {
+exports.FileExistsError = class FileExistsError extends this.GeneralError {
 	constructor(message) {
 		super(409, message, 'conflict')
 	}
@@ -114,17 +108,17 @@ exports.errorHandler = (error, request, response, next) => {
 		console.error(error.response.data)
 		// If it's an axios error, return the status code and the error
 		const errorMessage =
-				error.response.data &&
-				error.response.data.error &&
-				error.response.data.error.message ?
-					error.response.data.error.message :
-					'Unknown error'
+			error.response.data &&
+			error.response.data.error &&
+			error.response.data.error.message
+				? error.response.data.error.message
+				: 'Unknown error'
 		const errorReason =
-				error.response.data &&
-				error.response.data.error &&
-				error.response.data.error.reason ?
-					error.response.data.error.reason :
-					error.response.data.error.code || 'unknownReason'
+			error.response.data &&
+			error.response.data.error &&
+			error.response.data.error.reason
+				? error.response.data.error.reason
+				: error.response.data.error.code || 'unknownReason'
 		console.error(
 			`${error.response.status} (${error.response.statusText}): ${errorMessage}`
 		)

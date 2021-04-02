@@ -31,7 +31,7 @@ const FormData = require('form-data')
 // MARK: Environment setup
 
 // Initialise the server before running the tests
-test.before(async t => {
+test.before(async (t) => {
 	// Disable server output
 	process.env.DO_NOT_LOG_TO_CONSOLE = true
 	// Specify the enabled providers and then create the server
@@ -55,7 +55,7 @@ test.before(async t => {
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
 
-test('making a request without authorization header should throw an error', async t => {
+test('making a request without authorization header should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/gmail/%2Funknown-label/`)
@@ -65,9 +65,7 @@ test('making a request without authorization header should throw an error', asyn
 
 	// Read request
 	const getError = await t.throwsAsync(
-		axios.get(
-			`${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`
-		)
+		axios.get(`${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`)
 	)
 	t.is(getError?.response?.data?.code, 401)
 	t.is(getError?.response?.data?.error?.reason, 'unauthorized')
@@ -76,9 +74,7 @@ test('making a request without authorization header should throw an error', asyn
 
 	// Delete request
 	const deleteError = await t.throwsAsync(
-		axios.delete(
-			`${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`
-		)
+		axios.delete(`${t.context.apiUrl}/data/gmail/%2Funknown-label/some-thread`)
 	)
 	t.is(deleteError?.response?.data?.code, 401)
 	t.is(deleteError?.response?.data?.error?.reason, 'unauthorized')

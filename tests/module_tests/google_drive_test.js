@@ -31,7 +31,7 @@ const FormData = require('form-data')
 // MARK: Environment setup
 
 // Initialise the server before running the tests
-test.before(async t => {
+test.before(async (t) => {
 	// Disable server output
 	process.env.DO_NOT_LOG_TO_CONSOLE = true
 	// Specify the enabled providers and then create the server
@@ -55,12 +55,10 @@ test.before(async t => {
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
 
-test('making a request without authorization header should throw an error', async t => {
+test('making a request without authorization header should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
-		axios.get(
-			`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/`
-		)
+		axios.get(`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/`)
 	)
 	t.is(listError?.response?.data?.code, 401)
 	t.is(listError?.response?.data?.error?.reason, 'unauthorized')

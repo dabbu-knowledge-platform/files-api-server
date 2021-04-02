@@ -1,6 +1,6 @@
 # Dabbu Files API Server
 
-[![NodeJS CI](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml/badge.svg)](https://github.comdabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml)
+[![NodeJS CI](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml/badge.svg)](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml) [![Platforms: Alpine Linux MacOS Windows](https://img.shields.io/badge/platforms-alpine%20linux%20macos%20windows-blue)](https://img.shields.io/badge/platforms-windows%20linux%20macos%20alpine-blue) [![Code Style: XO/Prettier](https://img.shields.io/badge/code%20style-xo%2Fprettier-ff69b4)](https://img.shields.io/badge/code%20style-xo%2Fprettier-ff69b4)
 
 An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!
 

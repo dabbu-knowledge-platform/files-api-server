@@ -27,7 +27,7 @@ const axios = require('axios').default.default
 // MARK: Environment setup
 
 // Initialise the server before running the tests
-test.before(async t => {
+test.before(async (t) => {
 	// Disable server output
 	process.env.DO_NOT_LOG_TO_CONSOLE = true
 	// Specify the enabled providers and then create the server
@@ -53,7 +53,7 @@ test.before(async t => {
 
 // The actual tests using ava
 
-test('list providers', async t => {
+test('list providers', async (t) => {
 	const response = await axios.get(`${t.context.apiUrl}/providers`)
 	t.is(response?.data?.code, 200)
 	t.deepEqual(response?.data?.content?.providers, [
@@ -64,23 +64,19 @@ test('list providers', async t => {
 	])
 })
 
-test('enabled provider should return an HTTP 200 when queried', async t => {
-	const response = await axios.get(
-		`${t.context.apiUrl}/providers/hard_drive`
-	)
+test('enabled provider should return an HTTP 200 when queried', async (t) => {
+	const response = await axios.get(`${t.context.apiUrl}/providers/hard_drive`)
 	t.is(response?.status, 200)
 })
 
-test('unknown/disabled providers should throw an error', async t => {
+test('unknown/disabled providers should throw an error', async (t) => {
 	let error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/providers/unknown_provider`)
 	)
 	t.is(error?.response?.status, 501)
 
 	error = await t.throwsAsync(
-		axios.get(
-			`${t.context.apiUrl}/data/unknown_provider/some-folder/some-file`
-		)
+		axios.get(`${t.context.apiUrl}/data/unknown_provider/some-folder/some-file`)
 	)
 	t.is(error?.response?.data?.code, 501)
 })

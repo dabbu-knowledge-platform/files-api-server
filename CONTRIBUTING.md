@@ -72,7 +72,51 @@ To get a decent idea of how the code is organised and what happens where, the co
 
 To test a change without building the executables, you can type `npm start` and it will run the server directly. Use an HTTP client like `httpie` or `postman` to test the API.
 
-### Step 5: Commit
+### Step 5: Document
+
+Once your changes are ready to go, begin the process of documenting your code. The code **must** be heavily commented, so future contributors can move around and make changes easily.
+
+Make sure all the changes you make are in accordance with the [Files API Specifications](https://dabbu-knowledge-platform.github.io/files_api/). If you wish to make changes to the API specification itself, drop a message [here](https://github.com/dabbu-knowledge-platform/cli/discussions/categories/general) and we can start discussing the changes.
+
+### Step 6: Test
+
+Please ensure that all changes/additions come with tests. All PRs must have unit tests unless the maintainer says the PR is text-exempt.
+
+If you are adding a new module, add the tests for that module in the `tests/module_tests/<provider id>_test.js`. If you added a utility function, add a test for it in `tests/utils_test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server_test.js`.
+
+Before submitting your changes, please run the linter (`xo`) and all tests in the `tests/` folder:
+
+```
+npm test
+```
+
+Please ensure that:
+
+- your code passes all lint checks (`xo`)
+- your code passes all format checks (`prettier` run by xo) 
+- all existing and added tests pass. If the linter points out errors, try fixing them automatically by running:
+
+```
+npm run format
+```
+
+The linter will try its best to fix all issues, but certain issues require you to fix them manually.
+
+If you need to disable any lint rules, please make sure that it is really necessary and there is absolutely no better way of writing that piece of code. Disable lint checks for a certain line by entering typing the following before that line:
+
+```
+// eslint-disable-next-line some-lint-rule-id
+```
+
+To disable lint checks for an entire file (not recommended), enter the following at the top of the file:
+
+```
+/* eslint some-lint-rule-id: 0 */
+```
+
+All existing and added tests **MUST** pass for the PR to land. If existing tests are already failing on the `develop` branch, ensure that no additional tests fail due to your changes. Note that **no PRs will be merged until the tests on the `develop` branch are fixed and all of them pass**.
+
+### Step 7: Commit
 
 It is recommended to keep your changes grouped logically within individual commits. Many contributors find it easier to review changes that are split across multiple commits. There is no limit to the number of commits in a pull request.
 
@@ -121,7 +165,7 @@ A commit that has the text `BREAKING CHANGE:` at the beginning of its optional b
 
 See [conventionalcommits.org](https://conventionalcommits.org) for more details.
 
-### Step 6: Rebase
+### Step 8: Rebase
 
 Once you have committed your changes, it is a good idea to use `git rebase` (NOT `git merge`) to synchronize your work with the develop branch.
 
@@ -130,47 +174,7 @@ $ git fetch upstream
 $ git rebase upstream/develop
 ```
 
-This ensures that your working branch has the latest changes from `dabbu-knowledge-platform/files-api-server` develop.
-
-### Step 7: Test
-
-Please ensure that all changes/additions come with tests. All PRs must have unit tests unless the maintainer says the PR is text-exempt.
-
-If you are adding a new module, add the tests for that module in the `tests/module_tests/<provider id>_test.js`. If you added a utility function, add a test for it in `tests/utils_test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server_test.js`.
-
-Before submitting your changes, please run the linter (`xo`) and all tests in the `tests/` folder:
-
-```
-npm test
-```
-
-Please ensure that your code passes all lint checks and all existing and added tests pass. If the linter points out errors, try fixing them automatically by running:
-
-```
-npm run format
-```
-
-The linter will try its best to fix all issues, but certain issues require you to fix them manually.
-
-If you need to disable any lint rules, please make sure that it is really necessary and there is absolutely no better way of writing that piece of code. Disable lint checks for a certain line by entering typing the following before that line:
-
-```
-// eslint-disable-next-line some-lint-rule-id
-```
-
-To disable lint checks for an entire file (not recommended), enter the following at the top of the file:
-
-```
-/* eslint some-lint-rule-id: 0 */
-```
-
-All existing and added tests **MUST** pass for the PR to land. If existing tests are already failing on the `develop` branch, ensure that no additional tests fail due to your changes. Note that **no PRs will be merged until the tests on the `develop` branch are fixed and all of them pass**.
-
-### Step 8: Document
-
-Once your commits are ready to go - with adequate testing - begin the process of documenting your code. The code **must** be heavily commented, so future contributors can move around and make changes easily.
-
-Make sure all the changes you make are in accordance with the [Files API Specifications](https://dabbu-knowledge-platform.github.io/files_api/). If you wish to make changes to the API specification itself, drop a message [here](https://github.com/dabbu-knowledge-platform/cli/discussions/categories/general) and we can start discussing the changes.
+This ensures that your working branch has the latest changes from `dabbu-knowledge-platform/files-api-server` develop. If any conflicts arise, resolve them and commit the changes again.
 
 ### Step 9: Push
 

@@ -58,19 +58,18 @@ router.get('/:providerId/:folderPath', (request, response, next) => {
 	}
 
 	// Any JS file stored in the src/modules folder is considered a provider.
-	const Module = require(`../modules/${request.params.providerId}.js`)
-		.default
+	const Module = require(`../modules/${request.params.providerId}.js`).default
 
 	// Execute the list function of the provider and return the response or error.
 	new Module()
-		.list(request.body, request.headers, request.params, request.query) // Pass the request body, headers, URL parameters and query parameters
-		.then(response => {
+		.list(request.body, request.headers, request.params, request.query)
+		.then((response) => {
 			response.status(200).json({
 				code: 200,
 				content: response // Send it back with a 200 response code
 			})
 		})
-		.catch(error_ => {
+		.catch((error_) => {
 			error(error_)
 			next(error_) // Forward the error to our error handler
 		})
@@ -92,19 +91,18 @@ router.get('/:providerId/:folderPath/:fileName', (request, response, next) => {
 	}
 
 	// Any JS file stored in the src/modules folder is considered a provider.
-	const Module = require(`../modules/${request.params.providerId}.js`)
-		.default
+	const Module = require(`../modules/${request.params.providerId}.js`).default
 
 	// Execute the read function of the provider and return the response or error.
 	new Module()
 		.read(request.body, request.headers, request.params, request.query)
-		.then(response => {
+		.then((response) => {
 			response.status(200).json({
 				code: 200,
 				content: response // Send it back with a 200 response code
 			})
 		})
-		.catch(error_ => {
+		.catch((error_) => {
 			error(error_)
 			next(error_) // Forward the error to our error handler
 		})
@@ -129,19 +127,24 @@ router.post(
 		}
 
 		// Any JS file stored in the src/modules folder is considered a provider.
-		const Module = require(`../modules/${request.params.providerId}.js`)
-			.default
+		const Module = require(`../modules/${request.params.providerId}.js`).default
 
 		// Execute the create function of the provider and return the response or error.
 		new Module()
-			.create(request.body, request.headers, request.params, request.query, request.file)
-			.then(response => {
+			.create(
+				request.body,
+				request.headers,
+				request.params,
+				request.query,
+				request.file
+			)
+			.then((response) => {
 				response.status(201).json({
 					code: 201,
 					content: response // Send it back with a 200 response code
 				})
 			})
-			.catch(error_ => {
+			.catch((error_) => {
 				error(error_)
 				next(error_) // Forward the error to our error handler
 			})
@@ -167,19 +170,24 @@ router.put(
 		}
 
 		// Any JS file stored in the src/modules folder is considered a provider.
-		const Module = require(`../modules/${request.params.providerId}.js`)
-			.default
+		const Module = require(`../modules/${request.params.providerId}.js`).default
 
 		// Execute the update function of the provider and return the response or error.
 		new Module()
-			.update(request.body, request.headers, request.params, request.query, request.file)
-			.then(response => {
+			.update(
+				request.body,
+				request.headers,
+				request.params,
+				request.query,
+				request.file
+			)
+			.then((response) => {
 				response.status(200).json({
 					code: 200,
 					content: response // Send it back with a 200 response code
 				})
 			})
-			.catch(error_ => {
+			.catch((error_) => {
 				error(error_)
 				next(error_) // Forward the error to our error handler
 			})
@@ -204,16 +212,15 @@ router.delete(
 		}
 
 		// Any JS file stored in the src/modules folder is considered a provider.
-		const Module = require(`../modules/${request.params.providerId}.js`)
-			.default
+		const Module = require(`../modules/${request.params.providerId}.js`).default
 
 		// Execute the delete function of the provider and return the response or error.
 		new Module()
 			.delete(request.body, request.headers, request.params, request.query)
-			.then(response => {
+			.then((response) => {
 				response.sendStatus(204) // Send back a 200 response code
 			})
-			.catch(error_ => {
+			.catch((error_) => {
 				error(error_)
 				next(error_) // Forward the error to our error handler
 			})

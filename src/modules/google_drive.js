@@ -57,15 +57,15 @@ async function getFolderId(
 	// Query the Drive API
 	const result = await instance.get('/drive/v2/files', {
 		params: {
-			q: isShared ?
-				`title = '${folderName.replace(
-					/'/g,
-					'\\\''
-				)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true` :
-				`'${parentId}' in parents and title = '${folderName.replace(
-					/'/g,
-					'\\\''
-				)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+			q: isShared
+				? `title = '${folderName.replace(
+						/'/g,
+						"\\'"
+				  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true`
+				: `'${parentId}' in parents and title = '${folderName.replace(
+						/'/g,
+						"\\'"
+				  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
 			fields: 'items(id, title)'
 		}
 	})
@@ -169,15 +169,15 @@ async function getFileId(
 	// Query the Drive API
 	const result = await instance.get('/drive/v2/files', {
 		params: {
-			q: isShared ?
-				`title = '${fileName.replace(
-					/'/g,
-					'\\\''
-				)}' and sharedWithMe = true and trashed = false` :
-				`'${parentId}' in parents and title = '${fileName.replace(
-					/'/g,
-					'\\\''
-				)}' and trashed = false`,
+			q: isShared
+				? `title = '${fileName.replace(
+						/'/g,
+						"\\'"
+				  )}' and sharedWithMe = true and trashed = false`
+				: `'${parentId}' in parents and title = '${fileName.replace(
+						/'/g,
+						"\\'"
+				  )}' and trashed = false`,
 			fields: 'items(id, title)'
 		}
 	})
@@ -205,11 +205,7 @@ async function getFileId(
 }
 
 // Get the file ID of a file with a folder path before it
-async function getFileWithParents(
-	instance,
-	filePath,
-	isShared = false
-) {
+async function getFileWithParents(instance, filePath, isShared = false) {
 	// Parse the path
 	const folderNames = filePath.split('/')
 	// Get the file name and remove it from the folder path
@@ -326,8 +322,7 @@ class GoogleDriveDataProvider extends Provider {
 	// List files and folders at a particular location
 	async list(body, headers, parameters, queries) {
 		// Get the access token from the header
-		const accessToken =
-			headers.Authorization || headers.authorization
+		const accessToken = headers.Authorization || headers.authorization
 		// If there is no access token, return a 401 Unauthorised error
 		if (!accessToken) {
 			throw new UnauthorizedError('No access token specified')
@@ -347,9 +342,9 @@ class GoogleDriveDataProvider extends Provider {
 		// Get the folder path from the URL and replace the /Shared part if it is
 		// in the beginning
 		const folderPath = diskPath(
-			isShared ?
-				parameters.folderPath.replace('Shared', '') :
-				parameters.folderPath
+			isShared
+				? parameters.folderPath.replace('Shared', '')
+				: parameters.folderPath
 		)
 		// Get the export type and compare/sort params from the query parameters
 		const {
@@ -363,20 +358,17 @@ class GoogleDriveDataProvider extends Provider {
 
 		// Don't allow relative paths, let clients do th
 		if (folderPath.includes('/..')) {
-			throw new BadRequestError(
-				'Folder paths must not contain relative paths'
-			)
+			throw new BadRequestError('Folder paths must not contain relative paths')
 		}
 
 		// Get the folder ID (exception is if the folder is shared)
-		const folderId = await getFolderWithParents(
-			instance,
-			folderPath,
-			isShared
-		)
+		const folderId = await getFolderWithParents(instance, folderPath, isShared)
 
 		// Construct the query
-		const q = diskPath(parameters.folderPath) === '/Shared' ? 'trashed = false and sharedWithMe = true' : `'${folderId}' in parents and trashed = false`
+		const q =
+			diskPath(parameters.folderPath) === '/Shared'
+				? 'trashed = false and sharedWithMe = true'
+				: `'${folderId}' in parents and trashed = false`
 
 		// Query the Drive API
 		let allFiles = []
@@ -387,7 +379,8 @@ class GoogleDriveDataProvider extends Provider {
 			const listResult = await instance.get('/drive/v2/files', {
 				params: {
 					q,
-					fields: 'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)',
+					fields:
+						'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)',
 					pageSize: 100, // Get a max of 100 files at a time
 					pageToken: nextPageToken // Add the page token if there is any
 				}
@@ -412,12 +405,12 @@ class GoogleDriveDataProvider extends Provider {
 				const fileObject = allFiles[i]
 				const name = fileObject.title // Name of the file
 				const kind =
-					fileObject.mimeType === 'application/vnd.google-apps.folder' ?
-						'folder' :
-						'file' // File or folder
-				const path = isShared ?
-					diskPath('/Shared', folderPath, name) :
-					diskPath(folderPath, name) // Absolute path to the file
+					fileObject.mimeType === 'application/vnd.google-apps.folder'
+						? 'folder'
+						: 'file' // File or folder
+				const path = isShared
+					? diskPath('/Shared', folderPath, name)
+					: diskPath(folderPath, name) // Absolute path to the file
 				const {mimeType} = fileObject // Mime type
 				const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
 				const createdAtTime = fileObject.createdDate // When it was created
@@ -443,7 +436,9 @@ class GoogleDriveDataProvider extends Provider {
 						// Else it is a Doc/Sheet/Slide/Drawing/App Script
 						// If the requested export type is in the exportLinks field, return
 						// that link
-						contentURI = fileObject.exportLinks[exportType] ? fileObject.exportLinks[exportType] : fileObject.exportLinks[exportMimeType]
+						contentURI = fileObject.exportLinks[exportType]
+							? fileObject.exportLinks[exportType]
+							: fileObject.exportLinks[exportMimeType]
 					}
 				}
 
@@ -482,8 +477,7 @@ class GoogleDriveDataProvider extends Provider {
 	// Return a file obj at a specified location
 	async read(body, headers, parameters, queries) {
 		// Get the access token from the header
-		const accessToken =
-			headers.Authorization || headers.authorization
+		const accessToken = headers.Authorization || headers.authorization
 		// If there is no access token, return a 401 Unauthorised error
 		if (!accessToken) {
 			throw new UnauthorizedError('No access token specified')
@@ -497,9 +491,7 @@ class GoogleDriveDataProvider extends Provider {
 		})
 
 		// Get the folder path from the URL
-		const folderPath = diskPath(
-			parameters.folderPath.replace('Shared', '')
-		)
+		const folderPath = diskPath(parameters.folderPath.replace('Shared', ''))
 		// Get the file path from the URL
 		const {fileName} = parameters
 		// Get the export type from the query parameters
@@ -511,17 +503,11 @@ class GoogleDriveDataProvider extends Provider {
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
-			throw new BadRequestError(
-				'Folder paths must not contain relative paths'
-			)
+			throw new BadRequestError('Folder paths must not contain relative paths')
 		}
 
 		// Get the parent folder ID
-		const folderId = await getFolderWithParents(
-			instance,
-			folderPath,
-			isShared
-		)
+		const folderId = await getFolderWithParents(instance, folderPath, isShared)
 
 		// Construct the query
 		let q
@@ -529,13 +515,13 @@ class GoogleDriveDataProvider extends Provider {
 			// If the folder path is /Shared, the file has been shared individually.
 			q = `title = '${fileName.replace(
 				/'/g,
-				'\\\''
+				"\\'"
 			)}' and trashed = false and sharedWithMe = true`
 		} else {
 			// Else just do a normal get
 			q = `title = '${fileName.replace(
 				/'/g,
-				'\\\''
+				"\\'"
 			)}' and '${folderId}' in parents and trashed = false`
 		}
 
@@ -545,7 +531,8 @@ class GoogleDriveDataProvider extends Provider {
 		const listResult = await instance.get('/drive/v2/files', {
 			params: {
 				q,
-				fields: 'items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)'
+				fields:
+					'items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)'
 			}
 		})
 
@@ -555,12 +542,12 @@ class GoogleDriveDataProvider extends Provider {
 			const fileObject = listResult.data.items[0]
 			const name = fileObject.title // Name of the file
 			const kind =
-				fileObject.mimeType === 'application/vnd.google-apps.folder' ?
-					'folder' :
-					'file' // File or folder
-			const path = isShared ?
-				diskPath('/Shared', folderPath, name) :
-				diskPath(folderPath, name) // Absolute path to the file
+				fileObject.mimeType === 'application/vnd.google-apps.folder'
+					? 'folder'
+					: 'file' // File or folder
+			const path = isShared
+				? diskPath('/Shared', folderPath, name)
+				: diskPath(folderPath, name) // Absolute path to the file
 			const {mimeType} = fileObject // Mime type
 			const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = fileObject.createdDate // When it was created
@@ -585,7 +572,9 @@ class GoogleDriveDataProvider extends Provider {
 					// Else it is a Doc/Sheet/Slide/Drawing/App Script
 					// If the requested export type is in the exportLinks field, return
 					// that link
-					contentURI = fileObject.exportLinks[exportType] ? fileObject.exportLinks[exportType] : fileObject.exportLinks[exportMimeType]
+					contentURI = fileObject.exportLinks[exportType]
+						? fileObject.exportLinks[exportType]
+						: fileObject.exportLinks[exportMimeType]
 				}
 			}
 
@@ -610,8 +599,7 @@ class GoogleDriveDataProvider extends Provider {
 	// Create a file at a specified location
 	async create(body, headers, parameters, queries, fileMeta) {
 		// Get the access token from the header
-		const accessToken =
-			headers.Authorization || headers.authorization
+		const accessToken = headers.Authorization || headers.authorization
 		// If there is no access token, return a 401 Unauthorised error
 		if (!accessToken) {
 			throw new UnauthorizedError('No access token specified')
@@ -635,9 +623,7 @@ class GoogleDriveDataProvider extends Provider {
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
-			throw new BadRequestError(
-				'Folder paths must not contain relative paths'
-			)
+			throw new BadRequestError('Folder paths must not contain relative paths')
 		}
 
 		// Check if there is a file uploaded
@@ -669,9 +655,7 @@ class GoogleDriveDataProvider extends Provider {
 		// If there is a lastModifiedTime present, set the file's lastModifiedTime
 		// to that
 		if (body.lastModifiedTime) {
-			meta.modifiedDate = new Date(
-				body.lastModifiedTime
-			).toISOString()
+			meta.modifiedDate = new Date(body.lastModifiedTime).toISOString()
 		}
 
 		// First, post the file meta data to let Google Drive know we are posting
@@ -704,9 +688,9 @@ class GoogleDriveDataProvider extends Provider {
 					const fileObject = result.data
 					const name = fileObject.title // Name of the file
 					const kind =
-						fileObject.mimeType === 'application/vnd.google-apps.folder' ?
-							'folder' :
-							'file' // File or folder
+						fileObject.mimeType === 'application/vnd.google-apps.folder'
+							? 'folder'
+							: 'file' // File or folder
 					const path = diskPath(folderPath, name) // Absolute path to the file
 					const {mimeType} = fileObject // Mime type
 					const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
@@ -733,7 +717,9 @@ class GoogleDriveDataProvider extends Provider {
 							// Else it is a Doc/Sheet/Slide/Drawing/App Script
 							// If the requested export type is in the exportLinks field,
 							// return that link
-							contentURI = fileObject.exportLinks[exportType] ? fileObject.exportLinks[exportType] : fileObject.exportLinks[exportMimeType]
+							contentURI = fileObject.exportLinks[exportType]
+								? fileObject.exportLinks[exportType]
+								: fileObject.exportLinks[exportMimeType]
 						}
 					}
 
@@ -770,8 +756,7 @@ class GoogleDriveDataProvider extends Provider {
 	// Update the file at the specified location with the file provided
 	async update(body, headers, parameters, queries, fileMeta) {
 		// Get the access token from the header
-		const accessToken =
-			headers.Authorization || headers.authorization
+		const accessToken = headers.Authorization || headers.authorization
 		// If there is no access token, return a 401 Unauthorised error
 		if (!accessToken) {
 			throw new UnauthorizedError('No access token specified')
@@ -793,9 +778,7 @@ class GoogleDriveDataProvider extends Provider {
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
-			throw new BadRequestError(
-				'Folder paths must not contain relative paths'
-			)
+			throw new BadRequestError('Folder paths must not contain relative paths')
 		}
 
 		// Get the folder and file ID
@@ -805,13 +788,7 @@ class GoogleDriveDataProvider extends Provider {
 			false,
 			false
 		)
-		const fileId = await getFileId(
-			instance,
-			fileName,
-			folderId,
-			false,
-			false
-		)
+		const fileId = await getFileId(instance, fileName, folderId, false, false)
 
 		// The result of the operation
 		let result
@@ -857,9 +834,7 @@ class GoogleDriveDataProvider extends Provider {
 		}
 
 		if (body.lastModifiedTime) {
-			const modifiedDate = new Date(
-				body.lastModifiedTime
-			).toISOString()
+			const modifiedDate = new Date(body.lastModifiedTime).toISOString()
 			// Set the lastModifiedTime by sending a patch request
 			result = await instance.patch(
 				`/drive/v2/files/${fileId}?modifiedDateBehavior=fromBody`,
@@ -875,9 +850,9 @@ class GoogleDriveDataProvider extends Provider {
 			// If the creation was successful, return a file object
 			const name = fileObject.title // Name of the file
 			const kind =
-				fileObject.mimeType === 'application/vnd.google-apps.folder' ?
-					'folder' :
-					'file' // File or folder
+				fileObject.mimeType === 'application/vnd.google-apps.folder'
+					? 'folder'
+					: 'file' // File or folder
 			const path = diskPath(folderPath, name) // Absolute path to the file
 			const {mimeType} = fileObject // Mime type
 			const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
@@ -904,7 +879,9 @@ class GoogleDriveDataProvider extends Provider {
 				} else {
 					// Else it is a Doc/Sheet/Slide/Drawing/App Script
 					// If the requested export type is in the exportLinks field, return that link
-					contentURI = fileObject.exportLinks[exportType] ? fileObject.exportLinks[exportType] : fileObject.exportLinks[exportMimeType]
+					contentURI = fileObject.exportLinks[exportType]
+						? fileObject.exportLinks[exportType]
+						: fileObject.exportLinks[exportMimeType]
 				}
 			}
 
@@ -926,8 +903,7 @@ class GoogleDriveDataProvider extends Provider {
 	// Delete the file or folder at the specified location
 	async delete(body, headers, parameters, queries) {
 		// Get the access token from the header
-		const accessToken =
-			headers.Authorization || headers.authorization
+		const accessToken = headers.Authorization || headers.authorization
 		// If there is no access token, return a 401 Unauthorised error
 		if (!accessToken) {
 			throw new UnauthorizedError('No access token specified')
@@ -947,9 +923,7 @@ class GoogleDriveDataProvider extends Provider {
 
 		// Don't allow relative paths, let clients do that
 		if (folderPath.includes('/..')) {
-			throw new BadRequestError(
-				'Folder paths must not contain relative paths'
-			)
+			throw new BadRequestError('Folder paths must not contain relative paths')
 		}
 
 		if (folderPath && fileName) {

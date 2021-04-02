@@ -26,14 +26,14 @@ const test = require('ava')
 
 // The actual tests using ava
 
-test('test cache path creation', t => {
+test('test cache path creation', (t) => {
 	t.is(
 		cachePath('folder-name/new file:with weird-chars'),
 		'http://localhost:8080/files-api/v1/internal/cache/folder-name%2Fnew%20file%3Awith%20weird-chars'
 	)
 })
 
-test('test path resolving function', t => {
+test('test path resolving function', (t) => {
 	t.is(
 		diskPath(
 			'/',
@@ -49,7 +49,7 @@ test('test path resolving function', t => {
 	)
 })
 
-test('test sorting function', t => {
+test('test sorting function', (t) => {
 	// TODO: Test sorting function
 	t.pass()
 })
