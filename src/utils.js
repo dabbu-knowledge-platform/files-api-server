@@ -198,8 +198,8 @@ exports.sortFiles = (
 			// though they are fields that shouldn't be used to order
 			if (orderBy === 'name' || orderBy === 'kind' || orderBy === 'mimeType') {
 				return direction === 'desc'
-					? file1[orderBy].localeCompare(file2[orderBy])
-					: file2[orderBy].localeCompare(file1[orderBy])
+					? file2[orderBy].localeCompare(file1[orderBy])
+					: file1[orderBy].localeCompare(file2[orderBy])
 			}
 
 			if (orderBy === 'path') {
