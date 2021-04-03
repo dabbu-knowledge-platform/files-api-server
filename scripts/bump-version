@@ -1,0 +1,51 @@
+#!/bin/bash
+
+# Import colors
+SCRIPTS_DIR=$(dirname "$0")
+source "$SCRIPTS_DIR/colors"
+
+function help {
+	echo -e "${color_cyan}${bold}bump-version${normal}"
+	echo -e "${color_blue}Bumps the version in package.json, package-lock.json and version${normal}"
+	echo -e ""
+	echo -e "Usage: ${color_cyan}scripts/bump-version${normal} ${bold}[<new-version> | major | minor | patch | premajor | preminor | prepatch | prerelease]${normal}"
+	echo -e ""
+	echo -e "${color_cyan}Remember to run this script from the root of the project!${normal}"
+}
+
+function bump {
+	local npm_command=$(which npm)
+	if [ -z npm_command ]; then
+		echo -e "${red}NodeJS and NPM must be installed!${red}"
+		exit 1
+	fi
+
+	if [[ "$1" == "$(cat version)" ]]; then
+		echo -e "${color_red}New version must be greater than $(cat version)!${normal}"
+		exit 1
+	fi
+
+	local new_version=$(npm version $1 --no-git-tag-version)
+	echo $new_version > version
+
+	echo -e "${color_green}${bold}Succesfully changed version to $new_version${normal}"
+}
+
+function add_release_notes {
+	local new_release_tag=`cat version`
+	local previous_release_tag=`git describe --tags --abbrev=0`
+	local previous_tag_revision=`git rev-list --tags --max-count=1`
+	git log --format="%s [%h]%n%b" $previous_tag_revision..HEAD > RELEASE-NOTES.tmp
+	sed -i '/^Signed-off-by/d' RELEASE-NOTES.tmp
+	cat -s RELEASE-NOTES.tmp > RELEASE-NOTES.md
+	rm RELEASE-NOTES.tmp
+	$EDITOR RELEASE-NOTES.md
+}
+
+if [ -z "$1" ] || [ "$1" = "help" ]; then
+	help
+	exit
+else
+	bump "$1"
+	add_release_notes
+fi
