@@ -18,7 +18,7 @@
 // MARK: Imports
 
 // Import the functions
-const {cachePath, diskPath, sortFiles} = require('../src/utils.js')
+const { cachePath, diskPath, sortFiles } = require('../src/utils.js')
 // Library to run tests
 const test = require('ava')
 

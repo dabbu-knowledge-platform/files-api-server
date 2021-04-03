@@ -51,6 +51,14 @@
 			"!node_modules/form-data/**/*"
 		]
 	},
+	"prettier": {
+		"semi": false,
+		"useTabs": true,
+		"trailingComma": "none",
+		"singleQuote": true,
+		"bracketSpacing": true,
+		"jsxBracketSameLine": false
+	},
 	"xo": {
 		"semicolon": false,
 		"prettier": true,
@@ -59,8 +67,8 @@
 			"no-unused-vars": 0,
 			"max-params": 0,
 			"max-depth": 0,
-			"unicorn/no-nested-ternary": 0,
-			"object-curly-spacing": 1
+			"object-curly-spacing": 0,
+			"unicorn/no-nested-ternary": 0
 		},
 		"ignores": [
 			"node_modules/",

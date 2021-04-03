@@ -46,7 +46,7 @@ test.before(async (t) => {
 	)
 
 	// Get the port the server was assigned to
-	const {port} = server.address()
+	const { port } = server.address()
 	// The server URL
 	t.context.serverUrl = `http://localhost:${port}`
 	// The API URL

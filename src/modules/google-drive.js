@@ -34,7 +34,7 @@ const {
 	GeneralError
 } = require('../errors.js')
 // Used to generate platform-independent file/folder paths
-const {diskPath, sortFiles} = require('../utils.js')
+const { diskPath, sortFiles } = require('../utils.js')
 
 // Import the default Provider class we need to extend
 const Provider = require('./provider.js').default
@@ -81,7 +81,7 @@ async function getFolderId(
 		// Insert a folder if the `insertIfNotFound` option is true
 		const newFolderResult = await instance.post('/drive/v2/files', {
 			title: folderName,
-			parents: [{id: parentId}],
+			parents: [{ id: parentId }],
 			mimeType: 'application/vnd.google-apps.folder'
 		})
 
@@ -127,7 +127,7 @@ async function getFolderWithParents(
 		// If the path has multiple folders, loop through them, get their IDs and
 		// then get the next folder ID with it as a parent
 		let previousFolderId = 'root'
-		for (let j = 0, {length} = folderNames; j < length; j++) {
+		for (let j = 0, { length } = folderNames; j < length; j++) {
 			// Don't set sharedWithMe here to true if this is not the first folder,
 			// because then the folder is implicitly shared as part of the first
 			// folder
@@ -225,7 +225,7 @@ async function getFileWithParents(instance, filePath, isShared = false) {
 		// If the path has multiple folders, loop through them, get their IDs and
 		// then get the next folder ID with it as a parent
 		let previousFolderId = 'root'
-		for (let j = 0, {length} = folderNames; j < length; j++) {
+		for (let j = 0, { length } = folderNames; j < length; j++) {
 			// Don't set sharedWithMe here to true if this is not the first folder,
 			// because then the folder is implicitly shared as part of the first
 			// folder
@@ -332,7 +332,7 @@ class GoogleDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://www.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Is the file shared (explicitly or implicitly)
@@ -401,7 +401,7 @@ class GoogleDriveDataProvider extends Provider {
 			// If a valid result is returned, loop through all the files and folders
 			// there
 			let fileObjs = []
-			for (let i = 0, {length} = allFiles; i < length; i++) {
+			for (let i = 0, { length } = allFiles; i < length; i++) {
 				const fileObject = allFiles[i]
 				const name = fileObject.title // Name of the file
 				const kind =
@@ -411,7 +411,7 @@ class GoogleDriveDataProvider extends Provider {
 				const path = isShared
 					? diskPath('/Shared', folderPath, name)
 					: diskPath(folderPath, name) // Absolute path to the file
-				const {mimeType} = fileObject // Mime type
+				const { mimeType } = fileObject // Mime type
 				const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
 				const createdAtTime = fileObject.createdDate // When it was created
 				const lastModifiedTime = fileObject.modifiedDate // Last time the file or its metadata was changed
@@ -487,15 +487,15 @@ class GoogleDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://www.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		const folderPath = diskPath(parameters.folderPath.replace('Shared', ''))
 		// Get the file path from the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 		// Get the export type from the query parameters
-		const {exportType} = queries
+		const { exportType } = queries
 		// Is the file shared (explicitly or implicitly)
 		const isShared =
 			diskPath(parameters.folderPath).startsWith('/Shared') ||
@@ -548,7 +548,7 @@ class GoogleDriveDataProvider extends Provider {
 			const path = isShared
 				? diskPath('/Shared', folderPath, name)
 				: diskPath(folderPath, name) // Absolute path to the file
-			const {mimeType} = fileObject // Mime type
+			const { mimeType } = fileObject // Mime type
 			const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = fileObject.createdDate // When it was created
 			const lastModifiedTime = fileObject.modifiedDate // Last time the file or its metadata was changed
@@ -609,17 +609,17 @@ class GoogleDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://www.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		const folderPath = diskPath(parameters.folderPath)
 		// Get the file path from the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 		// If they have specified the type of contentURI they want in the returned
 		// file object, give them that
 		// This must be mentioned in the body as it is a provider-specific variable
-		const {exportType} = body
+		const { exportType } = body
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
@@ -648,7 +648,7 @@ class GoogleDriveDataProvider extends Provider {
 		// Construct the metadata of the file
 		const meta = {
 			title: fileName,
-			parents: [{id: folderId}],
+			parents: [{ id: folderId }],
 			mimeType: ((await fileTypes.fromFile(fileMeta.path)) || {}).mime
 		}
 
@@ -692,7 +692,7 @@ class GoogleDriveDataProvider extends Provider {
 							? 'folder'
 							: 'file' // File or folder
 					const path = diskPath(folderPath, name) // Absolute path to the file
-					const {mimeType} = fileObject // Mime type
+					const { mimeType } = fileObject // Mime type
 					const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
 					const createdAtTime = fileObject.createdDate // When it was created
 					const lastModifiedTime = fileObject.modifiedDate // Last time the file or its metadata was changed
@@ -766,15 +766,15 @@ class GoogleDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://www.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		let folderPath = diskPath(parameters.folderPath)
 		// Get the file path from the URL
-		let {fileName} = parameters
+		let { fileName } = parameters
 		// The export type
-		const {exportType} = queries
+		const { exportType } = queries
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
@@ -828,7 +828,7 @@ class GoogleDriveDataProvider extends Provider {
 			)
 			// Move the file by sending a patch request
 			result = await instance.patch(`/drive/v2/files/${fileId}`, {
-				parents: [{id: newFolderId}]
+				parents: [{ id: newFolderId }]
 			})
 			folderPath = body.path
 		}
@@ -854,7 +854,7 @@ class GoogleDriveDataProvider extends Provider {
 					? 'folder'
 					: 'file' // File or folder
 			const path = diskPath(folderPath, name) // Absolute path to the file
-			const {mimeType} = fileObject // Mime type
+			const { mimeType } = fileObject // Mime type
 			const size = fileObject.fileSize // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = fileObject.createdDate // When it was created
 			const lastModifiedTime = fileObject.modifiedDate // Last time the file or its metadata was changed
@@ -913,13 +913,13 @@ class GoogleDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://www.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		const folderPath = diskPath(parameters.folderPath)
 		// Get the file path from the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 
 		// Don't allow relative paths, let clients do that
 		if (folderPath.includes('/..')) {
