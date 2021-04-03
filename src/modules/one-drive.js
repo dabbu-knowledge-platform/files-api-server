@@ -501,7 +501,7 @@ class OneDriveDataProvider extends Provider {
 			)
 		}
 
-		if (result.data) {
+		if (result && result.data) {
 			const fileObject = result.data
 			const { name } = fileObject // Name of the file
 			const kind = fileObject.folder ? 'folder' : 'file' // File or folder
