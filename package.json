@@ -9,7 +9,7 @@
 		"format": "xo --fix",
 		"prebuild": "npm run test",
 		"build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
-		"ci-build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
+		"ci-build": "npm prune --production && npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
 		"test": "xo && ava"
 	},
 	"repository": {
@@ -43,12 +43,7 @@
 			"src/**/*"
 		],
 		"assets": [
-			"node_modules/**/*",
-			"!node_modules/xo/**/*",
-			"!node_modules/ava/**/*",
-			"!node_modules/pkg/**/*",
-			"!node_modules/pkg-fetch/**/*",
-			"!node_modules/form-data/**/*"
+			"node_modules/**/*"
 		]
 	},
 	"prettier": {
