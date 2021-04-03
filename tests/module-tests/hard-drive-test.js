@@ -1,4 +1,4 @@
-/* Dabbu Files API Server - hard-drive_test.js
+/* Dabbu Files API Server - hard-drive-test.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -103,7 +103,7 @@ test('making a request with a relative folder path should throw an error', async
 	const listError = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../`, {
 			data: {
-				'base-path': '/' // eslint-disable-line camelcase
+				'base-path': '/'
 			}
 		})
 	)
@@ -116,7 +116,7 @@ test('making a request with a relative folder path should throw an error', async
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			{
 				data: {
-					'base-path': '/' // eslint-disable-line camelcase
+					'base-path': '/'
 				}
 			}
 		)
@@ -128,9 +128,9 @@ test('making a request with a relative folder path should throw an error', async
 	const postFormData = new FormData()
 	postFormData.append(
 		'content',
-		fs.createReadStream('tests/test_content/Text.txt')
+		fs.createReadStream('tests/test-content/Text.txt')
 	)
-	postFormData.append(''base-path'', '/')
+	postFormData.append('base-path', '/')
 	const postError = await t.throwsAsync(
 		axios.post(
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
@@ -147,9 +147,9 @@ test('making a request with a relative folder path should throw an error', async
 	const putFormData = new FormData()
 	putFormData.append(
 		'content',
-		fs.createReadStream('tests/test_content/Text.txt')
+		fs.createReadStream('tests/test-content/Text.txt')
 	)
-	putFormData.append(''base-path'', '/')
+	putFormData.append('base-path', '/')
 	const putError = await t.throwsAsync(
 		axios.put(
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
@@ -168,7 +168,7 @@ test('making a request with a relative folder path should throw an error', async
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			{
 				data: {
-					'base-path': '/' // eslint-disable-line camelcase
+					'base-path': '/'
 				}
 			}
 		)
@@ -181,7 +181,7 @@ test('listing files in a non-existent folder should throw an error', async (t) =
 	const error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/unknown-folder`, {
 			data: {
-				'base-path': '/' // eslint-disable-line camelcase
+				'base-path': '/'
 			}
 		})
 	)
@@ -192,7 +192,7 @@ test('fetching a non-existent file should throw an error', async (t) => {
 	const error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/%2F/unknown-file`, {
 			data: {
-				'base-path': '/' // eslint-disable-line camelcase
+				'base-path': '/'
 			}
 		})
 	)

@@ -82,7 +82,7 @@ Make sure all the changes you make are in accordance with the [Files API Specifi
 
 Please ensure that all changes/additions come with tests. All PRs must have unit tests unless the maintainer says the PR is text-exempt.
 
-If you are adding a new module, add the tests for that module in the `tests/module_tests/<provider id>_test.js`. If you added a utility function, add a test for it in `tests/utils_test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server_test.js`.
+If you are adding a new module, add the tests for that module in the `tests/module-tests/<provider id>-test.js`. If you added a utility function, add a test for it in `tests/utils-test.js`. If you modified the handling of an internal method such as the `cache` method, or listing, enabling and disabling providers, add the test to `tests/server-test.js`.
 
 Before submitting your changes, please run the linter (`xo`) and all tests in the `tests/` folder:
 
