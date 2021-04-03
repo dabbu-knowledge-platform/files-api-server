@@ -116,7 +116,7 @@ jobs:
         with:
           body_path: RELEASE-NOTES.md
           tag_name: ${{ steps.check-version.outputs.version }}
-          prerelease: ${{ github.ref == 'refs/head/develop' }}
+          prerelease: contains(steps.check-version.outputs.version, '-')
           name: Dabbu Files API Server ${{ steps.check-version.outputs.version }}
           files: |
             files-api-server-alpine
