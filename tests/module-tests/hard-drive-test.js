@@ -57,7 +57,7 @@ test.before(async (t) => {
 
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
-test('making a request without 'base-path' should throw an error', async (t) => {
+test('making a request without base-path should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/`)
