@@ -109,32 +109,15 @@ jobs:
           echo "::set-output name=version::$version_name"
           echo "::set-output name=previous_version::$previous_version_name"
         id: check-version
-      # Get a list of all commits from the previous release till this one, and add it to the changelog
-      - name: Generate changelog
-        # Run it only if the version has been changed
-        if: ${{ steps.check-version.outputs.version != steps.check-version.outputs.previous_version }}
-        run: |
-          revision=`git rev-list --tags --max-count=1`
-          version_name=`cat version`
-          previous_version_name=`git describe --tags --abbrev=0`
-          echo "" >> CHANGELOG.md
-          echo "### Commits since last release:" >> CHANGELOG.md
-          git log --format="- %s %h" $revision..HEAD >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "Generated following CHANGELOG:"
-          cat CHANGELOG.md
-          echo "::set-output name=version::$version_name"
-          echo "::set-output name=previous_version::$previous_version_name"
-        id: generate-changelog
       - name: Create release
         # Run it only if the version has been changed
-        if: ${{ steps.generate-changelog.outputs.version != steps.generate-changelog.outputs.previous_version }}
+        if: ${{ steps.check-version.outputs.version != steps.check-version.outputs.previous_version }}
         uses: softprops/action-gh-release@v1
         with:
-          body_path: CHANGELOG.md
-          tag_name: ${{ steps.generate-changelog.outputs.version }}
-          prerelease: ${{ startsWith(github.ref, 'refs/head/develop') }}
-          name: Dabbu Files API Server ${{ steps.generate-changelog.outputs.version }}
+          body_path: RELEASE-NOTES.md
+          tag_name: ${{ steps.check-version.outputs.version }}
+          prerelease: ${{ github.ref == 'refs/head/develop' }}
+          name: Dabbu Files API Server ${{ steps.check-version.outputs.version }}
           files: |
             files-api-server-alpine
             files-api-server-linux
