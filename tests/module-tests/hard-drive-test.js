@@ -57,7 +57,7 @@ test.before(async (t) => {
 
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
-test('making a request without base-path should throw an error', async (t) => {
+test('making a request without 'base-path' should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/`)
@@ -103,7 +103,7 @@ test('making a request with a relative folder path should throw an error', async
 	const listError = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../`, {
 			data: {
-				base-path: '/' // eslint-disable-line camelcase
+				'base-path': '/' // eslint-disable-line camelcase
 			}
 		})
 	)
@@ -116,7 +116,7 @@ test('making a request with a relative folder path should throw an error', async
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			{
 				data: {
-					base-path: '/' // eslint-disable-line camelcase
+					'base-path': '/' // eslint-disable-line camelcase
 				}
 			}
 		)
@@ -130,7 +130,7 @@ test('making a request with a relative folder path should throw an error', async
 		'content',
 		fs.createReadStream('tests/test_content/Text.txt')
 	)
-	postFormData.append('base-path', '/')
+	postFormData.append(''base-path'', '/')
 	const postError = await t.throwsAsync(
 		axios.post(
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
@@ -149,7 +149,7 @@ test('making a request with a relative folder path should throw an error', async
 		'content',
 		fs.createReadStream('tests/test_content/Text.txt')
 	)
-	putFormData.append('base-path', '/')
+	putFormData.append(''base-path'', '/')
 	const putError = await t.throwsAsync(
 		axios.put(
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
@@ -168,7 +168,7 @@ test('making a request with a relative folder path should throw an error', async
 			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			{
 				data: {
-					base-path: '/' // eslint-disable-line camelcase
+					'base-path': '/' // eslint-disable-line camelcase
 				}
 			}
 		)
@@ -181,7 +181,7 @@ test('listing files in a non-existent folder should throw an error', async (t) =
 	const error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/unknown-folder`, {
 			data: {
-				base-path: '/' // eslint-disable-line camelcase
+				'base-path': '/' // eslint-disable-line camelcase
 			}
 		})
 	)
@@ -192,7 +192,7 @@ test('fetching a non-existent file should throw an error', async (t) => {
 	const error = await t.throwsAsync(
 		axios.get(`${t.context.apiUrl}/data/hard-drive/%2F/unknown-file`, {
 			data: {
-				base-path: '/' // eslint-disable-line camelcase
+				'base-path': '/' // eslint-disable-line camelcase
 			}
 		})
 	)
