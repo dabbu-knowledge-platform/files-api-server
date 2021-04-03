@@ -1,4 +1,4 @@
-/* Dabbu Files API Server - google_drive.js
+/* Dabbu Files API Server - google-drive.js
  * Copyright (C) 2021	gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -446,7 +446,7 @@ class GoogleDriveDataProvider extends Provider {
 				fileObjs.push({
 					name,
 					kind,
-					provider: 'google_drive',
+					provider: 'google-drive',
 					path,
 					mimeType,
 					size,
@@ -582,7 +582,7 @@ class GoogleDriveDataProvider extends Provider {
 			return {
 				name,
 				kind,
-				provider: 'google_drive',
+				provider: 'google-drive',
 				path,
 				mimeType,
 				size,
@@ -727,7 +727,7 @@ class GoogleDriveDataProvider extends Provider {
 					return {
 						name,
 						kind,
-						provider: 'google_drive',
+						provider: 'google-drive',
 						path,
 						mimeType,
 						size,
@@ -889,7 +889,7 @@ class GoogleDriveDataProvider extends Provider {
 			return {
 				name,
 				kind,
-				provider: 'google_drive',
+				provider: 'google-drive',
 				path,
 				mimeType,
 				size,

@@ -29,7 +29,7 @@ const test = require('ava')
 test('test cache path creation', (t) => {
 	t.is(
 		cachePath('folder-name/new file:with weird-chars'),
-		'http://localhost:8080/files-api/v1/internal/cache/folder-name%2Fnew%20file%3Awith%20weird-chars'
+		'http://localhost:8080/files-api/v2/internal/cache/folder-name%2Fnew%20file%3Awith%20weird-chars'
 	)
 })
 
@@ -60,7 +60,7 @@ test('test sorting function', (t) => {
 			{
 				name: 'Dabbu Knowledge Notes',
 				kind: 'file',
-				provider: 'hard_drive',
+				provider: 'hard-drive',
 				path: '/home/gamemaker1/Documents/Dabbu/Dabbu Knowledge Notes',
 				size: 395,
 				createdAtTime: '2021-02-27T16:20:20.445Z',
@@ -71,7 +71,7 @@ test('test sorting function', (t) => {
 			{
 				name: 'Dabbu Reference Architecture',
 				kind: 'file',
-				provider: 'hard_drive',
+				provider: 'hard-drive',
 				path: '/home/gamemaker1/Documents/Dabbu/Dabbu Reference Architecture',
 				mimeType:
 					'application/vnd.openxmlformats-officedocument.presentationml.presentation',
@@ -84,7 +84,7 @@ test('test sorting function', (t) => {
 			{
 				name: 'docs',
 				kind: 'folder',
-				provider: 'hard_drive',
+				provider: 'hard-drive',
 				path: '/home/gamemaker1/Documents/Dabbu/docs/',
 				mimeType: 'inode/directory',
 				size: 4096,
@@ -98,7 +98,7 @@ test('test sorting function', (t) => {
 		{
 			name: 'docs',
 			kind: 'folder',
-			provider: 'hard_drive',
+			provider: 'hard-drive',
 			path: '/home/gamemaker1/Documents/Dabbu/docs/',
 			mimeType: 'inode/directory',
 			size: 4096,
@@ -109,7 +109,7 @@ test('test sorting function', (t) => {
 		{
 			name: 'Dabbu Reference Architecture',
 			kind: 'file',
-			provider: 'hard_drive',
+			provider: 'hard-drive',
 			path: '/home/gamemaker1/Documents/Dabbu/Dabbu Reference Architecture',
 			mimeType:
 				'application/vnd.openxmlformats-officedocument.presentationml.presentation',

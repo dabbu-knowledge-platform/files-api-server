@@ -1,4 +1,4 @@
-/* Dabbu Files API Server - hard_drive.js
+/* Dabbu Files API Server - hard-drive.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -41,7 +41,7 @@ class HardDriveDataProvider extends Provider {
 	// List files and folders at a location
 	async list(body, headers, parameters, queries) {
 		// Get the base path provided in the request body
-		const basePath = body.base_path
+		const basePath = body.base-path
 		// Check if the base path exists
 		if (!basePath) {
 			// If it doesn't exist, error out
@@ -110,7 +110,7 @@ class HardDriveDataProvider extends Provider {
 			fileObjs.push({
 				name,
 				kind,
-				provider: 'hard_drive',
+				provider: 'hard-drive',
 				path,
 				mimeType,
 				size,
@@ -137,7 +137,7 @@ class HardDriveDataProvider extends Provider {
 	// Return a file obj at a specified location
 	async read(body, headers, parameters, queries) {
 		// Get the base path provided in the request body
-		const basePath = body.base_path
+		const basePath = body.base-path
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
@@ -199,7 +199,7 @@ class HardDriveDataProvider extends Provider {
 		return {
 			name,
 			kind,
-			provider: 'hard_drive',
+			provider: 'hard-drive',
 			path,
 			mimeType,
 			size,
@@ -212,7 +212,7 @@ class HardDriveDataProvider extends Provider {
 	// Create a file at a specified location
 	async create(body, headers, parameters, queries, fileMeta) {
 		// Get the base path provided in the request body
-		const basePath = body.base_path
+		const basePath = body.base-path
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
@@ -292,7 +292,7 @@ class HardDriveDataProvider extends Provider {
 		return {
 			name,
 			kind,
-			provider: 'hard_drive',
+			provider: 'hard-drive',
 			path,
 			mimeType,
 			size,
@@ -305,7 +305,7 @@ class HardDriveDataProvider extends Provider {
 	// Update the file at the specified location with the file provided
 	async update(body, headers, parameters, queries, fileMeta) {
 		// Get the base path provided in the request body
-		const basePath = body.base_path
+		const basePath = body.base-path
 		// Get the folder path in the URL
 		let folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
@@ -401,7 +401,7 @@ class HardDriveDataProvider extends Provider {
 		return {
 			name,
 			kind,
-			provider: 'hard_drive',
+			provider: 'hard-drive',
 			path,
 			mimeType,
 			size,
@@ -414,7 +414,7 @@ class HardDriveDataProvider extends Provider {
 	// Delete the file or folder at the specified location
 	async delete(body, headers, parameters, queries) {
 		// Get the base path provided in the request body
-		const basePath = body.base_path
+		const basePath = body.base-path
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL

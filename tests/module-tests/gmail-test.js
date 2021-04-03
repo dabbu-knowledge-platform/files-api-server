@@ -45,7 +45,7 @@ test.before(async (t) => {
 	// The server URL
 	t.context.serverUrl = `http://localhost:${port}`
 	// The API URL
-	t.context.apiUrl = `http://localhost:${port}/files-api/v1`
+	t.context.apiUrl = `http://localhost:${port}/files-api/v2`
 
 	// TODO: Get access token
 })

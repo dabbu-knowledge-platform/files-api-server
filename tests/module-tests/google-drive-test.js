@@ -1,4 +1,4 @@
-/* Dabbu Files API Server - google_drive_test.js
+/* Dabbu Files API Server - google-drive_test.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -37,7 +37,7 @@ test.before(async (t) => {
 	// Specify the enabled providers and then create the server
 	const server = await app(
 		0 /* 0 means it will assign a random port */,
-		['google_drive'] /* Enable only google_drive */
+		['google-drive'] /* Enable only google-drive */
 	)
 
 	// Get the port the server was assigned to
@@ -45,7 +45,7 @@ test.before(async (t) => {
 	// The server URL
 	t.context.serverUrl = `http://localhost:${port}`
 	// The API URL
-	t.context.apiUrl = `http://localhost:${port}/files-api/v1`
+	t.context.apiUrl = `http://localhost:${port}/files-api/v2`
 
 	// TODO: Get access token
 })
@@ -58,7 +58,7 @@ test.before(async (t) => {
 test('making a request without authorization header should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
-		axios.get(`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/`)
+		axios.get(`${t.context.apiUrl}/data/google-drive/%2Funknown-folder/`)
 	)
 	t.is(listError?.response?.data?.code, 401)
 	t.is(listError?.response?.data?.error?.reason, 'unauthorized')
@@ -66,7 +66,7 @@ test('making a request without authorization header should throw an error', asyn
 	// Read request
 	const getError = await t.throwsAsync(
 		axios.get(
-			`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/some-file`
+			`${t.context.apiUrl}/data/google-drive/%2Funknown-folder/some-file`
 		)
 	)
 	t.is(getError?.response?.data?.code, 401)
@@ -75,7 +75,7 @@ test('making a request without authorization header should throw an error', asyn
 	// Create request
 	const postError = await t.throwsAsync(
 		axios.post(
-			`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/some-file`
+			`${t.context.apiUrl}/data/google-drive/%2Funknown-folder/some-file`
 		)
 	)
 	t.is(postError?.response?.data?.code, 401)
@@ -84,7 +84,7 @@ test('making a request without authorization header should throw an error', asyn
 	// Update request
 	const putError = await t.throwsAsync(
 		axios.put(
-			`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/some-file`
+			`${t.context.apiUrl}/data/google-drive/%2Funknown-folder/some-file`
 		)
 	)
 	t.is(putError?.response?.data?.code, 401)
@@ -93,7 +93,7 @@ test('making a request without authorization header should throw an error', asyn
 	// Delete request
 	const deleteError = await t.throwsAsync(
 		axios.delete(
-			`${t.context.apiUrl}/data/google_drive/%2Funknown-folder/some-file`
+			`${t.context.apiUrl}/data/google-drive/%2Funknown-folder/some-file`
 		)
 	)
 	t.is(deleteError?.response?.data?.code, 401)

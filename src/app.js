@@ -35,7 +35,7 @@ const dataRoutes = require('./routes/data.js').router
 // MARK: Config and Globals
 
 // The prefix to all requests
-const rootURL = '/files-api/v1'
+const rootURL = '/files-api/v2'
 
 // MARK: Server
 
@@ -102,7 +102,7 @@ module.exports = async (
 		enabledProviders === undefined ||
 		enabledProviders.length === 0
 	) {
-		enabledProviders = ['hard_drive', 'one_drive', 'google_drive', 'gmail']
+		enabledProviders = ['hard-drive', 'one-drive', 'google-drive', 'gmail']
 	}
 
 	// Create the server

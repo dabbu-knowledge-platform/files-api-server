@@ -249,5 +249,5 @@ exports.sortFiles = (
 exports.cachePath = (filePath) => {
 	return `http://localhost:${
 		process.argv.DABBU_FILES_API_SERVER_PORT || 8080
-	}/files-api/v1/internal/cache/${encodeURIComponent(filePath)}`
+	}/files-api/v2/internal/cache/${encodeURIComponent(filePath)}`
 }

@@ -34,10 +34,10 @@ test.before(async (t) => {
 	const server = await app(
 		0 /* 0 means it will assign a random port */,
 		[
-			'hard_drive',
-			'google_drive',
+			'hard-drive',
+			'google-drive',
 			'gmail',
-			'one_drive'
+			'one-drive'
 		] /* Enable all providers */
 	)
 
@@ -46,7 +46,7 @@ test.before(async (t) => {
 	// The server URL
 	t.context.serverUrl = `http://localhost:${port}`
 	// The API URL
-	t.context.apiUrl = `http://localhost:${port}/files-api/v1`
+	t.context.apiUrl = `http://localhost:${port}/files-api/v2`
 })
 
 // MARK: Tests
@@ -57,15 +57,15 @@ test('list providers', async (t) => {
 	const response = await axios.get(`${t.context.apiUrl}/providers`)
 	t.is(response?.data?.code, 200)
 	t.deepEqual(response?.data?.content?.providers, [
-		'hard_drive',
-		'google_drive',
+		'hard-drive',
+		'google-drive',
 		'gmail',
-		'one_drive'
+		'one-drive'
 	])
 })
 
 test('enabled provider should return an HTTP 200 when queried', async (t) => {
-	const response = await axios.get(`${t.context.apiUrl}/providers/hard_drive`)
+	const response = await axios.get(`${t.context.apiUrl}/providers/hard-drive`)
 	t.is(response?.status, 200)
 })
 

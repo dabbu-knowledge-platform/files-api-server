@@ -1,4 +1,4 @@
-/* Dabbu Files API Server - hard_drive_test.js
+/* Dabbu Files API Server - hard-drive_test.js
  * Copyright (C) 2021  gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -38,10 +38,10 @@ test.before(async (t) => {
 	const server = await app(
 		0 /* 0 means it will assign a random port */,
 		[
-			'hard_drive',
-			'google_drive',
+			'hard-drive',
+			'google-drive',
 			'gmail',
-			'one_drive'
+			'one-drive'
 		] /* Enable all providers */
 	)
 
@@ -50,24 +50,24 @@ test.before(async (t) => {
 	// The server URL
 	t.context.serverUrl = `http://localhost:${port}`
 	// The API URL
-	t.context.apiUrl = `http://localhost:${port}/files-api/v1`
+	t.context.apiUrl = `http://localhost:${port}/files-api/v2`
 })
 
 // MARK: Tests
 
 // The actual tests using ava
 // `%2F` is actually a `/` (forward slash) that is URL encoded.
-test('making a request without base_path should throw an error', async (t) => {
+test('making a request without base-path should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
-		axios.get(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/`)
+		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/`)
 	)
 	t.is(listError?.response?.data?.code, 400)
 	t.is(listError?.response?.data?.error?.reason, 'missingParam')
 
 	// Read request
 	const getError = await t.throwsAsync(
-		axios.get(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`)
+		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/some-file`)
 	)
 	t.is(getError?.response?.data?.code, 400)
 	t.is(getError?.response?.data?.error?.reason, 'missingParam')
@@ -75,7 +75,7 @@ test('making a request without base_path should throw an error', async (t) => {
 	// Create request
 	const postError = await t.throwsAsync(
 		axios.post(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`
+			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/some-file`
 		)
 	)
 	t.is(postError?.response?.data?.code, 400)
@@ -83,7 +83,7 @@ test('making a request without base_path should throw an error', async (t) => {
 
 	// Update request
 	const putError = await t.throwsAsync(
-		axios.put(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`)
+		axios.put(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/some-file`)
 	)
 	t.is(putError?.response?.data?.code, 400)
 	t.is(putError?.response?.data?.error?.reason, 'missingParam')
@@ -91,7 +91,7 @@ test('making a request without base_path should throw an error', async (t) => {
 	// Delete request
 	const deleteError = await t.throwsAsync(
 		axios.delete(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder/some-file`
+			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder/some-file`
 		)
 	)
 	t.is(deleteError?.response?.data?.code, 400)
@@ -101,9 +101,9 @@ test('making a request without base_path should throw an error', async (t) => {
 test('making a request with a relative folder path should throw an error', async (t) => {
 	// List request
 	const listError = await t.throwsAsync(
-		axios.get(`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../`, {
+		axios.get(`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../`, {
 			data: {
-				base_path: '/' // eslint-disable-line camelcase
+				base-path: '/' // eslint-disable-line camelcase
 			}
 		})
 	)
@@ -113,10 +113,10 @@ test('making a request with a relative folder path should throw an error', async
 	// Read request
 	const getError = await t.throwsAsync(
 		axios.get(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../some-file`,
+			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			{
 				data: {
-					base_path: '/' // eslint-disable-line camelcase
+					base-path: '/' // eslint-disable-line camelcase
 				}
 			}
 		)
@@ -130,10 +130,10 @@ test('making a request with a relative folder path should throw an error', async
 		'content',
 		fs.createReadStream('tests/test_content/Text.txt')
 	)
-	postFormData.append('base_path', '/')
+	postFormData.append('base-path', '/')
 	const postError = await t.throwsAsync(
 		axios.post(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../some-file`,
+			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			postFormData,
 			{
 				headers: postFormData.getHeaders()
@@ -149,10 +149,10 @@ test('making a request with a relative folder path should throw an error', async
 		'content',
 		fs.createReadStream('tests/test_content/Text.txt')
 	)
-	putFormData.append('base_path', '/')
+	putFormData.append('base-path', '/')
 	const putError = await t.throwsAsync(
 		axios.put(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../some-file`,
+			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			putFormData,
 			{
 				headers: putFormData.getHeaders()
@@ -165,10 +165,10 @@ test('making a request with a relative folder path should throw an error', async
 	// Delete request
 	const deleteError = await t.throwsAsync(
 		axios.delete(
-			`${t.context.apiUrl}/data/hard_drive/%2Funknown-folder%2F../some-file`,
+			`${t.context.apiUrl}/data/hard-drive/%2Funknown-folder%2F../some-file`,
 			{
 				data: {
-					base_path: '/' // eslint-disable-line camelcase
+					base-path: '/' // eslint-disable-line camelcase
 				}
 			}
 		)
@@ -179,9 +179,9 @@ test('making a request with a relative folder path should throw an error', async
 
 test('listing files in a non-existent folder should throw an error', async (t) => {
 	const error = await t.throwsAsync(
-		axios.get(`${t.context.apiUrl}/data/hard_drive/unknown-folder`, {
+		axios.get(`${t.context.apiUrl}/data/hard-drive/unknown-folder`, {
 			data: {
-				base_path: '/' // eslint-disable-line camelcase
+				base-path: '/' // eslint-disable-line camelcase
 			}
 		})
 	)
@@ -190,9 +190,9 @@ test('listing files in a non-existent folder should throw an error', async (t) =
 
 test('fetching a non-existent file should throw an error', async (t) => {
 	const error = await t.throwsAsync(
-		axios.get(`${t.context.apiUrl}/data/hard_drive/%2F/unknown-file`, {
+		axios.get(`${t.context.apiUrl}/data/hard-drive/%2F/unknown-file`, {
 			data: {
-				base_path: '/' // eslint-disable-line camelcase
+				base-path: '/' // eslint-disable-line camelcase
 			}
 		})
 	)

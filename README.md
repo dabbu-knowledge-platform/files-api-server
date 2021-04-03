@@ -34,10 +34,10 @@ Here is a list of clients that use the Dabbu API to interact with your files and
 
 ## Supported Providers
 
-- [**Hard drive**](./docs/modules/hard_drive.md)
-- [**Google drive**](./docs/modules/google_drive.md)
-- [**Gmail**](./docs/modules/gmail.md)
-- [**One drive**](./docs/modules/one_drive.md)
+- **Hard drive**
+- **Google drive**
+- **Gmail**
+- **One drive**
 
 _And more to come...!_
 

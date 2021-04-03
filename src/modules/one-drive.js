@@ -1,4 +1,4 @@
-/* Dabbu Files API Server - one_drive.js
+/* Dabbu Files API Server - one-drive.js
  * Copyright (C) 2021	gamemaker1
  *
  * This program is free software: you can redistribute it and/or modify
@@ -139,7 +139,7 @@ class OneDriveDataProvider extends Provider {
 				fileObjs.push({
 					name,
 					kind,
-					provider: 'one_drive',
+					provider: 'one-drive',
 					path,
 					mimeType,
 					size,
@@ -247,7 +247,7 @@ class OneDriveDataProvider extends Provider {
 			return {
 				name,
 				kind,
-				provider: 'one_drive',
+				provider: 'one-drive',
 				path,
 				mimeType,
 				size,
@@ -373,7 +373,7 @@ class OneDriveDataProvider extends Provider {
 			return {
 				name,
 				kind,
-				provider: 'one_drive',
+				provider: 'one-drive',
 				path,
 				mimeType,
 				size,
@@ -533,7 +533,7 @@ class OneDriveDataProvider extends Provider {
 			return {
 				name,
 				kind,
-				provider: 'one_drive',
+				provider: 'one-drive',
 				path,
 				mimeType,
 				size,

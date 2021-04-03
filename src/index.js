@@ -46,8 +46,6 @@ async function main() {
 
 	// Initialise the server on the given port with the specified providers
 	const server = await app(port, enabledProviders)
-	// Allow server ouput
-	process.env.DO_NOT_LOG_TO_CONSOLE = false
 	// Once it starts, print out the server version and the port it's running on
 	info(`Dabbu Files API Server v${require('../package.json').version}`)
 	info(`Server listening on port ${port}`)
