@@ -23,7 +23,7 @@ const app = require('./app.js')
 // Extended file system library
 const fs = require('fs-extra')
 // Logging methods and utils
-const {info} = require('./utils.js')
+const { info } = require('./utils.js')
 
 // Parse the command line arguments and run the server
 async function main() {

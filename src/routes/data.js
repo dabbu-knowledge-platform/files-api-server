@@ -28,9 +28,9 @@ const multer = require('multer')
 const path = require('path')
 
 // Custom errors we throw
-const {ProviderNotEnabledError} = require('../errors.js')
+const { ProviderNotEnabledError } = require('../errors.js')
 // Logging methods and utils
-const {info, error, json} = require('../utils.js')
+const { info, error, json } = require('../utils.js')
 
 // MARK: Config and Globals
 
@@ -38,7 +38,7 @@ const {info, error, json} = require('../utils.js')
 // eslint-disable-next-line new-cap
 const router = express.Router()
 // Define where multer should store the uploaded files
-const upload = multer({dest: path.normalize('./_dabbu/_server/')})
+const upload = multer({ dest: path.normalize('./_dabbu/_server/') })
 
 // MARK: Routes
 

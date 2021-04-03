@@ -21,7 +21,7 @@
 const fs = require('fs-extra')
 
 // Custom errors we throw
-const {BadRequestError} = require('./errors.js')
+const { BadRequestError } = require('./errors.js')
 
 // MARK: Functions
 

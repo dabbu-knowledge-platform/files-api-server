@@ -18,7 +18,7 @@
 // MARK: Imports
 
 // Custom error to return
-const {NotImplementedError} = require('../errors.js')
+const { NotImplementedError } = require('../errors.js')
 
 // MARK: Provider
 

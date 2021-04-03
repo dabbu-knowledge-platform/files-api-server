@@ -845,7 +845,7 @@ class GoogleDriveDataProvider extends Provider {
 		}
 
 		// Now send back the updated file object
-		if (result.response && result.response.data) {
+		if (result && result.response && result.response.data) {
 			const fileObject = result.response.data
 			// If the creation was successful, return a file object
 			const name = fileObject.title // Name of the file

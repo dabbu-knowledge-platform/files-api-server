@@ -21,7 +21,7 @@
 const express = require('express')
 
 // Custom error handler used to send back user and computer friendly messages to clients.
-const {errorHandler} = require('./errors.js')
+const { errorHandler } = require('./errors.js')
 
 // MARK: Routes
 
@@ -46,7 +46,7 @@ function createServer(enabledProviders) {
 
 	// Tell the server to accept JSON and Multipart Form Data
 	// (x-www-form-urlencoded) in the HTTP request body
-	app.use(express.urlencoded({extended: true}))
+	app.use(express.urlencoded({ extended: true }))
 	app.use(express.json())
 
 	// Add the enabledProviders to the request every time

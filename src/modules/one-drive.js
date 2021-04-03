@@ -31,7 +31,7 @@ const {
 	UnauthorizedError
 } = require('../errors.js')
 // Used to generate platform-independent file/folder paths
-const {diskPath, sortFiles} = require('../utils.js')
+const { diskPath, sortFiles } = require('../utils.js')
 
 // Import the default Provider class we need to extend
 const Provider = require('./provider.js').default
@@ -52,7 +52,7 @@ class OneDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Is the file shared (explicitly or implicitly)
@@ -101,9 +101,9 @@ class OneDriveDataProvider extends Provider {
 		) {
 			// If a valid result is returned, loop through all the files and folders there
 			let fileObjs = []
-			for (let i = 0, {length} = listResult.data.value; i < length; i++) {
+			for (let i = 0, { length } = listResult.data.value; i < length; i++) {
 				const fileObject = listResult.data.value[i]
-				const {name} = fileObject // Name of the file
+				const { name } = fileObject // Name of the file
 				const kind = fileObject.folder ? 'folder' : 'file' // File or folder
 				const path = isShared
 					? diskPath('/Shared', folderPath, name)
@@ -116,7 +116,7 @@ class OneDriveDataProvider extends Provider {
 						: fileObject.package
 						? fileObject.package.type
 						: null // Mime type
-				const {size} = fileObject // Size in bytes, let clients convert to whatever unit they want
+				const { size } = fileObject // Size in bytes, let clients convert to whatever unit they want
 				const createdAtTime = fileObject.fileSystemInfo.createdDateTime // When it was created
 				const lastModifiedTime = fileObject.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
 				let contentURI = null
@@ -180,15 +180,15 @@ class OneDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		const folderPath = diskPath(parameters.folderPath.replace('Shared', ''))
 		// Get the file path from the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 		// Get the export type from the query parameters
-		const {exportType} = queries
+		const { exportType } = queries
 		// Is the file shared (explicitly or implicitly)
 		const isShared =
 			diskPath(parameters.folderPath).startsWith('/Shared') ||
@@ -211,7 +211,7 @@ class OneDriveDataProvider extends Provider {
 		if (fetchResult.data) {
 			// Parse the returned object
 			const fileObject = fetchResult.data
-			const {name} = fileObject // Name of the file
+			const { name } = fileObject // Name of the file
 			const kind = fileObject.folder ? 'folder' : 'file' // File or folder
 			const path = isShared
 				? diskPath('/Shared', folderPath, name)
@@ -224,7 +224,7 @@ class OneDriveDataProvider extends Provider {
 					: fileObject.package
 					? fileObject.package.type
 					: null // Mime type
-			const {size} = fileObject // Size in bytes, let clients convert to whatever unit they want
+			const { size } = fileObject // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = fileObject.fileSystemInfo.createdDateTime // When it was created
 			const lastModifiedTime = fileObject.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
 			let contentURI = null
@@ -271,17 +271,17 @@ class OneDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		const folderPath = diskPath(parameters.folderPath)
 		// Get the file path from the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 		// If they have specified the type of contentURI they want in the returned
 		// file object, give them that
 		// This must be mentioned in the body as it is a provider-specific variable
-		const {exportType} = body
+		const { exportType } = body
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
@@ -343,7 +343,7 @@ class OneDriveDataProvider extends Provider {
 
 		if (result.data) {
 			const fileObject = result.data
-			const {name} = fileObject // Name of the file
+			const { name } = fileObject // Name of the file
 			const kind = fileObject.folder ? 'folder' : 'file' // File or folder
 			const path = diskPath(folderPath, name) // Absolute path to the file
 			const mimeType =
@@ -354,7 +354,7 @@ class OneDriveDataProvider extends Provider {
 					: fileObject.package
 					? fileObject.package.type
 					: null // Mime type
-			const {size} = fileObject // Size in bytes, let clients convert to whatever unit they want
+			const { size } = fileObject // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = fileObject.fileSystemInfo.createdDateTime // When it was created
 			const lastModifiedTime = fileObject.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
 			let contentURI = null
@@ -397,17 +397,17 @@ class OneDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		let folderPath = diskPath(parameters.folderPath)
 		// Get the file path from the URL
-		let {fileName} = parameters
+		let { fileName } = parameters
 		// If they have specified the type of contentURI they want in the returned
 		// file object, give them that
 		// This must be mentioned in the body as it is a provider-specific variable
-		const {exportType} = body
+		const { exportType } = body
 
 		// Don't allow relative paths, let clients do that
 		if ([folderPath, fileName].join('/').includes('/..')) {
@@ -503,7 +503,7 @@ class OneDriveDataProvider extends Provider {
 
 		if (result.data) {
 			const fileObject = result.data
-			const {name} = fileObject // Name of the file
+			const { name } = fileObject // Name of the file
 			const kind = fileObject.folder ? 'folder' : 'file' // File or folder
 			const path = diskPath(folderPath, name) // Absolute path to the file
 			const mimeType =
@@ -514,7 +514,7 @@ class OneDriveDataProvider extends Provider {
 					: fileObject.package
 					? fileObject.package.type
 					: null // Mime type
-			const {size} = fileObject // Size in bytes, let clients convert to whatever unit they want
+			const { size } = fileObject // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = fileObject.fileSystemInfo.createdDateTime // When it was created
 			const lastModifiedTime = fileObject.fileSystemInfo.lastModifiedDateTime // Last time the file or its metadata was changed
 			let contentURI = null
@@ -557,13 +557,13 @@ class OneDriveDataProvider extends Provider {
 		// this instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Get the folder path from the URL
 		const folderPath = diskPath(parameters.folderPath)
 		// Get the file path from the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 
 		// Don't allow relative paths, let clients do that
 		if (folderPath.includes('/..')) {

@@ -23,7 +23,7 @@
 const express = require('express')
 
 // Logging methods and utils
-const {info, json} = require('../utils.js')
+const { info, json } = require('../utils.js')
 
 // MARK: Config and Globals
 

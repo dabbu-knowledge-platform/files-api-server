@@ -30,7 +30,7 @@ const {
 	MissingParamError
 } = require('../errors.js')
 // Used to generate platform-independent file/folder paths
-const {diskPath, sortFiles} = require('../utils.js')
+const { diskPath, sortFiles } = require('../utils.js')
 
 // Import the default Provider class we need to extend
 const Provider = require('./provider.js').default
@@ -52,7 +52,7 @@ class HardDriveDataProvider extends Provider {
 
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
-		const {compareWith, operator, value, orderBy, direction} = queries
+		const { compareWith, operator, value, orderBy, direction } = queries
 
 		// Don't allow relative paths, let clients do that
 		if ([basePath, folderPath].join('/').includes('/..')) {
@@ -72,7 +72,7 @@ class HardDriveDataProvider extends Provider {
 		let fileObjs = []
 
 		// Then loop through the list of files
-		for (let i = 0, {length} = files; i < length; i++) {
+		for (let i = 0, { length } = files; i < length; i++) {
 			const fileName = files[i]
 
 			// Get the statistics related to that file, `fs.readdir` only gives the name
@@ -99,7 +99,7 @@ class HardDriveDataProvider extends Provider {
 				mimeType = mimeType.mime
 			}
 
-			const {size} = statistics // Size in bytes, let clients convert to whatever unit they want
+			const { size } = statistics // Size in bytes, let clients convert to whatever unit they want
 			const createdAtTime = statistics.birthtime // When it was created
 			const lastModifiedTime = statistics.mtime // Last time the file or its metadata was changed
 			const contentURI =
@@ -141,7 +141,7 @@ class HardDriveDataProvider extends Provider {
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 
 		// Check if the base path was specified
 		if (!basePath) {
@@ -190,7 +190,7 @@ class HardDriveDataProvider extends Provider {
 			).mime // The mime type of the file
 		}
 
-		const {size} = statistics // Size in bytes, let clients convert to whatever unit they want
+		const { size } = statistics // Size in bytes, let clients convert to whatever unit they want
 		const createdAtTime = statistics.birthTime // When it was created
 		const lastModifiedTime = statistics.mtime // Last time the file or its metadata was changed
 		const contentURI =
@@ -216,7 +216,7 @@ class HardDriveDataProvider extends Provider {
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 
 		// Check if the base path was specified
 		if (!basePath) {
@@ -283,7 +283,7 @@ class HardDriveDataProvider extends Provider {
 			).mime // The mime type of the file
 		}
 
-		const {size} = statistics // Size in bytes, let clients convert to whatever unit they want
+		const { size } = statistics // Size in bytes, let clients convert to whatever unit they want
 		const createdAtTime = statistics.birthTime // When it was created
 		const lastModifiedTime = statistics.mtime // Last time the file or its metadata was changed
 		const contentURI =
@@ -309,7 +309,7 @@ class HardDriveDataProvider extends Provider {
 		// Get the folder path in the URL
 		let folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
-		let {fileName} = parameters
+		let { fileName } = parameters
 
 		// Check if the base path was specified
 		if (!basePath) {
@@ -361,7 +361,7 @@ class HardDriveDataProvider extends Provider {
 			await fs.move(
 				diskPath(basePath, folderPath, fileName),
 				diskPath(basePath, body.path, fileName),
-				{overwrite: true}
+				{ overwrite: true }
 			)
 			folderPath = body.path
 		}
@@ -392,7 +392,7 @@ class HardDriveDataProvider extends Provider {
 			).mime // The mime type of the file
 		}
 
-		const {size} = statistics // Size in bytes, let clients convert to whatever unit they want
+		const { size } = statistics // Size in bytes, let clients convert to whatever unit they want
 		const createdAtTime = statistics.birthTime // When it was created
 		const lastModifiedTime = statistics.mtime // Last time the file or its metadata was changed
 		const contentURI =
@@ -418,7 +418,7 @@ class HardDriveDataProvider extends Provider {
 		// Get the folder path in the URL
 		const folderPath = parameters.folderPath.replace(basePath, '')
 		// Get the file name in the URL
-		const {fileName} = parameters
+		const { fileName } = parameters
 
 		// Check if the base path was specified
 		if (!basePath) {

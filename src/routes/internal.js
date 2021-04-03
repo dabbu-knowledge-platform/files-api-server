@@ -23,9 +23,9 @@
 const express = require('express')
 
 // Custom errors we throw
-const {BadRequestError} = require('../errors.js')
+const { BadRequestError } = require('../errors.js')
 // Logging methods and utils
-const {info, json} = require('../utils.js')
+const { info, json } = require('../utils.js')
 
 // MARK: Config and Globals
 

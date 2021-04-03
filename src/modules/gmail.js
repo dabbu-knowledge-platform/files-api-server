@@ -34,7 +34,7 @@ const {
 	MissingParamError
 } = require('../errors.js')
 // Used sort the files retrieved based on query parameters
-const {sortFiles, diskPath, cachePath} = require('../utils.js')
+const { sortFiles, diskPath, cachePath } = require('../utils.js')
 
 // Import the default Provider class we need to extend
 const Provider = require('./provider.js').default
@@ -66,7 +66,7 @@ async function getLabelsFromName(instance, name) {
 	const labels = []
 
 	const labelsResult = await instance.get('/gmail/v1/users/me/labels')
-	for (let i = 0, {length} = labelNames; i < length; i++) {
+	for (let i = 0, { length } = labelNames; i < length; i++) {
 		const labelName = labelNames[i]
 		// If there is a result, parse it
 		if (labelsResult.data && labelsResult.data.labels) {
@@ -127,7 +127,7 @@ function parseGmailMessage(message) {
 	}
 
 	// The message payload (contains body and attachments)
-	const {payload} = message
+	const { payload } = message
 	if (!payload) {
 		return result
 	}
@@ -197,7 +197,7 @@ function parseGmailMessage(message) {
 			// If it is an attachment, return the metadata so we can
 			// fetch the attachment
 
-			const {body} = part
+			const { body } = part
 			if (!result.attachments) {
 				result.attachments = []
 			}
@@ -213,7 +213,7 @@ function parseGmailMessage(message) {
 			// If it is an attachment, return the metadata so we can
 			// fetch the attachment
 
-			const {body} = part
+			const { body } = part
 			if (!result.inline) {
 				result.inline = []
 			}
@@ -244,7 +244,7 @@ async function createMailDataURI(instance, threadData) {
 	// The final archive name
 	let archiveName = ''
 	// Loop through the messages
-	for (let i = 0, {length} = threadData.messages; i < length; i++) {
+	for (let i = 0, { length } = threadData.messages; i < length; i++) {
 		// Parse the message
 		const message = parseGmailMessage(threadData.messages[i])
 
@@ -265,7 +265,7 @@ async function createMailDataURI(instance, threadData) {
 		let attachmentsText = ''
 		let inlineText = ''
 		if (message.attachments) {
-			for (let j = 0, {length} = message.attachments; j < length; j++) {
+			for (let j = 0, { length } = message.attachments; j < length; j++) {
 				const attachment = message.attachments[j]
 				// First add the text to the message file
 				attachmentsText += [
@@ -308,7 +308,7 @@ async function createMailDataURI(instance, threadData) {
 		}
 
 		if (message.inline) {
-			for (let j = 0, {length} = message.inline; j < length; j++) {
+			for (let j = 0, { length } = message.inline; j < length; j++) {
 				const attachment = message.inline[j]
 				// First add the text to the message file
 				inlineText += [
@@ -389,26 +389,26 @@ async function createMailDataURI(instance, threadData) {
 		`./_dabbu/_server/_gmail/zips/${archiveName}.zip`
 	)
 	const archive = archiver('zip', {
-		zlib: {level: 9} // Sets the compression level.
+		zlib: { level: 9 } // Sets the compression level.
 	})
 
 	// Now append files to the archive
 	// First add the messages
-	for (let k = 0, {length} = messagePaths; k < length; k++) {
+	for (let k = 0, { length } = messagePaths; k < length; k++) {
 		// Get the path and name object
 		const message = messagePaths[k]
 
 		// Add the data to the archive
-		archive.file(message.path, {name: message.name})
+		archive.file(message.path, { name: message.name })
 	}
 
 	// Then append the attachments, if any
-	for (let k = 0, {length} = attachmentPaths; k < length; k++) {
+	for (let k = 0, { length } = attachmentPaths; k < length; k++) {
 		// Get the path and name object
 		const attachment = attachmentPaths[k]
 
 		// Add the data to the archive
-		archive.file(attachment.path, {name: attachment.name})
+		archive.file(attachment.path, { name: attachment.name })
 	}
 
 	return new Promise((resolve, reject) => {
@@ -445,14 +445,14 @@ class GmailProvider extends Provider {
 		// instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://gmail.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// Folder path for threads are treated as space separated labels
 		const labelIds = await getLabelsFromName(instance, parameters.folderPath)
 
 		// Get the export type and compare/sort params from the query parameters
-		const {compareWith, operator, value, orderBy, direction} = queries
+		const { compareWith, operator, value, orderBy, direction } = queries
 
 		// If the request is for / (the root folder), then return a list
 		// of all labels. Else return the list of threads with that label
@@ -498,7 +498,7 @@ class GmailProvider extends Provider {
 					// If the thread exists, parse it
 					if (threadResult.data && threadResult.data.messages) {
 						// Get all its messages
-						const {messages} = threadResult.data
+						const { messages } = threadResult.data
 						if (messages.length > 0) {
 							// Get the first and last messages
 							const firstMessage = messages[0]
@@ -620,14 +620,14 @@ class GmailProvider extends Provider {
 		// instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://gmail.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// File name is the thread ID
 		const threadId = getThreadIDFromName(parameters.fileName)
 
 		// Get the export type
-		const {exportType} = queries
+		const { exportType } = queries
 
 		// Get that particular thread from the Gmail API
 		const threadResult = await instance.get(
@@ -642,7 +642,7 @@ class GmailProvider extends Provider {
 		// If the thread exists, parse it
 		if (threadResult.data && threadResult.data.messages) {
 			// Get all its messages
-			const {messages} = threadResult.data
+			const { messages } = threadResult.data
 			if (messages.length > 0) {
 				// Get the first and last messages
 				const firstMessage = messages[0]
@@ -742,7 +742,7 @@ class GmailProvider extends Provider {
 		// instance so the headers will be present everywhere
 		const instance = axios.create({
 			baseURL: 'https://gmail.googleapis.com/',
-			headers: {Authorization: accessToken}
+			headers: { Authorization: accessToken }
 		})
 
 		// File name is the thread ID, we don't care about the folder
