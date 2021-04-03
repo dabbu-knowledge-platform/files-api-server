@@ -1,1 +1,1 @@
-web: npm start $PORT google_drive one_drive gmail
+web: npm start $PORT google-drive one-drive gmail

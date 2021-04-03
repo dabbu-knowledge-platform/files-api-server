@@ -1,52 +1,91 @@
 {
-  "name": "dabbu-files-api-server",
-  "version": "1.8.2",
-  "description": "An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!",
-  "main": "src/server.js",
-  "scripts": {
-    "start": "node src/server.js",
-    "clean": "rm -r dist/ && mkdir dist/",
-    "format": "npx prettier --write .",
-    "check-format": "npx prettier --check .",
-    "prebuild": "npm run check-format",
-    "build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
-    "ci-build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
-    "test": "echo \"Error: no test specified\"; exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dabbu-knowledge-platform/files-api-server.git"
-  },
-  "author": "gamemaker1",
-  "license": "GPL-3.0-or-later",
-  "bugs": {
-    "url": "https://github.com/dabbu-knowledge-platform/files-api-server/issues"
-  },
-  "homepage": "https://github.com/dabbu-knowledge-platform/files-api-server#readme",
-  "dependencies": {
-    "archiver": "^5.3.0",
-    "axios": "^0.21.1",
-    "breakdance": "3.0.1",
-    "express": "^4.17.1",
-    "file-type": "16.3.0",
-    "fs-extra": "^9.1.0",
-    "multer": "^1.4.2"
-  },
-  "devDependencies": {
-    "pkg": "^4.5.1",
-    "prettier": "2.2.1"
-  },
-  "bin": "src/server.js",
-  "pkg": {
-    "scripts": [
-      "src/**/*"
-    ],
-    "assets": [
-      "node_modules/**/*"
-    ]
-  },
-  "engines": {
-    "node": "14.16.0",
-    "npm": "6.14.11"
-  }
+	"name": "dabbu-files-api-server",
+	"version": "2.0.0",
+	"description": "An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!",
+	"main": "src/index.js",
+	"scripts": {
+		"start": "node src/index.js",
+		"clean": "rm -r dist/ && mkdir dist/",
+		"format": "xo --fix",
+		"prebuild": "npm run test",
+		"build": "npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
+		"ci-build": "npm prune --production && npx pkg --output dist/files-api-server . --targets node14.4.0-win-x64,node14.4.0-macos-x64,node14.4.0-linux-x64,node14.4.0-alpine-x64",
+		"test": "xo && ava"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/dabbu-knowledge-platform/files-api-server.git"
+	},
+	"author": "gamemaker1",
+	"license": "GPL-3.0-or-later",
+	"bugs": {
+		"url": "https://github.com/dabbu-knowledge-platform/files-api-server/issues"
+	},
+	"homepage": "https://github.com/dabbu-knowledge-platform/files-api-server#readme",
+	"dependencies": {
+		"archiver": "^5.3.0",
+		"axios": "^0.21.1",
+		"breakdance": "3.0.1",
+		"express": "^4.17.1",
+		"file-type": "16.3.0",
+		"fs-extra": "^9.1.0",
+		"multer": "^1.4.2"
+	},
+	"devDependencies": {
+		"xo": "0.38.2",
+		"ava": "^3.15.0",
+		"pkg": "^4.5.1",
+		"form-data": "^4.0.0"
+	},
+	"bin": "src/index.js",
+	"pkg": {
+		"scripts": [
+			"src/**/*"
+		],
+		"assets": [
+			"node_modules/**/*"
+		]
+	},
+	"prettier": {
+		"semi": false,
+		"useTabs": true,
+		"trailingComma": "none",
+		"singleQuote": true,
+		"bracketSpacing": true,
+		"jsxBracketSameLine": false
+	},
+	"xo": {
+		"semicolon": false,
+		"prettier": true,
+		"rules": {
+			"complexity": 0,
+			"no-unused-vars": 0,
+			"max-params": 0,
+			"max-depth": 0,
+			"object-curly-spacing": 0,
+			"unicorn/no-nested-ternary": 0
+		},
+		"ignores": [
+			"node_modules/",
+			"creds/",
+			"dist/",
+			"_dabbu/",
+			".git/",
+			".heroku/"
+		]
+	},
+	"ava": {
+		"files": [
+			"tests/**/*"
+		],
+		"verbose": true,
+		"nodeArguments": [
+			"--trace-deprecation",
+			"--napi-modules"
+		]
+	},
+	"engines": {
+		"node": "14.16.0",
+		"npm": "6.14.11"
+	}
 }

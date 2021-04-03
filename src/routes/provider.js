@@ -15,6 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* eslint promise/prefer-await-to-then: 0 */
+
 // MARK: Imports
 
 // Express JS, the library used to run the server and respond to HTTP requests
@@ -26,42 +28,43 @@ const { info, json } = require('../utils.js')
 // MARK: Config and Globals
 
 // Define the router object, which we will add our routes to
+// eslint-disable-next-line new-cap
 const router = express.Router()
 
 // MARK: Routes
 
 // HTTP GET request to `/providers` will return all enabled providers
-router.get(`/`, (req, res, next) => {
-  info(
-    `(List providers) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
+router.get('/', (request, response, next) => {
+	info(
+		`(List providers) Get request called with params: ${json(
+			request.params
+		)} and queries: ${json(request.query)}`
+	)
 
-  // Send back a successfull response code (200) and the enabled providers.
-  res.status(200).json({
-    code: 200,
-    content: {
-      providers: req.enabledProviders, // Can be accessed using `response.data.content.providers` if using axios.
-    },
-  })
+	// Send back a successfull response code (200) and the enabled providers.
+	response.status(200).json({
+		code: 200,
+		content: {
+			providers: request.enabledProviders // Can be accessed using `response.data.content.providers` if using axios.
+		}
+	})
 })
 
 // HTTP GET request to /providers/:providerId will return status code 200 if the provider is enabled, else 501
-router.get(`/:providerId`, (req, res, next) => {
-  info(
-    `(Check provider) Get request called with params: ${json(
-      req.params
-    )} and queries: ${json(req.query)}`
-  )
+router.get('/:providerId', (request, response, next) => {
+	info(
+		`(Check provider) Get request called with params: ${json(
+			request.params
+		)} and queries: ${json(request.query)}`
+	)
 
-  // Return the response accordingly
-  // Throw an error if the provider isn't enabled
-  if (req.enabledProviders.indexOf(req.params.providerId) === -1) {
-    res.sendStatus(501) // Not enabled
-  } else {
-    res.sendStatus(200) // Enabled
-  }
+	// Return the response accordingly
+	// Throw an error if the provider isn't enabled
+	if (request.enabledProviders.includes(request.params.providerId)) {
+		response.sendStatus(200) // Enabled
+	} else {
+		response.sendStatus(501) // Not enabled
+	}
 })
 
 // MARK: Exports
