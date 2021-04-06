@@ -507,7 +507,7 @@ class GmailProvider extends Provider {
 
 		// Folders are treated as labels
 		const labelIdQ =
-			parameters.folderPath === '/ALL_MAIL'
+			parameters.folderPath.includes('/ALL_MAIL')
 				? '?q='
 				: `?labelIds=${await getLabelsFromName(
 						instance,
