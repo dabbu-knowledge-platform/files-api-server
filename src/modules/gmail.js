@@ -448,18 +448,58 @@ class GmailProvider extends Provider {
 			headers: { Authorization: accessToken }
 		})
 
-		// Folder path for threads are treated as space separated labels
-		const labelIds = await getLabelsFromName(instance, parameters.folderPath)
-
 		// Get the export type and compare/sort params from the query parameters
 		const { compareWith, operator, value, orderBy, direction } = queries
 
 		// If the request is for / (the root folder), then return a list
 		// of all labels. Else return the list of threads with that label
 		let results = []
-		if (labelIds) {
-			// Convert the list to a query param
-			const labelIdQ = `?labelIds=${labelIds.join('&labelIds=')}`
+		if (parameters.folderPath === '/') {
+			// Return all the labels the user or Gmail has created
+			const labelsResult = await instance.get('/gmail/v1/users/me/labels')
+
+			// If there is a result, parse it
+			if (labelsResult.data && labelsResult.data.labels) {
+				// Loop through the labels
+				for (const label of labelsResult.data.labels) {
+					// Add the label to the results
+					results.push({
+						name: `${label.name}`,
+						path: `/${label.name}`,
+						kind: 'folder', // Labels are folders, threads are files within them
+						provider: 'gmail',
+						mimeType: 'mail/label', // Weird mime type invented by me TODO: replace this with a proper one
+						size: Number.NaN, // We could return number of threads or number of messages with that label, but it will require another request per label
+						createdAtTime: Number.NaN, // No such thing as when the label was created
+						lastModifiedTime: Number.NaN, // Or when it was last modified
+						contentURI: `https://mail.google.com/mail/u/0/#search/label%3A${(
+							label.name || ''
+						).replace(/ /g, '%2F')}` // Content URI
+					})
+				}
+				// Also manually add a special label ALL_MAIL
+				results.push({
+					name: `ALL_MAIL`,
+					path: `/ALL_MAIL`,
+					kind: 'folder', // Labels are folders, threads are files within them
+					provider: 'gmail',
+					mimeType: 'mail/label', // Weird mime type invented by me TODO: replace this with a proper one
+					size: Number.NaN, // We could return number of threads or number of messages with that label, but it will require another request per label
+					createdAtTime: Number.NaN, // No such thing as when the label was created
+					lastModifiedTime: Number.NaN, // Or when it was last modified
+					contentURI: `https://mail.google.com/mail/u/0/#all` // Content URI
+				})
+			}
+		} else {
+			// Folders are treated as labels
+			const labelIdQ =
+				parameters.folderPath === '/ALL_MAIL'
+					? '?q='
+					: `?labelIds=${await getLabelsFromName(
+							instance,
+							parameters.folderPath
+					  ).join('&labelIds=')}`
+
 			// List out all the threads labelled with that particular label
 			let allThreads = []
 			let nextPageToken = null
@@ -568,30 +608,6 @@ class GmailProvider extends Provider {
 				}
 			} else {
 				return []
-			}
-		} else {
-			// Return all the labels the user or Gmail has created
-			const labelsResult = await instance.get('/gmail/v1/users/me/labels')
-
-			// If there is a result, parse it
-			if (labelsResult.data && labelsResult.data.labels) {
-				// Loop through the labels
-				for (const label of labelsResult.data.labels) {
-					// Add the label to the results
-					results.push({
-						name: `${label.name}`,
-						path: `/${label.name}`,
-						kind: 'folder', // Labels are folders, threads are files within them
-						provider: 'gmail',
-						mimeType: 'mail/label', // Weird mime type invented by me TODO: replace this with a proper one
-						size: Number.NaN, // We could return number of threads or number of messages with that label, but it will require another request per label
-						createdAtTime: Number.NaN, // No such thing as when the label was created
-						lastModifiedTime: Number.NaN, // Or when it was last modified
-						contentURI: `https://mail.google.com/mail/u/0/#search/label%3A${(
-							label.name || ''
-						).replace(/ /g, '%2F')}` // Content URI
-					})
-				}
 			}
 		}
 
