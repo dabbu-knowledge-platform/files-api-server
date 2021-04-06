@@ -477,6 +477,7 @@ class GmailProvider extends Provider {
 						).replace(/ /g, '%2F')}` // Content URI
 					})
 				}
+
 				// Also manually add a special label ALL_MAIL
 				results.push({
 					name: `ALL_MAIL`,
@@ -490,138 +491,152 @@ class GmailProvider extends Provider {
 					contentURI: `https://mail.google.com/mail/u/0/#all` // Content URI
 				})
 			}
-		} else {
-			// Folders are treated as labels
-			const labelIdQ =
-				parameters.folderPath === '/ALL_MAIL'
-					? '?q='
-					: `?labelIds=${await getLabelsFromName(
-							instance,
-							parameters.folderPath
-					  ).join('&labelIds=')}`
 
-			// List out all the threads labelled with that particular label
-			let allThreads = []
-			let nextPageToken = null
-			do {
-				// Run the GET request
-				// eslint-disable-next-line no-await-in-loop
-				const listResult = await instance.get(
-					`/gmail/v1/users/me/threads/${labelIdQ}&maxResults=100${
-						nextPageToken ? `&pageToken=${nextPageToken}` : ''
-					}`
-				)
+			// Sort the results using the sortFile function
+			results = sortFiles(
+				compareWith,
+				operator,
+				value,
+				orderBy,
+				direction,
+				results
+			)
 
-				// Get the next page token (incase Gmail returned incomplete results)
-				nextPageToken = listResult.data.nextPageToken
-
-				// Add the files we got right now to the main list
-				if (listResult.data.threads) {
-					allThreads = [...allThreads, ...listResult.data.threads]
-				}
-			} while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
-
-			// Loop through the threads
-			if (allThreads.length > 0) {
-				for (const thread of allThreads) {
-					// If the export type is view, get only the metadata, else get everything
-					// eslint-disable-next-line no-await-in-loop
-					const threadResult = await instance.get(
-						`/gmail/v1/users/me/threads/${thread.id}`,
-						{
-							params: {
-								format: 'METADATA'
-							}
-						}
-					)
-
-					// If the thread exists, parse it
-					if (threadResult.data && threadResult.data.messages) {
-						// Get all its messages
-						const { messages } = threadResult.data
-						if (messages.length > 0) {
-							// Get the first and last messages
-							const firstMessage = messages[0]
-							const lastMessage = messages[messages.length - 1]
-							// Get the headers of the messages
-							const firstHeaders = firstMessage.payload.headers
-							const lastHeaders = lastMessage.payload.headers
-
-							// Get the subject from the last email, as that is what is seen in
-							// the user's inbox
-							let subject = '(No Subject)'
-							const subjectHeaders = lastHeaders.filter(
-								(header) => header.name.toLowerCase() === 'subject'
-							)
-							if (subjectHeaders.length > 0) {
-								subject = subjectHeaders[0].value
-							}
-
-							// The created at time is when the first message was sent
-							let createdAtDate
-							const createdAtDateHeaders = firstHeaders.filter(
-								(header) => header.name.toLowerCase() === 'date'
-							)
-							if (createdAtDateHeaders.length > 0) {
-								createdAtDate = createdAtDateHeaders[0].value
-							}
-
-							// The last modified time is when the last message was sent
-							// Note: would be more accurate to use internalDate, but that
-							// is only returned when retrieving a specific message
-							let lastModifiedDate
-							const lastModifiedDateHeaders = lastHeaders.filter(
-								(header) => header.name.toLowerCase() === 'date'
-							)
-							if (lastModifiedDateHeaders.length > 0) {
-								lastModifiedDate = lastModifiedDateHeaders[0].value
-							}
-
-							// The content URI
-							const contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
-
-							// Add this to the results
-							results.push({
-								name: `${formatDate(lastModifiedDate)} - ${
-									threadResult.data.id
-								} - ${subject || '(No subject)'}.zip`,
-								path: diskPath(
-									parameters.folderPath,
-									`${formatDate(lastModifiedDate)} - ${
-										threadResult.data.id
-									} - ${subject || '(No subject)'}.zip`
-								),
-								kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
-								provider: 'gmail',
-								mimeType: 'mail/thread', // Weird mime type invented by me TODO: replace this with a proper one
-								size: Number.NaN, // We have size of messages+attachments, not threads
-								createdAtTime: createdAtDate
-									? new Date(createdAtDate).toISOString()
-									: Number.NaN, // When the first message was sent
-								lastModifiedTime: lastModifiedDate
-									? new Date(lastModifiedDate).toISOString()
-									: Number.NaN, // When the last message was sent
-								contentURI // Content URI
-							})
-						}
-					}
-				}
-			} else {
-				return []
-			}
+			return { content: results, nextSetToken: null }
 		}
 
-		// Sort the results using the sortFile function
-		results = sortFiles(
-			compareWith,
-			operator,
-			value,
-			orderBy,
-			direction,
-			results
-		)
+		// Folders are treated as labels
+		const labelIdQ =
+			parameters.folderPath === '/ALL_MAIL'
+				? '?q='
+				: `?labelIds=${await getLabelsFromName(
+						instance,
+						parameters.folderPath
+				  ).join('&labelIds=')}`
 
-		return results
+		// List out all the threads labelled with that particular label
+		let allThreads = []
+		let nextPageToken = queries.nextSetToken
+		do {
+			// Run the GET request
+			// eslint-disable-next-line no-await-in-loop
+			const listResult = await instance.get(
+				`/gmail/v1/users/me/threads/${labelIdQ}&maxResults=25${
+					nextPageToken ? `&pageToken=${nextPageToken}` : ''
+				}`
+			)
+
+			// Get the next page token (incase Gmail returned incomplete results)
+			nextPageToken = listResult.data.nextPageToken
+
+			// Add the files we got right now to the main list
+			if (listResult.data.threads) {
+				allThreads = [...allThreads, ...listResult.data.threads]
+			}
+		} while (nextPageToken && allThreads.length < (parameters.limit || 50))
+		// Keep doing the above list request until there is no nextPageToken
+		// returned or the max result limit is reached
+
+		// Loop through the threads
+		if (allThreads.length > 0) {
+			for (const thread of allThreads) {
+				// If the export type is view, get only the metadata, else get everything
+				// eslint-disable-next-line no-await-in-loop
+				const threadResult = await instance.get(
+					`/gmail/v1/users/me/threads/${thread.id}`,
+					{
+						params: {
+							format: 'METADATA'
+						}
+					}
+				)
+
+				// If the thread exists, parse it
+				if (threadResult.data && threadResult.data.messages) {
+					// Get all its messages
+					const { messages } = threadResult.data
+					if (messages.length > 0) {
+						// Get the first and last messages
+						const firstMessage = messages[0]
+						const lastMessage = messages[messages.length - 1]
+						// Get the headers of the messages
+						const firstHeaders = firstMessage.payload.headers
+						const lastHeaders = lastMessage.payload.headers
+
+						// Get the subject from the last email, as that is what is seen in
+						// the user's inbox
+						let subject = '(No Subject)'
+						const subjectHeaders = lastHeaders.filter(
+							(header) => header.name.toLowerCase() === 'subject'
+						)
+						if (subjectHeaders.length > 0) {
+							subject = subjectHeaders[0].value
+						}
+
+						// The created at time is when the first message was sent
+						let createdAtDate
+						const createdAtDateHeaders = firstHeaders.filter(
+							(header) => header.name.toLowerCase() === 'date'
+						)
+						if (createdAtDateHeaders.length > 0) {
+							createdAtDate = createdAtDateHeaders[0].value
+						}
+
+						// The last modified time is when the last message was sent
+						// Note: would be more accurate to use internalDate, but that
+						// is only returned when retrieving a specific message
+						let lastModifiedDate
+						const lastModifiedDateHeaders = lastHeaders.filter(
+							(header) => header.name.toLowerCase() === 'date'
+						)
+						if (lastModifiedDateHeaders.length > 0) {
+							lastModifiedDate = lastModifiedDateHeaders[0].value
+						}
+
+						// The content URI
+						const contentURI = `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}` // View in gmail
+
+						// Add this to the results
+						results.push({
+							name: `${formatDate(lastModifiedDate)} - ${
+								threadResult.data.id
+							} - ${subject || '(No subject)'}.zip`,
+							path: diskPath(
+								parameters.folderPath,
+								`${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${
+									subject || '(No subject)'
+								}.zip`
+							),
+							kind: 'file', // An entire thread can be viewed at once. Labels are folders, not threads
+							provider: 'gmail',
+							mimeType: 'mail/thread', // Weird mime type invented by me TODO: replace this with a proper one
+							size: Number.NaN, // We have size of messages+attachments, not threads
+							createdAtTime: createdAtDate
+								? new Date(createdAtDate).toISOString()
+								: Number.NaN, // When the first message was sent
+							lastModifiedTime: lastModifiedDate
+								? new Date(lastModifiedDate).toISOString()
+								: Number.NaN, // When the last message was sent
+							contentURI // Content URI
+						})
+					}
+				}
+			}
+
+			// Sort the results using the sortFile function
+			results = sortFiles(
+				compareWith,
+				operator,
+				value,
+				orderBy,
+				direction,
+				results
+			)
+
+			return { content: results, nextSetToken: nextPageToken }
+		}
+
+		return []
 	}
 
 	async read(body, headers, parameters, queries) {

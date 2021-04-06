@@ -66,7 +66,7 @@ router.get('/:providerId/:folderPath', (request, response, next) => {
 		.then((result) => {
 			response.status(200).json({
 				code: 200,
-				content: result // Send it back with a 200 response code
+				...result // We use the spread operator as the list function returns the content (files) as well as a nextSetToken
 			})
 		})
 		.catch((error_) => {

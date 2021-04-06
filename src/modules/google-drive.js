@@ -372,7 +372,7 @@ class GoogleDriveDataProvider extends Provider {
 
 		// Query the Drive API
 		let allFiles = []
-		let nextPageToken = null
+		let nextPageToken = queries.nextSetToken
 		do {
 			// List all files that match the given query
 			// eslint-disable-next-line no-await-in-loop
@@ -381,7 +381,7 @@ class GoogleDriveDataProvider extends Provider {
 					q,
 					fields:
 						'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)',
-					pageSize: 100, // Get a max of 100 files at a time
+					pageSize: 25, // Get a max of 25 files at a time
 					pageToken: nextPageToken // Add the page token if there is any
 				}
 			})
@@ -394,7 +394,9 @@ class GoogleDriveDataProvider extends Provider {
 			if (listResult.data.items) {
 				allFiles = [...allFiles, ...listResult.data.items]
 			}
-		} while (nextPageToken) // Keep doing the above list request until there is no nextPageToken returned
+		} while (nextPageToken && allFiles.length <= 50) // Keep doing the
+		// above list request until there is no nextPageToken returned or the max
+		// result limit is reached
 
 		// Once we get everything, parse and print the files
 		if (allFiles.length > 0) {
@@ -467,7 +469,7 @@ class GoogleDriveDataProvider extends Provider {
 			)
 
 			// Return all the files as a final array
-			return fileObjs
+			return { content: fileObjs, nextSetToken: nextPageToken }
 		}
 
 		// Empty folder
