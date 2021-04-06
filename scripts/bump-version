@@ -7,9 +7,30 @@
 # 
 # Remember to run this script from the root of the project!
 
-# Import colours to colourise the output
-SCRIPT_DIR=$(dirname "$0")
-source "$SCRIPT_DIR/colours"
+# ANSI colour codes so we can highlight text in the terminal
+colour_black="\033[0;30m"
+colour_darkgray="\033[1;30m"
+colour_red="\033[0;31m"
+colour_lightred="\033[1;31m"
+colour_green="\033[0;32m"
+colour_lightgreen="\033[1;32m"
+colour_orange="\033[0;33m"
+colour_yellow="\033[1;33m"
+colour_blue="\033[0;34m"
+colour_lightblue="\033[1;34m"
+colour_purple="\033[0;35m"
+colour_lightpurple="\033[1;35m"
+colour_cyan="\033[0;36m"
+colour_lightcyan="\033[1;36m"
+colour_lightgray="0;\033[37 m"
+colour_white="\033[1;37m"
+
+# Escape codes for making text bold, italic, etc.
+bold="\e[1m"
+italic="\e[3m"
+underline="\e[4"
+strikethrough="\e[9"
+normal="\e[0m"
 
 # Display a help message
 function help {
@@ -68,19 +89,19 @@ function add_release_notes {
 	# Get the commit that was tagged as the last version
 	local previous_tag_revision=`git rev-list --tags --max-count=1`
 
-	# Add all commit details since the last tagged commit into RELEASE-NOTES.tmp
-	git log --format="%s [%h]%n%b" $previous_tag_revision..HEAD > RELEASE-NOTES.tmp
+	# Add all commit details since the last tagged commit into release-notes.tmp
+	git log --format="%s [%h]%n%b" $previous_tag_revision..HEAD > release-notes.tmp
 	
 	# Remove Signed-off-by and Co-authored-by lines from the details
-	sed -i '/^Signed-off-by/d' RELEASE-NOTES.tmp
-	sed -i '/^Co-authored-by/d' RELEASE-NOTES.tmp
-	# Remove double newlines and save that as RELEASE-NOTES.md
-	cat -s RELEASE-NOTES.tmp > RELEASE-NOTES.md
+	sed -i "/^Signed-off-by/d" release-notes.tmp
+	sed -i "/^Co-authored-by/d" release-notes.tmp
+	# Remove double newlines and save that as release-notes
+	cat -s release-notes.tmp > release-notes.md
 	# Delete the temporary file
-	rm RELEASE-NOTES.tmp
+	rm release-notes.tmp
 
 	# Open the release notes in an editor for the user to edit
-	$EDITOR RELEASE-NOTES.md
+	$EDITOR release-notes.md
 }
 
 # Push a new version to github
@@ -88,15 +109,19 @@ function push_to_git {
 	# Get the new version
 	local new_release_tag=`cat version`
 	# Add the changed files
-	git add version package.json package-lock.json RELEASE-NOTES.md
+	git add version package.json package-lock.json release-notes.md
 
 	# Commit it as a prerelease or a release
+	# NOTE: Do not tag the commit, as the CI will then not create a release
 	# Pre-releases will contain a dash in their version
 	if [[ $new_release_tag =~ "-" ]]; then
-		git commit -m "chore(release): prerelease $new_release_tag"
+		git commit --signoff -m "chore(release): prerelease $new_release_tag"
 	else
-		git commit -m "chore(release): release $new_release_tag"
+		git commit --signoff -m "chore(release): release $new_release_tag"
 	fi
+	
+	# Push the changes
+	git push
 }
 
 # Main function

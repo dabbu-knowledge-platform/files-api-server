@@ -45,7 +45,7 @@ _And more to come...!_
 
 If you want to create a new provider, please file an issue using the `New provider` template [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). This is only to let us know that you want to work on the provider and how you plan to go about it.
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed guide to setting up your environment and making changes to the code.
+Please read [contributing](./contributing) for a detailed guide to setting up your environment and making changes to the code.
 
 Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/categories/want-to-contribute) Github discussion. We will only be glad to help :)
 
@@ -57,7 +57,7 @@ The documentation for the server can be found on the [website](https://dabbu-kno
 
 You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and spreading the word! If you want to report a bug, create an issue by clicking [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). While creating an issue, try to follow the Bug report or Feature request template.
 
-Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for a detailed guide to setting up your environment and making changes to the code.
+Please read [contributing](./contributing) for a detailed guide to setting up your environment and making changes to the code.
 
 ## Legal stuff
 

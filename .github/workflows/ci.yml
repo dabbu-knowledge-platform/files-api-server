@@ -27,6 +27,7 @@ jobs:
         run: |
           npm ci
           npm test
+
   # Build the executable
   build:
     name: Build executable (alpine, linux, macos, win) (node ${{ matrix.node_version }})
@@ -114,9 +115,9 @@ jobs:
         if: ${{ steps.check-version.outputs.version != steps.check-version.outputs.previous_version }}
         uses: softprops/action-gh-release@v1
         with:
-          body_path: RELEASE-NOTES.md
+          body_path: release-notes.md
           tag_name: ${{ steps.check-version.outputs.version }}
-          prerelease: contains(steps.check-version.outputs.version, '-')
+          prerelease: ${{ contains(steps.check-version.outputs.version, '-') }}
           name: Dabbu Files API Server ${{ steps.check-version.outputs.version }}
           files: |
             files-api-server-alpine

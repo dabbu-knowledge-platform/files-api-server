@@ -88,21 +88,33 @@ class OneDriveDataProvider extends Provider {
 			  }`
 			: `/me/drive/root${
 					folderPath && folderPath !== '/' ? `:${folderPath}:` : ''
-			  }/children`
+			  }/children?top=25`
 
-		// Fetch the results
-		const listResult = await instance.get(listQuery)
+		let allFiles = []
+		let nextPageLink = queries.nextSetToken || listQuery
+		do {
+			// List all files that match the given query
+			// eslint-disable-next-line no-await-in-loop
+			const listResult = await instance.get(nextPageLink)
 
-		// Get the list of files and folders
-		if (
-			listResult.data &&
-			listResult.data.value &&
-			listResult.data.value.length > 0
-		) {
+			// Get the next page link (incase One Drive returned incomplete
+			// results)
+			nextPageLink = listResult.data['@odata.nextLink']
+
+			// Add the files we got right now to the main list
+			if (listResult.data.value) {
+				allFiles = [...allFiles, ...listResult.data.value]
+			}
+		} while (nextPageLink && allFiles.length <= 50) // Keep doing the
+		// above list request until there is no nextPageLink returned or the max
+		// result limit is reached
+
+		// Once we get everything, parse and print the files
+		if (allFiles.length > 0) {
 			// If a valid result is returned, loop through all the files and folders there
 			let fileObjs = []
-			for (let i = 0, { length } = listResult.data.value; i < length; i++) {
-				const fileObject = listResult.data.value[i]
+			for (let i = 0, { length } = allFiles; i < length; i++) {
+				const fileObject = allFiles[i]
 				const { name } = fileObject // Name of the file
 				const kind = fileObject.folder ? 'folder' : 'file' // File or folder
 				const path = isShared
@@ -160,7 +172,7 @@ class OneDriveDataProvider extends Provider {
 			)
 
 			// Return all the files as a final array
-			return fileObjs
+			return { content: fileObjs, nextSetToken: nextPageLink }
 		}
 
 		// Empty folder

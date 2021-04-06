@@ -35,7 +35,7 @@ async function main() {
 	if (args.length > 0) {
 		// Check if the port has been mentioned
 		if (args[0]) {
-			port = args[0]
+			port = Number(args[0])
 		}
 
 		// If there are any more, take them as providers

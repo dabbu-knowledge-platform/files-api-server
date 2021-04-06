@@ -131,7 +131,7 @@ class HardDriveDataProvider extends Provider {
 		)
 
 		// Return all the files as a final array
-		return fileObjs
+		return { content: fileObjs }
 	}
 
 	// Return a file obj at a specified location
