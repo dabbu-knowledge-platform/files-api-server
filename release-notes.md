@@ -1,3 +1,3 @@
-## Bug fixes
+## Bug Fixes
 
-- fix(gmail): crash when trying to access ALL_MAIL [4f686f9]
+- fix(gmail): crash when trying to access labels [19228b6]
