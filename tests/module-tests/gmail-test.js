@@ -1,5 +1,5 @@
 /* Dabbu Files API Server - gmail-test.js
- * Copyright (C) 2021  gamemaker1
+ * Copyright (C) 2021 Dabbu Knowledge Platform <dabbuknowledgeplatform@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

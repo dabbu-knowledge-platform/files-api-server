@@ -25,9 +25,9 @@ Install `git`, `nodejs` and `npm`.
 
 #### NodeJS and NPM
 
-`nodejs` and `npm` **must** be installed to run the CLI locally.
+`nodejs` and `npm` **must** be installed to run the server locally.
 
-- To check if NodeJS and NPM already installed, type `node --version && npm --version` in terminal/command prompt. You should see two version numbers displayed after running this command. For developing Dabbu CLI, we use the LTS version of NodeJS (v14.x)
+- To check if NodeJS and NPM already installed, type `node --version && npm --version` in terminal/command prompt. You should see two version numbers displayed after running this command. For developing Dabbu Files API Server, we use the LTS version of NodeJS (v14.x)
 - [Here](https://nodejs.org/en/download/package-manager/) are the official instructions to install NodeJS and NPM for all platforms in case you haven't installed it already.
 
 ### Step 1: Fork
@@ -76,7 +76,7 @@ To test a change without building the executables, you can type `npm start` and 
 
 Once your changes are ready to go, begin the process of documenting your code. The code **must** be heavily commented, so future contributors can move around and make changes easily.
 
-Make sure all the changes you make are in accordance with the [Files API Specifications](https://dabbu-knowledge-platform.github.io/files_api/). If you wish to make changes to the API specification itself, drop a message [here](https://github.com/dabbu-knowledge-platform/cli/discussions/categories/general) and we can start discussing the changes.
+Make sure all the changes you make are in accordance with the [Files API Specifications](https://dabbu-knowledge-platform.github.io/files-api/). If you wish to make changes to the API specification itself, drop a message [here](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/categories/general) and we can start discussing the changes.
 
 ### Step 6: Test
 

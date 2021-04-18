@@ -1,5 +1,5 @@
 /* Dabbu Files API Server - gmail.js
- * Copyright (C) 2021	gamemaker1
+ * Copyright (C) 2021 Dabbu Knowledge Platform <dabbuknowledgeplatform@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -508,9 +508,8 @@ class GmailProvider extends Provider {
 		// Folders are treated as labels
 		const labelIdQ = parameters.folderPath.includes('/ALL_MAIL')
 			? '?q='
-			: `?labelIds=${await getLabelsFromName(
-					instance,
-					parameters.folderPath
+			: `?labelIds=${(
+					await getLabelsFromName(instance, parameters.folderPath)
 			  ).join('&labelIds=')}`
 
 		// List out all the threads labelled with that particular label

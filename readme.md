@@ -67,7 +67,7 @@ Dabbu Files API Server - An implementation of the Dabbu Files API that
 enables you to access your files, folders and emails stored with
 multiple providers as simple files and folders, all in one place!
 
-Copyright (C) 2021 gamemaker1
+Copyright (C) 2021 Dabbu Knowledge Platform <dabbuknowledgeplatform@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
