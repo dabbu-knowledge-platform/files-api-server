@@ -506,13 +506,11 @@ class GmailProvider extends Provider {
 		}
 
 		// Folders are treated as labels
-		const labelIdQ =
-			parameters.folderPath.includes('/ALL_MAIL')
-				? '?q='
-				: `?labelIds=${await getLabelsFromName(
-						instance,
-						parameters.folderPath
-				  ).join('&labelIds=')}`
+		const labelIdQ = parameters.folderPath.includes('/ALL_MAIL')
+			? '?q='
+			: `?labelIds=${(
+					await getLabelsFromName(instance, parameters.folderPath)
+			  ).join('&labelIds=')}`
 
 		// List out all the threads labelled with that particular label
 		let allThreads = []
