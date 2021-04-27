@@ -12,9 +12,9 @@
 		"coverage": "yarn build && yarn test --coverage && echo 'View coverage report at http://localhost:23984' && python -m http.server --directory coverage/lcov-report/ 23984",
 		"lint": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts'",
 		"fix": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts' --fix",
-		"clean": "yarn rimraf dist/ coverage/",
+		"clean": "yarn rimraf dist/ coverage/ execs/",
 		"build": "yarn clean && yarn tsc",
-		"preexecs": "yarn build && yarn rimraf execs/ && yarn global add pkg",
+		"preexecs": "yarn build && yarn global add pkg",
 		"execs": "yarn --prod && pkg --output execs/files-api-server . --targets node14.16.1-win-x64,node14.16.1-macos-x64,node14.16.1-linux-x64,node14.16.1-alpine-x64",
 		"postexecs": "yarn",
 		"ci": "yarn lint && yarn test && yarn execs"
