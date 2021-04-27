@@ -21,30 +21,33 @@ const multer = Multer({
 // All the routes for the /data endpoint
 const router = Express.Router()
 
-// If the user makes a GET request to /data/:providerId/:folderPath/, list
+// If the user makes a GET request to /data/:folderPath/, list
 // out all the files/subfolders in the specified folder
 router.get(
-	'/:providerId/:folderPath/',
+	'/:folderPath/',
 	async (
 		request: Express.Request,
 		response: Express.Response,
 		next: Express.NextFunction,
 	) => {
 		// Check for a valid provider ID
-		if (!isValidProvider(request.params.providerId)) {
+		if (
+			typeof request.query.providerId != 'string' ||
+			!isValidProvider(request.query.providerId)
+		) {
 			// If it is not valid, throw an error and return
 			// We don't use throw here, instead we forward the error to the error
 			// handler
 			next(
 				new InvalidProviderError(
-					`Invalid provider ID - ${request.params.providerId}`,
+					`Invalid provider ID - ${request.query.providerId}`,
 				),
 			)
 			return
 		}
 
 		// Get the appropriate provider
-		const providerFileName = `../providers/${request.params.providerId}.provider`
+		const providerFileName = `../providers/${request.query.providerId}.provider`
 		const providerModule = new (
 			await import(providerFileName)
 		).default()
@@ -66,30 +69,33 @@ router.get(
 	},
 )
 
-// If the user makes a GET request to /data/:providerId/:folderPath/:fileName,
+// If the user makes a GET request to /data/:folderPath/:fileName,
 // return information about the file at that specified location
 router.get(
-	'/:providerId/:folderPath/:fileName/',
+	'/:folderPath/:fileName/',
 	async (
 		request: Express.Request,
 		response: Express.Response,
 		next: Express.NextFunction,
 	) => {
 		// Check for a valid provider ID
-		if (!isValidProvider(request.params.providerId)) {
+		if (
+			typeof request.query.providerId != 'string' ||
+			!isValidProvider(request.query.providerId)
+		) {
 			// If it is not valid, throw an error and return
 			// We don't use throw here, instead we forward the error to the error
 			// handler
 			next(
 				new InvalidProviderError(
-					`Invalid provider ID - ${request.params.providerId}`,
+					`Invalid provider ID - ${request.query.providerId}`,
 				),
 			)
 			return
 		}
 
 		// Get the appropriate provider
-		const providerFileName = `../providers/${request.params.providerId}.provider`
+		const providerFileName = `../providers/${request.query.providerId}.provider`
 		const providerModule = new (
 			await import(providerFileName)
 		).default()
@@ -111,10 +117,10 @@ router.get(
 	},
 )
 
-// If the user makes a POST request to /data/:providerId/:folderPath/:fileName,
+// If the user makes a POST request to /data/:folderPath/:fileName,
 // upload the given file to that specified location
 router.post(
-	'/:providerId/:folderPath/:fileName/',
+	'/:folderPath/:fileName/',
 	multer.single('content'),
 	async (
 		request: Express.Request,
@@ -122,20 +128,23 @@ router.post(
 		next: Express.NextFunction,
 	) => {
 		// Check for a valid provider ID
-		if (!isValidProvider(request.params.providerId)) {
+		if (
+			typeof request.query.providerId != 'string' ||
+			!isValidProvider(request.query.providerId)
+		) {
 			// If it is not valid, throw an error and return
 			// We don't use throw here, instead we forward the error to the error
 			// handler
 			next(
 				new InvalidProviderError(
-					`Invalid provider ID - ${request.params.providerId}`,
+					`Invalid provider ID - ${request.query.providerId}`,
 				),
 			)
 			return
 		}
 
 		// Get the appropriate provider
-		const providerFileName = `../providers/${request.params.providerId}.provider`
+		const providerFileName = `../providers/${request.query.providerId}.provider`
 		const providerModule = new (
 			await import(providerFileName)
 		).default()
@@ -158,10 +167,10 @@ router.post(
 	},
 )
 
-// If the user makes a PUT request to /data/:providerId/:folderPath/:fileName,
+// If the user makes a PUT request to /data/:folderPath/:fileName,
 // update the file at that specified location
 router.put(
-	'/:providerId/:folderPath/:fileName/',
+	'/:folderPath/:fileName/',
 	multer.single('content'),
 	async (
 		request: Express.Request,
@@ -169,20 +178,23 @@ router.put(
 		next: Express.NextFunction,
 	) => {
 		// Check for a valid provider ID
-		if (!isValidProvider(request.params.providerId)) {
+		if (
+			typeof request.query.providerId != 'string' ||
+			!isValidProvider(request.query.providerId)
+		) {
 			// If it is not valid, throw an error and return
 			// We don't use throw here, instead we forward the error to the error
 			// handler
 			next(
 				new InvalidProviderError(
-					`Invalid provider ID - ${request.params.providerId}`,
+					`Invalid provider ID - ${request.query.providerId}`,
 				),
 			)
 			return
 		}
 
 		// Get the appropriate provider
-		const providerFileName = `../providers/${request.params.providerId}.provider`
+		const providerFileName = `../providers/${request.query.providerId}.provider`
 		const providerModule = new (
 			await import(providerFileName)
 		).default()
@@ -205,30 +217,33 @@ router.put(
 	},
 )
 
-// If the user makes a DELETE request to /data/:providerId/:folderPath/
+// If the user makes a DELETE request to /data/:folderPath/
 // :fileName, delete the file/folder at that specified location
 router.delete(
-	'/:providerId/:folderPath/:fileName?/',
+	'/:folderPath/:fileName?/',
 	async (
 		request: Express.Request,
 		response: Express.Response,
 		next: Express.NextFunction,
 	) => {
 		// Check for a valid provider ID
-		if (!isValidProvider(request.params.providerId)) {
+		if (
+			typeof request.query.providerId != 'string' ||
+			!isValidProvider(request.query.providerId)
+		) {
 			// If it is not valid, throw an error and return
 			// We don't use throw here, instead we forward the error to the error
 			// handler
 			next(
 				new InvalidProviderError(
-					`Invalid provider ID - ${request.params.providerId}`,
+					`Invalid provider ID - ${request.query.providerId}`,
 				),
 			)
 			return
 		}
 
 		// Get the appropriate provider
-		const providerFileName = `../providers/${request.params.providerId}.provider`
+		const providerFileName = `../providers/${request.query.providerId}.provider`
 		const providerModule = new (
 			await import(providerFileName)
 		).default()

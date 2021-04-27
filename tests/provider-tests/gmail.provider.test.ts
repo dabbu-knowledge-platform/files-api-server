@@ -20,28 +20,28 @@ beforeAll(async () => {
 		url:
 			'https://oauth2.googleapis.com/token' +
 			`?client_id=${encodeURIComponent(
-				process.env.DABBU_TESTING_GOOGLE_CLIENT_ID!,
+				process.env.GOOGLE_CLIENT_ID!,
 			)}&client_secret=${encodeURIComponent(
-				process.env.DABBU_TESTING_GOOGLE_CLIENT_SECRET!,
+				process.env.GOOGLE_CLIENT_SECRET!,
 			)}&redirect_uri=${encodeURIComponent(
-				process.env.DABBU_TESTING_GOOGLE_REDIRECT_URI!,
+				process.env.GOOGLE_REDIRECT_URI!,
 			)}&refresh_token=${encodeURIComponent(
-				process.env.DABBU_TESTING_GOOGLE_REFRESH_TOKEN!,
+				process.env.GOOGLE_REFRESH_TOKEN!,
 			)}&grant_type=refresh_token`,
 	})
 
 	// Set the ACCESS_TOKEN environment variable. This variable is local, is set
 	// to null once the process ends. NEVER console.log this variable
-	process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN = `${
+	process.env.GOOGLE_ACCESS_TOKEN = `${
 		serverResponse.data.token_type || 'Bearer'
 	} ${serverResponse.data.access_token}`
 })
 
 describe('test list request', () => {
 	it('fail - no access token', async () => {
-		const response = await request(app).get(
-			'/files-api/v3/data/gmail/%2F',
-		)
+		const response = await request(app)
+			.get('/files-api/v3/data/%2F')
+			.query({ providerId: 'gmail' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -52,7 +52,8 @@ describe('test list request', () => {
 
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
-			.get('/files-api/v3/data/gmail/%2F')
+			.get('/files-api/v3/data/%2F')
+			.query({ providerId: 'gmail' })
 			.set('Authorization', 'absolutely horrendously invalid token')
 
 		if (response.status != 401) {
@@ -63,11 +64,9 @@ describe('test list request', () => {
 
 	it('fail - invalid path', async () => {
 		const response = await request(app)
-			.get('/files-api/v3/data/gmail/%2Fthis-does-not-exist')
-			.set(
-				'Authorization',
-				process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN!,
-			)
+			.get('/files-api/v3/data/%2Fthis-does-not-exist')
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
 			console.log(response.body)
@@ -77,11 +76,9 @@ describe('test list request', () => {
 
 	it('succeed - fetch labels', async () => {
 		const response = await request(app)
-			.get('/files-api/v3/data/gmail/%2F')
-			.set(
-				'Authorization',
-				process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN!,
-			)
+			.get('/files-api/v3/data/%2F')
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -94,11 +91,9 @@ describe('test list request', () => {
 
 	it('succeed - fetch inbox', async () => {
 		const response = await request(app)
-			.get('/files-api/v3/data/gmail/%2FINBOX')
-			.set(
-				'Authorization',
-				process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN!,
-			)
+			.get('/files-api/v3/data/%2FINBOX')
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -112,9 +107,9 @@ describe('test list request', () => {
 
 describe('test read request', () => {
 	it('fail - no access token', async () => {
-		const response = await request(app).get(
-			'/files-api/v3/data/gmail/%2FINBOX/17901f589bb3c9ea',
-		)
+		const response = await request(app)
+			.get('/files-api/v3/data/%2FINBOX/17901f589bb3c9ea')
+			.query({ providerId: 'gmail' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -125,7 +120,8 @@ describe('test read request', () => {
 
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
-			.get('/files-api/v3/data/gmail/%2FINBOX/17901f589bb3c9ea')
+			.get('/files-api/v3/data/%2FINBOX/17901f589bb3c9ea')
+			.query({ providerId: 'gmail' })
 			.set('Authorization', 'absolutely horrendously invalid token')
 
 		if (response.status != 401) {
@@ -137,12 +133,10 @@ describe('test read request', () => {
 	it('fail - invalid path', async () => {
 		const response = await request(app)
 			.get(
-				'/files-api/v3/data/gmail/%2FINBOX/17901f589bb3c9ea - Something - blahblahblah',
+				'/files-api/v3/data/%2FINBOX/17901f589bb3c9ea - Something - blahblahblah',
 			)
-			.set(
-				'Authorization',
-				process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN!,
-			)
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
 			console.log(response.body)
@@ -153,12 +147,10 @@ describe('test read request', () => {
 	it('succeed - export type media', async () => {
 		const response = await request(app)
 			.get(
-				'/files-api/v3/data/gmail/%2FINBOX/20210424%20-%2017901f589bb3c9ea%20-%20Re:%20Hi!.zip',
+				'/files-api/v3/data/%2FINBOX/20210424%20-%2017901f589bb3c9ea%20-%20Re:%20Hi!.zip',
 			)
-			.set(
-				'Authorization',
-				process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN!,
-			)
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'media',
 			})
@@ -179,12 +171,10 @@ describe('test read request', () => {
 	it('succeed - export type view', async () => {
 		const response = await request(app)
 			.get(
-				'/files-api/v3/data/gmail/%2FINBOX/20210424%20-%2017901f589bb3c9ea%20-%20Re:%20Hi!.zip',
+				'/files-api/v3/data/%2FINBOX/20210424%20-%2017901f589bb3c9ea%20-%20Re:%20Hi!.zip',
 			)
-			.set(
-				'Authorization',
-				process.env.DABBU_TESTING_GOOGLE_ACCESS_TOKEN!,
-			)
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'view',
 			})
