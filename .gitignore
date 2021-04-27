@@ -1,0 +1,7 @@
+dist/
+execs/
+ignore/
+coverage/
+node_modules/
+
+*.log
