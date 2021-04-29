@@ -30,27 +30,6 @@ export function diskPath(...folders: Array<string>): string {
 	return Path.normalize(folders.join('/'))
 }
 
-// Check if the request headers contain an Authorization header. If not, throw
-// a 403 Unauthorized error
-export function checkAccessToken(
-	headers: Record<string, string | number>,
-): void {
-	if (!headers['Authorization'] && !headers['authorization']) {
-		throw new UnauthorizedError(
-			'Missing access token in `Authorization` header',
-		)
-	}
-}
-
-// Check if any path is relative
-export function checkRelativePath(...paths: Array<string>): void {
-	for (const path of paths) {
-		if (path && (path.includes('/..') || path.includes('/.'))) {
-			throw new BadRequestError('Relative paths are not allowed')
-		}
-	}
-}
-
 // Sort out an array of Dabbu resources returned by the API
 export function sortDabbuResources(
 	files: Array<DabbuResource>,

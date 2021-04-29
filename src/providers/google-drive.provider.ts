@@ -5,6 +5,9 @@ import FileType from 'file-type'
 // Use the filesystem library to read uploaded file contents
 import * as Fs from 'fs-extra'
 
+// Implement the DataProvider interface
+import DataProvider from '../provider'
+
 // Import errors and utility functions
 import {
 	BadRequestError,
@@ -15,6 +18,7 @@ import {
 	ProviderInteractionError,
 } from '../utils/errors.util'
 import * as Utils from '../utils/general.util'
+import * as Guards from '../utils/guards.util'
 
 // Convert the JSON object returned by the Drive API to a Dabbu DabbuResource
 function convertDriveFileToDabbuResource(
@@ -415,16 +419,16 @@ function getImportTypeForDoc(fileMimeType: string): string | undefined {
 	return
 }
 
-export default class GoogleDriveDataProvider {
+export default class GoogleDriveDataProvider implements DataProvider {
 	// List files and folders at a particular folder path
 	async list(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -452,7 +456,7 @@ export default class GoogleDriveDataProvider {
 		const sortAndFilterOptions = queries as DabbuListRequestOptions
 
 		// Don't allow relative paths, let clients do that
-		Utils.checkRelativePath(parameters.folderPath, parameters.fileName)
+		Guards.checkRelativePath(parameters.folderPath, parameters.fileName)
 
 		// Get the folder ID (exception is if the folder is shared)
 		const folderId = await getFolderWithParents(
@@ -561,13 +565,13 @@ export default class GoogleDriveDataProvider {
 
 	// Return information about the file at the specified location
 	async read(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -592,7 +596,7 @@ export default class GoogleDriveDataProvider {
 			Utils.diskPath(parameters.folderPath).startsWith('Shared')
 
 		// Don't allow relative paths, let clients do that
-		Utils.checkRelativePath(parameters.folderPath, parameters.fileName)
+		Guards.checkRelativePath(parameters.folderPath, parameters.fileName)
 
 		// Get the parent folder ID
 		const folderId = await getFolderWithParents(
@@ -683,14 +687,14 @@ export default class GoogleDriveDataProvider {
 
 	// Upload a file to the specified location
 	async create(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
-		fileMetadata: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
+		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -709,7 +713,7 @@ export default class GoogleDriveDataProvider {
 		const { fileName } = parameters
 
 		// Don't allow relative paths, let clients do that
-		Utils.checkRelativePath(parameters.folderPath, parameters.fileName)
+		Guards.checkRelativePath(parameters.folderPath, parameters.fileName)
 
 		// Check if there is a file uploaded
 		if (!fileMetadata) {
@@ -890,14 +894,14 @@ export default class GoogleDriveDataProvider {
 
 	// Update the file at the specified location
 	async update(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
-		fileMetadata: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
+		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -916,7 +920,7 @@ export default class GoogleDriveDataProvider {
 		let { fileName } = parameters
 
 		// Don't allow relative paths, let clients do that
-		Utils.checkRelativePath(parameters.folderPath, parameters.fileName)
+		Guards.checkRelativePath(parameters.folderPath, parameters.fileName)
 
 		// Get the folder and file ID
 		const folderId = await getFolderWithParents(
@@ -1060,7 +1064,7 @@ export default class GoogleDriveDataProvider {
 
 		if (body.path) {
 			// Don't allow relative paths, let clients do that
-			Utils.checkRelativePath(body.path)
+			Guards.checkRelativePath(body.path)
 
 			// Get the new folder ID
 			const newFolderId = await getFolderWithParents(
@@ -1164,13 +1168,13 @@ export default class GoogleDriveDataProvider {
 
 	// Delete the file/folder at the specified location
 	async delete(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -1189,7 +1193,7 @@ export default class GoogleDriveDataProvider {
 		const { fileName } = parameters
 
 		// Don't allow relative paths, let clients do that
-		Utils.checkRelativePath(parameters.folderPath, parameters.fileName)
+		Guards.checkRelativePath(parameters.folderPath, parameters.fileName)
 
 		if (folderPath && fileName) {
 			// If there is a file name provided, delete the file

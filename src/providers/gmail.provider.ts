@@ -10,6 +10,9 @@ import breakdance from 'breakdance'
 import EnvPaths from 'env-paths'
 const cachePath = EnvPaths('Dabbu Server', { suffix: '' }).cache
 
+// Implement the DataProvider interface
+import DataProvider from '../provider'
+
 // Import errors and utility functions
 import {
 	InvalidCredentialsError,
@@ -19,6 +22,7 @@ import {
 	ProviderInteractionError,
 } from '../utils/errors.util'
 import * as Utils from '../utils/general.util'
+import * as Guards from '../utils/guards.util'
 
 // Convert the JSON object returned by the Gmail API to a Dabbu DabbuResource
 async function convertGmailFileToDabbuResource(
@@ -562,16 +566,16 @@ async function createMailDataURI(
 	})
 }
 
-export default class GmailDataProvider {
+export default class GmailDataProvider implements DataProvider {
 	// List files and folders at a particular folder path
 	async list(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -805,13 +809,13 @@ export default class GmailDataProvider {
 
 	// Return information about the file at the specified location
 	async read(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header
@@ -894,16 +898,16 @@ export default class GmailDataProvider {
 
 	// Upload a file to the specified location
 	async create(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
-		fileMetadata: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
+		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header.
 		// Even though this method is not implemented, only authorized users should
 		// know that
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// Start parsing the file path and the option
 		// Else throw an error
@@ -914,33 +918,33 @@ export default class GmailDataProvider {
 
 	// Update the file at the specified location
 	async update(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
-		fileMetadata: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
+		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header.
 		// Even though this method is not implemented, only authorized users should
 		// know that
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// Start parsing the file path and the option
 		// Else throw an error
 		throw new NotImplementedError(
-			'The Gmail provider does not yet support replying to emails (update/PUT request)',
+			'The Gmail provider does not yet support replying to emails (update/PATCH request)',
 		)
 	}
 
 	// Delete the file/folder at the specified location
 	async delete(
-		parameters: Record<string, string>,
+		parameters: Record<string, any>,
 		queries: Record<string, any>,
-		body: Record<string, string>,
-		headers: Record<string, string>,
+		body: Record<string, any>,
+		headers: Record<string, any>,
 	): Promise<DabbuResponse> {
 		// Check that the request has an access token in the Authorization header
-		Utils.checkAccessToken(headers)
+		Guards.checkAccessToken(headers)
 
 		// If an access token is present, create an axios httpClient with the access
 		// token in the Authorization header

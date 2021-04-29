@@ -14,6 +14,18 @@ describe('test internal routes', () => {
 	describe('test cache request', () => {
 		it('fail - invalid path', async () => {
 			const response = await request(app).get(
+				'/files-api/v3/internal/cache/non-existent-file',
+			)
+
+			if (response.status !== 404) {
+				console.log(response.body)
+			}
+			expect(response.status).toEqual(404)
+			expect(response.body.error.reason).toEqual('notFound')
+		})
+
+		it('fail - relative path', async () => {
+			const response = await request(app).get(
 				'/files-api/v3/internal/cache/some%2F..%2F.%2Frandom%2Fpath%2F',
 			)
 

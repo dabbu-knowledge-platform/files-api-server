@@ -60,7 +60,7 @@ export class FileExistsError extends DabbuError {
 		super(409, message, 'conflict')
 	}
 }
-// Not implemented; used when a certain request verb like PUT (update) is not
+// Not implemented; used when a certain request verb like POST (create) is not
 // supported by a provider
 export class NotImplementedError extends DabbuError {
 	constructor(message: string) {

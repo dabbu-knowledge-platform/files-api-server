@@ -192,3 +192,57 @@ describe('test read request', () => {
 		).toContain('https://mail.google.com/mail/u/0/#inbox/')
 	})
 })
+
+describe('test create request', () => {
+	it('fail - no access token', async () => {
+		const response = await request(app)
+			.get('/files-api/v3/data/%2F/some-thread')
+			.query({ providerId: 'gmail' })
+
+		if (response.status != 403) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(403)
+		expect(response.body.error.reason).toEqual('unauthorized')
+	})
+
+	it('fail - not implemented', async () => {
+		const response = await request(app)
+			.post('/files-api/v3/data/%2F/some-thread')
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+
+		if (response.status != 501) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(501)
+		expect(response.body.error.reason).toEqual('notImplemented')
+	})
+})
+
+describe('test update request', () => {
+	it('fail - no access token', async () => {
+		const response = await request(app)
+			.get('/files-api/v3/data/%2F/some-thread')
+			.query({ providerId: 'gmail' })
+
+		if (response.status != 403) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(403)
+		expect(response.body.error.reason).toEqual('unauthorized')
+	})
+
+	it('fail - not implemented', async () => {
+		const response = await request(app)
+			.patch('/files-api/v3/data/%2F/some-thread')
+			.query({ providerId: 'gmail' })
+			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+
+		if (response.status != 501) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(501)
+		expect(response.body.error.reason).toEqual('notImplemented')
+	})
+})
