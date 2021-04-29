@@ -40,23 +40,8 @@ jobs:
           GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
           GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
       # Save the built executables
-      - name: Uploading alpine executable
+      - name: Uploading built executables
         uses: actions/upload-artifact@v2
         with:
-          name: files-api-server-alpine
-          path: execs/files-api-server-alpine
-      - name: Uploading linux executable
-        uses: actions/upload-artifact@v2
-        with:
-          name: files-api-server-linux
-          path: execs/files-api-server-linux
-      - name: Uploading macos executable
-        uses: actions/upload-artifact@v2
-        with:
-          name: files-api-server-macos
-          path: execs/files-api-server-macos
-      - name: Uploading windows executable
-        uses: actions/upload-artifact@v2
-        with:
-          name: files-api-server-win.exe
-          path: execs/files-api-server-win.exe
+          name: Files API Server Executables
+          path: execs/*
