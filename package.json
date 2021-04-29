@@ -15,7 +15,7 @@
 		"clean": "yarn rimraf dist/ coverage/ execs/",
 		"build": "yarn clean && yarn tsc",
 		"preexecs": "yarn build && yarn global add pkg",
-		"execs": "yarn --prod && pkg --output execs/files-api-server . --targets node14.16.1-win-x64,node14.16.1-macos-x64,node14.16.1-linux-x64,node14.16.1-alpine-x64",
+		"execs": "yarn --prod && pkg --output execs/files-api-server . --targets node14-win-x64,node14-macos-x64,node14-linux-x64,node14-alpine-x64",
 		"postexecs": "yarn",
 		"ci": "yarn lint && yarn test && yarn execs"
 	},
