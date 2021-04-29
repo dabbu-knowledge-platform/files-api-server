@@ -330,7 +330,7 @@ describe('test create request', () => {
 			)
 			.query({ providerId: 'one-drive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
-			.field('lastModifiedTime', 'Thursday, 22 April 2021 06:27:05')
+			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
@@ -346,7 +346,9 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
+		).toEqual(
+			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
+		)
 	})
 
 	it('succeed - upload and set createdAtTime', async () => {
@@ -356,7 +358,7 @@ describe('test create request', () => {
 			)
 			.query({ providerId: 'one-drive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
-			.field('createdAtTime', 'Thursday, 22 April 2021 05:27:05')
+			.field('createdAtTime', 'Thu 21 Apr 2021 05:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
@@ -372,7 +374,9 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).createdAtTime,
-		).toEqual('Wed, 21 Apr 2021 23:57:05 GMT')
+		).toEqual(
+			new Date('Thu 21 Apr 2021 05:27:05 GMT+0530').toISOString(),
+		)
 	})
 })
 
@@ -517,7 +521,7 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'one-drive' })
-			.field('lastModifiedTime', 'Thursday, 22 April 2021 06:27:05')
+			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
@@ -533,7 +537,9 @@ describe('test update request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
+		).toEqual(
+			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
+		)
 	})
 
 	it('succeed - update createdAtTime', async () => {
@@ -542,7 +548,7 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'one-drive' })
-			.field('createdAtTime', 'Thursday, 22 April 2021 05:27:05')
+			.field('createdAtTime', 'Thu 21 Apr 2021 05:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
@@ -558,7 +564,9 @@ describe('test update request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).createdAtTime,
-		).toEqual('Wed, 21 Apr 2021 23:57:05 GMT')
+		).toEqual(
+			new Date('Thu 21 Apr 2021 05:27:05 GMT+0530').toISOString(),
+		)
 	})
 })
 

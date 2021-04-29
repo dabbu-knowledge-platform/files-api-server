@@ -331,7 +331,7 @@ describe('test create request', () => {
 			)
 			.query({ providerId: 'google-drive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
-			.field('lastModifiedTime', 'Thursday, 22 April 2021 06:27:05')
+			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
@@ -347,7 +347,9 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
+		).toEqual(
+			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
+		)
 	})
 
 	it('succeed - normal upload with conversion to google format', async () => {
@@ -379,7 +381,7 @@ describe('test create request', () => {
 			)
 			.query({ providerId: 'google-drive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.field('lastModifiedTime', 'Thursday, 22 April 2021 06:27:05')
+			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
@@ -395,7 +397,9 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
+		).toEqual(
+			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
+		)
 	})
 })
 
@@ -538,7 +542,7 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'google-drive' })
-			.field('lastModifiedTime', 'Thursday, 22 April 2021 06:27:05')
+			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
@@ -554,7 +558,9 @@ describe('test update request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
+		).toEqual(
+			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
+		)
 	})
 })
 

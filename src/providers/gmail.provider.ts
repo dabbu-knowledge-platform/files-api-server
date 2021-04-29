@@ -101,11 +101,11 @@ async function convertGmailFileToDabbuResource(
 			size: Number.NaN,
 			// When the first message was sent
 			createdAtTime: createdAtDate
-				? new Date(createdAtDate).toUTCString()
+				? new Date(createdAtDate).toISOString()
 				: '',
 			// When the last message was sent
 			lastModifiedTime: lastModifiedDate
-				? new Date(lastModifiedDate).toUTCString()
+				? new Date(lastModifiedDate).toISOString()
 				: '',
 			// Content URI
 			contentUri: contentUri,

@@ -48,11 +48,11 @@ function convertOneDriveFileToDabbuResource(
 	// When it was created
 	const createdAtTime = new Date(
 		fileObject.fileSystemInfo.createdDateTime,
-	).toUTCString()
+	).toISOString()
 	// Last time the file or its metadata was changed
 	const lastModifiedTime = new Date(
 		fileObject.fileSystemInfo.lastModifiedDateTime,
-	).toUTCString()
+	).toISOString()
 	let contentUri = ''
 	// If the export type is media, then return a googleapis.com link
 	if (exportType === 'view') {

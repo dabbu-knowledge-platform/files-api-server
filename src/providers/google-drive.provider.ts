@@ -43,11 +43,11 @@ function convertDriveFileToDabbuResource(
 	// Size in bytes, let clients convert to whatever unit they want
 	const size = Number(fileObject.fileSize)
 	// When it was created
-	const createdAtTime = new Date(fileObject.createdDate).toUTCString()
+	const createdAtTime = new Date(fileObject.createdDate).toISOString()
 	// Last time the file or its metadata was changed
 	const lastModifiedTime = new Date(
 		fileObject.modifiedDate,
-	).toUTCString()
+	).toISOString()
 	const exportMimeType = getExportTypeForDoc(mimeType)
 	let contentUri = ''
 	// If the export type is media, then return a googleapis.com link
