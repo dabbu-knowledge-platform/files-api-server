@@ -7,8 +7,8 @@
 	"author": "Vedant K (gamemaker1) <gamemaker0042@gmail.com>",
 	"license": "GPL-3.0-or-later",
 	"scripts": {
-		"start": "yarn build && node --unhandled-rejections=strict dist/server.js",
-		"test": "yarn build && yarn jest --test-timeout 30000",
+		"start": "yarn build && env PORT=8000 node --unhandled-rejections=strict dist/server.js",
+		"test": "yarn build && yarn jest --test-timeout 50000",
 		"coverage": "yarn build && yarn test --coverage && echo 'View coverage report at http://localhost:23984' && python -m http.server --directory coverage/lcov-report/ 23984",
 		"lint": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts'",
 		"fix": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts' --fix",
