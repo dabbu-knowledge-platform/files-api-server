@@ -347,7 +347,7 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(1619053025000)
+		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
 	})
 
 	it('succeed - normal upload with conversion to google format', async () => {
@@ -395,7 +395,7 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(1619053025000)
+		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
 	})
 })
 
@@ -554,7 +554,7 @@ describe('test update request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(1619053025000)
+		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
 	})
 })
 

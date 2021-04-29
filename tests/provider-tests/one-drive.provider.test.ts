@@ -346,7 +346,7 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(1619053025000)
+		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
 	})
 
 	it('succeed - upload and set createdAtTime', async () => {
@@ -372,7 +372,7 @@ describe('test create request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).createdAtTime,
-		).toEqual(1619049425000)
+		).toEqual('Wed, 21 Apr 2021 23:57:05 GMT')
 	})
 })
 
@@ -533,7 +533,7 @@ describe('test update request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(1619053025000)
+		).toEqual('Thu, 22 Apr 2021 00:57:05 GMT')
 	})
 
 	it('succeed - update createdAtTime', async () => {
@@ -558,7 +558,7 @@ describe('test update request', () => {
 		)
 		expect(
 			(response.body.content as DabbuResource).createdAtTime,
-		).toEqual(1619049425000)
+		).toEqual('Wed, 21 Apr 2021 23:57:05 GMT')
 	})
 })
 

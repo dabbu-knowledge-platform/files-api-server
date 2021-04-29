@@ -22,9 +22,6 @@ declare interface MulterFile {
 	path: string
 }
 
-// Use UTC Unix timestamps while dealing with dates
-declare type UnixTimestamp = number
-
 // A DabbuResource can contain the following fields
 declare type FieldName =
 	| 'name'
@@ -48,8 +45,8 @@ declare interface DabbuResource {
 	provider: ProviderId
 	mimeType: string
 	size: number
-	createdAtTime: UnixTimestamp
-	lastModifiedTime: UnixTimestamp
+	createdAtTime: string
+	lastModifiedTime: string
 	contentUri: string
 }
 

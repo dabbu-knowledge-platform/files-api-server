@@ -101,12 +101,12 @@ async function convertGmailFileToDabbuResource(
 			size: Number.NaN,
 			// When the first message was sent
 			createdAtTime: createdAtDate
-				? new Date(createdAtDate).getTime()
-				: Number.NaN,
+				? new Date(createdAtDate).toUTCString()
+				: '',
 			// When the last message was sent
 			lastModifiedTime: lastModifiedDate
-				? new Date(lastModifiedDate).getTime()
-				: Number.NaN,
+				? new Date(lastModifiedDate).toUTCString()
+				: '',
 			// Content URI
 			contentUri: contentUri,
 		}
@@ -127,9 +127,9 @@ async function convertGmailFileToDabbuResource(
 			// We have size of messages+attachments, not threads
 			size: Number.NaN,
 			// When the first message was sent
-			createdAtTime: Number.NaN,
+			createdAtTime: '',
 			// When the last message was sent
-			lastModifiedTime: Number.NaN,
+			lastModifiedTime: '',
 			// Content URI
 			contentUri: `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}`,
 		}
@@ -632,9 +632,9 @@ export default class GmailDataProvider implements DataProvider {
 						// that label, but it will require another request per label
 						size: Number.NaN,
 						// No such thing as when the label was created
-						createdAtTime: Number.NaN,
+						createdAtTime: '',
 						// Or when it was last modified
-						lastModifiedTime: Number.NaN,
+						lastModifiedTime: '',
 						// Content URI
 						contentUri: `https://mail.google.com/mail/u/0/#search/label%3A${(
 							label.name || ''
@@ -656,9 +656,9 @@ export default class GmailDataProvider implements DataProvider {
 					// label, but it will require another request per label
 					size: Number.NaN,
 					// No such thing as when the label was created
-					createdAtTime: Number.NaN,
+					createdAtTime: '',
 					// Or when it was last modified
-					lastModifiedTime: Number.NaN,
+					lastModifiedTime: '',
 					// Content URI
 					contentUri: `https://mail.google.com/mail/u/0/#all`,
 				})
