@@ -6,6 +6,7 @@ import * as Helmet from 'helmet'
 // Import all the routes
 import DataRouter from './routes/data.route'
 import InternalRouter from './routes/internal.route'
+import ProviderRouter from './routes/provider.route'
 
 // Import types and utility functions
 import { errorHandler } from './utils/errors.util'
@@ -24,6 +25,7 @@ app.use(Helmet.default())
 // Register all routes
 app.use('/files-api/v3/data/', DataRouter)
 app.use('/files-api/v3/internal/', InternalRouter)
+app.use('/files-api/v3/providers/', ProviderRouter)
 
 // Register the error handler
 app.use(errorHandler)
