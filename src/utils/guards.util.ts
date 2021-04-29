@@ -14,9 +14,9 @@ export function isValidProvider(
 	providerId: string,
 ): providerId is ProviderId {
 	return (
-		providerId === 'google-drive' ||
+		providerId === 'googledrive' ||
 		providerId === 'gmail' ||
-		providerId === 'one-drive'
+		providerId === 'onedrive'
 	)
 }
 

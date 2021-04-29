@@ -80,7 +80,7 @@ function convertDriveFileToDabbuResource(
 	return {
 		name,
 		kind,
-		provider: 'google-drive',
+		provider: 'googledrive',
 		path,
 		mimeType,
 		size,

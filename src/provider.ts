@@ -6,7 +6,7 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
-	): DabbuResponse | Promise<DabbuResponse>
+	): Promise<DabbuResponse>
 
 	// Return information about the file at the specified location
 	read(
@@ -14,7 +14,7 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
-	): DabbuResponse | Promise<DabbuResponse>
+	): Promise<DabbuResponse>
 
 	// Upload a file to the specified location
 	create(
@@ -23,7 +23,7 @@ export default interface DataProvider {
 		body: Record<string, any>,
 		headers: Record<string, any>,
 		fileMetadata: MulterFile,
-	): DabbuResponse | Promise<DabbuResponse>
+	): Promise<DabbuResponse>
 
 	// Update the file at the specified location
 	update(
@@ -32,7 +32,7 @@ export default interface DataProvider {
 		body: Record<string, any>,
 		headers: Record<string, any>,
 		fileMetadata: MulterFile,
-	): DabbuResponse | Promise<DabbuResponse>
+	): Promise<DabbuResponse>
 
 	// Delete the file/folder at the specified location
 	delete(
@@ -40,5 +40,5 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
-	): DabbuResponse | Promise<DabbuResponse>
+	): Promise<DabbuResponse>
 }

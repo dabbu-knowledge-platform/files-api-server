@@ -37,7 +37,7 @@ function convertOneDriveFileToDabbuResource(
 	// Mime type
 	const mimeType =
 		kind === 'folder'
-			? 'application/vnd.one-drive.folder'
+			? 'application/vnd.onedrive.folder'
 			: fileObject.file
 			? fileObject.file.mimeType
 			: fileObject.package
@@ -74,7 +74,7 @@ function convertOneDriveFileToDabbuResource(
 	return {
 		name,
 		kind,
-		provider: 'one-drive',
+		provider: 'onedrive',
 		path,
 		mimeType,
 		size,

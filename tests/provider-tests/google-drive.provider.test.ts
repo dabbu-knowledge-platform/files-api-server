@@ -41,7 +41,7 @@ describe('test list request', () => {
 	it('fail - no access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -53,7 +53,7 @@ describe('test list request', () => {
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', 'absolutely horrendously invalid token')
 
 		if (response.status != 401) {
@@ -65,7 +65,7 @@ describe('test list request', () => {
 	it('fail - invalid path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Fthis-does-not-exist')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
@@ -78,7 +78,7 @@ describe('test list request', () => {
 	it('fail - relative path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F..%2F.%2Ftests')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -91,7 +91,7 @@ describe('test list request', () => {
 	it('succeed - with access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2Ftest-files')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
@@ -103,7 +103,7 @@ describe('test list request', () => {
 	it('succeed - with filter by size and order by name options', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2Ftest-files')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				orderBy: 'name',
@@ -139,7 +139,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -153,7 +153,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', 'absolutely horrendously invalid token')
 
 		if (response.status != 401) {
@@ -165,7 +165,7 @@ describe('test read request', () => {
 	it('fail - invalid path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftest%2Ftest-files/non-existent-file')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
@@ -178,7 +178,7 @@ describe('test read request', () => {
 	it('fail - relative path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2F..%2F.%2F')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -193,7 +193,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'media',
@@ -219,7 +219,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'view',
@@ -247,7 +247,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -261,7 +261,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', 'absolutely horrendously invalid token')
 
@@ -276,7 +276,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -292,7 +292,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -307,7 +307,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -329,7 +329,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
@@ -357,7 +357,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20And%20Convert%20Test.docx',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -379,7 +379,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20And%20Convert%20Test.docx',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
@@ -409,7 +409,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Testpng',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -423,7 +423,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', 'absolutely horrendously invalid token')
 
@@ -438,7 +438,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -454,7 +454,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -469,7 +469,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach(
 				'content',
 				'./tests/test-files/documents/Portable Doc.pdf',
@@ -494,7 +494,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.field('name', 'Updated PDF.pdf')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -516,7 +516,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Updated%20PDF.pdf',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.field('path', '/tests/test-files/updated/')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -541,7 +541,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -570,7 +570,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Testpng',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -584,7 +584,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', 'absolutely horrendously invalid token')
 
@@ -599,7 +599,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
@@ -615,7 +615,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20And%20Convert%20Test',
 			)
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 204) {
@@ -627,12 +627,12 @@ describe('test delete request', () => {
 	it('succeed - delete folder', async () => {
 		let response = await request(app)
 			.delete('/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		response = await request(app)
 			.delete('/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/')
-			.query({ providerId: 'google-drive' })
+			.query({ providerId: 'googledrive' })
 			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 204) {

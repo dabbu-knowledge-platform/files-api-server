@@ -1,5 +1,7 @@
 // Use express to handle HTTP requests
 import * as Express from 'express'
+// Use helmet to add basic security to the server
+import * as Helmet from 'helmet'
 
 // Import all the routes
 import DataRouter from './routes/data.route'
@@ -15,6 +17,9 @@ const app = Express.default()
 // (x-www-form-urlencoded) in the HTTP request body
 app.use(Express.urlencoded({ extended: true }))
 app.use(Express.json())
+
+// Use Helmet middleware
+app.use(Helmet.default())
 
 // Register all routes
 app.use('/files-api/v3/data/', DataRouter)

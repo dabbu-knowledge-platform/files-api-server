@@ -40,7 +40,7 @@ describe('test list request', () => {
 	it('fail - no access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -53,7 +53,7 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
 			.set('Authorization', 'absolutely horrendously invalid token')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -64,7 +64,7 @@ describe('test list request', () => {
 	it('fail - invalid path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Fthis-does-not-exist')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
@@ -77,7 +77,7 @@ describe('test list request', () => {
 	it('fail - relative path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F..%2F.%2Ftests')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -90,7 +90,7 @@ describe('test list request', () => {
 	it('succeed - with access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2Ftest-files')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
@@ -102,7 +102,7 @@ describe('test list request', () => {
 	it('succeed - with filter by size and order by name options', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2Ftest-files')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 			.query({
 				orderBy: 'name',
@@ -138,7 +138,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -152,7 +152,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', 'absolutely horrendously invalid token')
 
 		if (response.status != 401) {
@@ -164,7 +164,7 @@ describe('test read request', () => {
 	it('fail - invalid path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftest%2Ftest-files/non-existent-file')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
@@ -177,7 +177,7 @@ describe('test read request', () => {
 	it('fail - relative path', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2F..%2F.%2F')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -192,7 +192,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 			.query({
 				exportType: 'media',
@@ -218,7 +218,7 @@ describe('test read request', () => {
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 			.query({
 				exportType: 'view',
@@ -246,7 +246,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -260,7 +260,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', 'absolutely horrendously invalid token')
 
@@ -275,7 +275,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -291,7 +291,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -306,7 +306,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -328,7 +328,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
@@ -356,7 +356,7 @@ describe('test create request', () => {
 			.post(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Created%20At%20Time%20Upload%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/pictures/Image.png')
 			.field('createdAtTime', 'Thu 21 Apr 2021 05:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
@@ -386,7 +386,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -400,7 +400,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', 'absolutely horrendously invalid token')
 
@@ -415,7 +415,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -431,7 +431,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
@@ -446,7 +446,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach(
 				'content',
 				'./tests/test-files/documents/Portable Doc.pdf',
@@ -473,7 +473,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.field('name', 'Updated PDF.pdf')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -495,7 +495,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Updated%20PDF.pdf',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.field('path', '/tests/test-files/updated/')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -520,7 +520,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -547,7 +547,7 @@ describe('test update request', () => {
 			.patch(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.field('createdAtTime', 'Thu 21 Apr 2021 05:27:05 GMT+0530')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -576,7 +576,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 
 		if (response.status != 403) {
 			console.log(response.body)
@@ -590,7 +590,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', 'absolutely horrendously invalid token')
 
@@ -605,7 +605,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
@@ -621,7 +621,7 @@ describe('test delete request', () => {
 			.delete(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20Image%20Test.png',
 			)
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 204) {
@@ -633,7 +633,7 @@ describe('test delete request', () => {
 	it('succeed - delete folder', async () => {
 		let response = await request(app)
 			.delete('/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 204) {
@@ -643,7 +643,7 @@ describe('test delete request', () => {
 
 		response = await request(app)
 			.delete('/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/')
-			.query({ providerId: 'one-drive' })
+			.query({ providerId: 'onedrive' })
 			.set('Authorization', process.env.MICROSOFT_ACCESS_TOKEN!)
 
 		if (response.status != 204) {

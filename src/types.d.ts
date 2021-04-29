@@ -35,7 +35,7 @@ declare type FieldName =
 	| 'contentUri'
 
 // All the providers
-declare type ProviderId = 'google-drive' | 'gmail' | 'one-drive'
+declare type ProviderId = 'googledrive' | 'gmail' | 'onedrive'
 
 // Representation of a file/folder by Dabbu
 declare interface DabbuResource {

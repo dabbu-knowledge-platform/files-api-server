@@ -1,13 +1,15 @@
 // Import all data providers
 // Google Drive
-import GoogleDriveDataProvider from '../providers/google-drive.provider'
+import GoogleDriveDataProvider from '../providers/googledrive.provider'
 const googleDriveDataProvider = new GoogleDriveDataProvider()
 // Gmail
 import GmailDataProvider from '../providers/gmail.provider'
 const gmailDataProvider = new GmailDataProvider()
 // OneDrive
-import OneDriveDataProvider from '../providers/one-drive.provider'
+import OneDriveDataProvider from '../providers/onedrive.provider'
 const oneDriveDataProvider = new OneDriveDataProvider()
+// The DataProvider interface that all providers implement
+import DataProvider from '../provider'
 
 // Import errors and utility functions
 import { checkProviderId } from '../utils/guards.util'
@@ -15,13 +17,13 @@ import { checkProviderId } from '../utils/guards.util'
 import { Request, Response, NextFunction } from 'express'
 
 // Function that returns an instance of the Provider module by the ID
-function getProviderModule(providerId: ProviderId) {
+function getProviderModule(providerId: ProviderId): DataProvider {
 	switch (providerId) {
-		case 'google-drive':
+		case 'googledrive':
 			return googleDriveDataProvider
 		case 'gmail':
 			return gmailDataProvider
-		case 'one-drive':
+		case 'onedrive':
 			return oneDriveDataProvider
 	}
 }
@@ -40,7 +42,6 @@ export async function list(
 	} catch (err) {
 		// Forward the error to the error handler and return
 		next(err)
-		return
 		return
 	}
 
