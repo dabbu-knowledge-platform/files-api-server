@@ -4,7 +4,8 @@ import Winston from 'winston'
 import Morgan from 'morgan'
 // Use the env paths library to get the local config path
 import EnvPaths from 'env-paths'
-const logsPath = EnvPaths('Dabbu Files API Server', { suffix: '' }).config
+const logsPath = EnvPaths('Dabbu Files API Server', { suffix: '' })
+	.config
 
 // First define the Winston config
 

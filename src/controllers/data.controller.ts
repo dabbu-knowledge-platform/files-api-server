@@ -20,19 +20,27 @@ import { Request, Response, NextFunction } from 'express'
 
 // Function that returns an instance of the Provider module by the ID
 function getProviderModule(providerId: ProviderId): DataProvider {
-	Logger.debug(`controller.data.getProviderModule: providerId = ${providerId}`)
-	
+	Logger.debug(
+		`controller.data.getProviderModule: providerId = ${providerId}`,
+	)
+
 	switch (providerId) {
 		case 'googledrive':
-			Logger.debug(`controller.data.getProviderModule: returning googleDriveDataProvider`)
+			Logger.debug(
+				`controller.data.getProviderModule: returning googleDriveDataProvider`,
+			)
 
 			return googleDriveDataProvider
 		case 'gmail':
-			Logger.debug(`controller.data.getProviderModule: returning gmailDataProvider`)
+			Logger.debug(
+				`controller.data.getProviderModule: returning gmailDataProvider`,
+			)
 
 			return gmailDataProvider
 		case 'onedrive':
-			Logger.debug(`controller.data.getProviderModule: returning oneDriveDataProvider`)
+			Logger.debug(
+				`controller.data.getProviderModule: returning oneDriveDataProvider`,
+			)
 
 			return oneDriveDataProvider
 	}

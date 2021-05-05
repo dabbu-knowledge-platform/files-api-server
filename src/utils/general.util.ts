@@ -17,22 +17,27 @@ export function formatDate(date: Date): string {
 		return n < 10 ? '0' + n : n
 	}
 
-	Logger.debug(`util.general.formatDate: converting date ${date} to rfc3339 format`)
+	Logger.debug(
+		`util.general.formatDate: converting date ${date} to rfc3339 format`,
+	)
 
-	const formattedDate = date.getUTCFullYear() +
-	'-' +
-	pad(date.getUTCMonth() + 1) +
-	'-' +
-	pad(date.getUTCDate()) +
-	'T' +
-	pad(date.getUTCHours()) +
-	':' +
-	pad(date.getUTCMinutes()) +
-	':' +
-	pad(date.getUTCSeconds()) +
-	'Z'
+	const formattedDate =
+		date.getUTCFullYear() +
+		'-' +
+		pad(date.getUTCMonth() + 1) +
+		'-' +
+		pad(date.getUTCDate()) +
+		'T' +
+		pad(date.getUTCHours()) +
+		':' +
+		pad(date.getUTCMinutes()) +
+		':' +
+		pad(date.getUTCSeconds()) +
+		'Z'
 
-	Logger.debug(`util.general.formatDate: rfc3339 formatted date: ${formattedDate}`)
+	Logger.debug(
+		`util.general.formatDate: rfc3339 formatted date: ${formattedDate}`,
+	)
 
 	return formattedDate
 }
