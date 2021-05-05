@@ -79,7 +79,7 @@ export function checkAccessToken(
 // Check if the provider ID specified is a valid one. If not, throw a 501
 // Invalid Provider error
 export function checkProviderId(providerId: string | undefined): void {
-	const providerIdIsValid = providerId || isValidProvider(providerId)
+	const providerIdIsValid = providerId && isValidProvider(providerId)
 
 	Logger.debug(
 		`util.guard.checkProviderId: provider ID ${providerId} is ${

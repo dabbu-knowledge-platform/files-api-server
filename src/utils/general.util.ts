@@ -7,6 +7,7 @@ import Path from 'path'
 import Logger from './logger.util'
 
 // Return formatted JSON if we are in a dev environment
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function json(object: any): string {
 	return JSON.stringify(object, null, 2)
 }
