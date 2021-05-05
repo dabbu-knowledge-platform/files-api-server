@@ -2,7 +2,12 @@
 
 // Use express to handle HTTP requests
 import * as Express from 'express'
+
+// Import utility functions
 import { isDabbuError, isAxiosError } from './guards.util'
+import { json } from './general.util'
+// Import the logger
+import Logger from './logger.util'
 
 // The superclass for custom errors that Dabbu Files API Server can throw
 export class DabbuError extends Error {
@@ -25,6 +30,10 @@ export class DabbuError extends Error {
 // Bad request; returned if the URL has any typos or mistakes
 export class BadRequestError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: BadRequestError thrown: ${message}`,
+		)
 		super(400, message, 'malformedUrl')
 	}
 }
@@ -32,24 +41,40 @@ export class BadRequestError extends DabbuError {
 // bad request code
 export class MissingParameterError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: MissingParameterError thrown: ${message}`,
+		)
 		super(400, message, 'missingParam')
 	}
 }
 // Invalid access token in the request header
 export class InvalidCredentialsError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: InvalidCredentialsError thrown: ${message}`,
+		)
 		super(401, message, 'invalidCredentials')
 	}
 }
 // Missing access token in the request header
 export class UnauthorizedError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: UnauthorizedError thrown: ${message}`,
+		)
 		super(403, message, 'unauthorized')
 	}
 }
 // 404 not found
 export class NotFoundError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: NotFoundError thrown: ${message}`,
+		)
 		super(404, message, 'notFound')
 	}
 }
@@ -57,6 +82,10 @@ export class NotFoundError extends DabbuError {
 // of update it
 export class FileExistsError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: FileExistsError thrown: ${message}`,
+		)
 		super(409, message, 'conflict')
 	}
 }
@@ -64,30 +93,54 @@ export class FileExistsError extends DabbuError {
 // supported by a provider
 export class NotImplementedError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: NotImplementedError thrown: ${message}`,
+		)
 		super(501, message, 'notImplemented')
 	}
 }
 // Service unavailable; used when the provider is invalid or not enabled
 export class InvalidProviderError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: InvalidProviderError thrown: ${message}`,
+		)
 		super(501, message, 'invalidProvider')
 	}
 }
 // An error occurred while interacting with the respective provider's API
 export class ProviderInteractionError extends DabbuError {
 	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: ProviderInteractionError thrown: ${message}`,
+		)
 		super(500, message, 'providerInteractionError')
 	}
 }
 
 // The custom error handler we use on the server
-export function errorHandler(
+export default function errorHandler(
 	error: Error,
 	request: Express.Request,
 	response: Express.Response,
 	_: Express.NextFunction,
 ): void {
+	// Log it
+	Logger.debug(`middleware.error: error forwarded to handler`)
 	if (isDabbuError(error)) {
+		// Log it
+		Logger.error(
+			`middleware.error: dabbu error thrown - ${json({
+				code: error.code,
+				error: {
+					message: error.message,
+					reason: error.reason,
+				},
+			})}`,
+		)
 		// If it is a custom error, return the code, message and reason accordingly
 		response.status(error.code).json({
 			code: error.code,
@@ -110,6 +163,15 @@ export function errorHandler(
 			error.response.data.error.reason
 				? error.response.data.error.reason
 				: error.response.data.error.code || 'unknownReason'
+
+		// Log it
+		Logger.error(
+			`middleware.error: axios error thrown - ${json({
+				code: error.response.status,
+				error: { message: errorMessage, reason: errorReason },
+			})}`,
+		)
+
 		response.status(error.response.status).json({
 			code: error.response.status,
 			error: {
@@ -118,6 +180,8 @@ export function errorHandler(
 			},
 		})
 	} else {
+		// Log it
+		Logger.error(`middleware.error: server crash - ${json(error)}`)
 		// Else the server has crashed, return an internalServerError
 		response.status(500).json({
 			code: 500,

@@ -1,29 +1,39 @@
 // Import all data providers
 // Google Drive
-import GoogleDriveDataProvider from '../providers/googledrive.provider'
+import GoogleDriveDataProvider from '../providers/google-drive.provider'
 const googleDriveDataProvider = new GoogleDriveDataProvider()
 // Gmail
 import GmailDataProvider from '../providers/gmail.provider'
 const gmailDataProvider = new GmailDataProvider()
 // OneDrive
-import OneDriveDataProvider from '../providers/onedrive.provider'
+import OneDriveDataProvider from '../providers/one-drive.provider'
 const oneDriveDataProvider = new OneDriveDataProvider()
 // The DataProvider interface that all providers implement
 import DataProvider from '../provider'
 
 // Import errors and utility functions
 import { checkProviderId } from '../utils/guards.util'
+// Import the logger
+import Logger from '../utils/logger.util'
 // Import necessary types
 import { Request, Response, NextFunction } from 'express'
 
 // Function that returns an instance of the Provider module by the ID
 function getProviderModule(providerId: ProviderId): DataProvider {
+	Logger.debug(`controller.data.getProviderModule: providerId = ${providerId}`)
+	
 	switch (providerId) {
 		case 'googledrive':
+			Logger.debug(`controller.data.getProviderModule: returning googleDriveDataProvider`)
+
 			return googleDriveDataProvider
 		case 'gmail':
+			Logger.debug(`controller.data.getProviderModule: returning gmailDataProvider`)
+
 			return gmailDataProvider
 		case 'onedrive':
+			Logger.debug(`controller.data.getProviderModule: returning oneDriveDataProvider`)
+
 			return oneDriveDataProvider
 	}
 }

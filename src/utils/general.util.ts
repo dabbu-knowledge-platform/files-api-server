@@ -2,27 +2,39 @@
 
 // Import the path library
 import Path from 'path'
-import { BadRequestError, UnauthorizedError } from './errors.util'
+
+// Import the logger
+import Logger from './logger.util'
+
+// Return formatted JSON if we are in a dev environment
+export function json(object: any): string {
+	return JSON.stringify(object, null, 2)
+}
 
 // Format a date object to RFC3339 format
 export function formatDate(date: Date): string {
 	function pad(n: number) {
 		return n < 10 ? '0' + n : n
 	}
-	return (
-		date.getUTCFullYear() +
-		'-' +
-		pad(date.getUTCMonth() + 1) +
-		'-' +
-		pad(date.getUTCDate()) +
-		'T' +
-		pad(date.getUTCHours()) +
-		':' +
-		pad(date.getUTCMinutes()) +
-		':' +
-		pad(date.getUTCSeconds()) +
-		'Z'
-	)
+
+	Logger.debug(`util.general.formatDate: converting date ${date} to rfc3339 format`)
+
+	const formattedDate = date.getUTCFullYear() +
+	'-' +
+	pad(date.getUTCMonth() + 1) +
+	'-' +
+	pad(date.getUTCDate()) +
+	'T' +
+	pad(date.getUTCHours()) +
+	':' +
+	pad(date.getUTCMinutes()) +
+	':' +
+	pad(date.getUTCSeconds()) +
+	'Z'
+
+	Logger.debug(`util.general.formatDate: rfc3339 formatted date: ${formattedDate}`)
+
+	return formattedDate
 }
 
 // Get a platform-independent path

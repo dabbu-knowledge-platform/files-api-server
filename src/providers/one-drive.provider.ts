@@ -18,6 +18,8 @@ import {
 } from '../utils/errors.util'
 import * as Utils from '../utils/general.util'
 import * as Guards from '../utils/guards.util'
+// Import the logger
+import Logger from '../utils/logger.util'
 
 // Convert the JSON object returned by the One Drive API to a Dabbu Resource
 function convertOneDriveFileToDabbuResource(

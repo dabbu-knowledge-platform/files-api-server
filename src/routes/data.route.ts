@@ -14,7 +14,7 @@ import * as DataController from '../controllers/data.controller'
 
 // Define where multer should store the uploaded files
 const multer = Multer({
-	dest: EnvPaths('Dabbu Server', { suffix: '' }).cache,
+	dest: EnvPaths('Dabbu Files API Server', { suffix: '' }).cache,
 })
 
 // All the routes for the /data endpoint
