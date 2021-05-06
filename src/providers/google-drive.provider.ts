@@ -52,11 +52,8 @@ function convertDriveFileToDabbuResource(
 	).toISOString()
 	const exportMimeType = getExportTypeForDoc(mimeType)
 	let contentUri = ''
-	// If the export type is media, then return a googleapis.com link
-	if (exportType === 'media') {
-		contentUri = `https://www.googleapis.com/drive/v3/files/${fileObject.id}?alt=media`
-	} else if (exportType === 'view') {
-		// If the export type is view, return an "Open in Google Editor" link
+	// If the export type is view, return an "Open in Google Editor" link
+	if (exportType === 'view') {
 		contentUri = `https://drive.google.com/open?id=${fileObject.id}`
 	} else {
 		// Else:
@@ -67,17 +64,18 @@ function convertDriveFileToDabbuResource(
 			// that link
 			contentUri = fileObject.exportLinks[exportType]
 		} else if (
+			exportType === 'media' &&
 			exportMimeType &&
 			fileObject.exportLinks[exportMimeType]
 		) {
 			// Else return the donwload link for the default export type
 			contentUri = fileObject.exportLinks[exportMimeType]
+		} else {
+			// Else give the googleapis.com link (doesn't work for Google Workspace Files)
+			contentUri = `https://www.googleapis.com/drive/v3/files/${fileObject.id}?alt=media`
 		}
-
-		// If it is a 404, then give the web content link (only downloadable by
-		// browser)
-		contentUri = fileObject.webContentLink as string
 	}
+
 
 	return {
 		name,
