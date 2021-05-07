@@ -8,7 +8,8 @@ import Archiver from 'archiver'
 import breakdance from 'breakdance'
 // Use the env paths library to get the local cache path
 import EnvPaths from 'env-paths'
-const cachePath = EnvPaths('Dabbu Files API Server', { suffix: '' }).cache
+const cachePath = EnvPaths('Dabbu Files API Server', { suffix: '' })
+	.cache
 
 // Implement the DataProvider interface
 import DataProvider from '../provider'

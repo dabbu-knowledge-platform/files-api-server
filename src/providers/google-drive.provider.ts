@@ -76,7 +76,6 @@ function convertDriveFileToDabbuResource(
 		}
 	}
 
-
 	return {
 		name,
 		kind,

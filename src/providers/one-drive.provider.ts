@@ -301,7 +301,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			// Check if it is a OneNote file
 			if (fileObject.mimeType === 'oneNote') {
 				// If so, return an informative response
-				throw new ProviderInteractionError('Error: OneNote files cannot be exported yet')
+				throw new ProviderInteractionError(
+					'Error: OneNote files cannot be exported yet',
+				)
 			}
 
 			// Then return it
