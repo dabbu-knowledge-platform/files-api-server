@@ -291,17 +291,23 @@ export default class OneDriveDataProvider implements DataProvider {
 		// Parse the result and return a file object
 		if (fetchResult.data) {
 			// Parse the returned object
-			const fileObject = fetchResult.data
+			const fileObject = convertOneDriveFileToDabbuResource(
+				fetchResult.data,
+				folderPath,
+				isShared,
+				queries.exportType,
+			)
 
-			// Then Return it
+			// Check if it is a OneNote file
+			if (fileObject.mimeType === 'oneNote') {
+				// If so, return an informative response
+				throw new ProviderInteractionError('Error: OneNote files cannot be exported yet')
+			}
+
+			// Then return it
 			return {
 				code: 200,
-				content: convertOneDriveFileToDabbuResource(
-					fileObject,
-					folderPath,
-					isShared,
-					queries.exportType,
-				),
+				content: fileObject,
 			}
 		} else {
 			// Throw an error
