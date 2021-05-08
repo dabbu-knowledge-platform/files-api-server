@@ -18,13 +18,6 @@ const levels = {
 	debug: 4,
 }
 
-// Set the level based on the NODE_ENV environment variable
-const level = () => {
-	const env = (process.env.NODE_ENV || 'development').toLowerCase()
-	const isDevelopment = env === 'development' || env === 'dev'
-	return isDevelopment ? 'debug' : 'http'
-}
-
 // Define different colors for each level
 const colors = {
 	error: 'red',
@@ -39,22 +32,9 @@ const colors = {
 Winston.addColors(colors)
 
 // Define which transports the logger must use to print out messages
+// Do not print logs to console as they contain sensitive information
 const transports = [
-	// Allow the use the console to print the messages
-	new Winston.transports.Console({
-		format: Winston.format.combine(
-			// Add the message timestamp with the preferred format
-			Winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
-			// Tell Winston that the logs must be coloured
-			Winston.format.colorize({ all: true }),
-			// Define the format of the message showing the timestamp, the level and
-			// the message
-			Winston.format.printf(
-				(info) => `${info.timestamp} ${info.level}: ${info.message}`,
-			),
-		),
-	}),
-	// Save the logs in a file as well, in the same format as the console
+	// Save the logs in a file
 	new Winston.transports.File({
 		filename: `${logsPath}/logs/files-api-server.log`,
 		format: Winston.format.combine(
@@ -67,7 +47,7 @@ const transports = [
 			),
 		),
 	}),
-	// Save the logs in a JSON format
+	// Save the logs in a JSON format too
 	new Winston.transports.File({
 		filename: `${logsPath}/logs/files-api-server.json.log`,
 		format: Winston.format.combine(
@@ -86,7 +66,7 @@ const transports = [
 // Create the logger instance that has to be exported
 // and used to log messages.
 const Logger = Winston.createLogger({
-	level: level(),
+	level: 'debug',
 	levels,
 	transports,
 })
