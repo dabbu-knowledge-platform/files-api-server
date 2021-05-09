@@ -6,6 +6,7 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse>
 
 	// Return information about the file at the specified location
@@ -14,6 +15,7 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse>
 
 	// Upload a file to the specified location
@@ -22,6 +24,7 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse>
 
@@ -31,6 +34,7 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse>
 
@@ -40,5 +44,6 @@ export default interface DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse>
 }

@@ -2,7 +2,7 @@
 
 ### Provider specific fields
 
-- Requires an access token of the format `Bearer <token>` in the `Authorization` header of every request. No fields need to be added to the request body.
+- Requires an access token of the format `Bearer <token>` in the `X-Provider-Credentials` header of every request. No fields need to be added to the request body.
 
 ### Provider specific features
 

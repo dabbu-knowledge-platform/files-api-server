@@ -11,6 +11,8 @@ import request from 'supertest'
 
 // Import the server
 import app from '../../src/app'
+// Import the function to initialise the client database
+import * as ClientDb from '../../src/utils/auth.util'
 
 // Before running any tests, refresh all access tokens
 beforeAll(async () => {
@@ -35,6 +37,18 @@ beforeAll(async () => {
 	process.env.GOOGLE_ACCESS_TOKEN = `${
 		serverResponse.data.token_type || 'Bearer'
 	} ${serverResponse.data.access_token}`
+
+	// Initialise the client auth database
+	await ClientDb.init(':memory:')
+
+	// Also register a client with the server and store the token as an environment variable
+	const response = await request(app).post('/files-api/v3/clients/')
+
+	// Set the DABBU_TOKEN environment variable. This variable is local, is set
+	// to null once the process ends. NEVER console.log this variable
+	process.env.DABBU_TOKEN = `${Buffer.from(
+		`${response.body.content.id}:${response.body.content.apiKey}`,
+	).toString('base64')}`
 })
 
 describe('test list request', () => {
@@ -42,19 +56,26 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -66,7 +87,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Fthis-does-not-exist')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
 			console.log(response.body)
@@ -79,7 +101,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F..%2F.%2Ftests')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -92,7 +115,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2Ftest-files')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -104,7 +128,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2Ftest-files')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				orderBy: 'name',
 				direction: 'asc',
@@ -140,12 +165,15 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
@@ -154,7 +182,11 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -166,7 +198,8 @@ describe('test read request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftest%2Ftest-files/non-existent-file')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
 			console.log(response.body)
@@ -179,7 +212,8 @@ describe('test read request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Ftests%2F..%2F.%2F')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -194,7 +228,8 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'media',
 			})
@@ -220,7 +255,8 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
 			)
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'view',
 			})
@@ -248,12 +284,15 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
@@ -262,8 +301,12 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -277,8 +320,9 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -293,7 +337,8 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -308,8 +353,9 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/pictures/Image.png')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
 			console.log(response.body)
@@ -330,9 +376,10 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/pictures/Image.png')
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
 			console.log(response.body)
@@ -358,8 +405,9 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20And%20Convert%20Test.docx',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
 			console.log(response.body)
@@ -380,9 +428,10 @@ describe('test create request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20And%20Convert%20Test.docx',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 201) {
 			console.log(response.body)
@@ -410,12 +459,15 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Testpng',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
@@ -424,8 +476,12 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -439,8 +495,9 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -455,7 +512,8 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -470,11 +528,12 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach(
 				'content',
 				'./tests/test-files/documents/Portable Doc.pdf',
 			)
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -495,8 +554,9 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.field('name', 'Updated PDF.pdf')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -517,8 +577,9 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.field('path', '/tests/test-files/updated/')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -542,8 +603,9 @@ describe('test update request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.field('lastModifiedTime', 'Thu 22 Apr 2021 06:27:05 GMT+0530')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -571,12 +633,15 @@ describe('test delete request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Testpng',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
@@ -585,8 +650,12 @@ describe('test delete request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -600,8 +669,9 @@ describe('test delete request', () => {
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.attach('content', './tests/test-files/documents/Document.docx')
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 400) {
 			console.log(response.body)
@@ -616,7 +686,8 @@ describe('test delete request', () => {
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Last%20Modified%20Time%20Upload%20And%20Convert%20Test',
 			)
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 204) {
 			console.log(response.body)
@@ -628,12 +699,14 @@ describe('test delete request', () => {
 		let response = await request(app)
 			.delete('/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		response = await request(app)
 			.delete('/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/')
 			.query({ providerId: 'googledrive' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 204) {
 			console.log(response.body)

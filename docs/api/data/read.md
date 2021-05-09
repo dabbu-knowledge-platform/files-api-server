@@ -15,6 +15,7 @@ Request body:
 
 Request headers:
 
+- `X-Credentials` header must have the client ID - API key pair encoded as follows: `base64('<CLIENT ID>' + ':' + '<API KEY>')`
 - Headers as required by provider
 
 ### Response

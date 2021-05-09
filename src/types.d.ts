@@ -2,6 +2,12 @@
 
 // The library we use to convert html to markdown has no types, so declare it
 declare module 'breakdance'
+// Extend express' request type to have an auth field so we can inject our client object in the request
+declare namespace Express {
+	export interface Request {
+		creds: Client
+	}
+}
 
 // Multer File type. It is not complete, this type exists simply to get rid of
 // Typescript type errors
@@ -48,6 +54,12 @@ declare interface DabbuResource {
 	createdAtTime: string
 	lastModifiedTime: string
 	contentUri: string
+}
+
+// A client that can access the Dabbu API
+declare interface Client {
+	id: string
+	apiKey: string
 }
 
 // Types for requests and responses

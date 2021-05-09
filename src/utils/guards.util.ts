@@ -7,8 +7,9 @@ import { AxiosError } from 'axios'
 import {
 	BadRequestError,
 	DabbuError,
-	InvalidProviderError,
-	UnauthorizedError,
+	InvalidProviderIdError,
+	MissingCredentialsError,
+	MissingProviderCredentialsError,
 } from './errors.util'
 
 // Check if the
@@ -53,25 +54,56 @@ export function isAxiosError(error: Error): error is AxiosError {
 	return isAxios
 }
 
-// Check if the request headers contain an Authorization header. If not, throw
+// Check if the request headers contain an X-Credentials header. If not, throw
 // a 403 Unauthorized error
-export function checkAccessToken(
+export function checkClientIDApiKeyPair(
 	headers: Record<string, string | number>,
 ): void {
-	const headersContainAccessToken =
-		headers['Authorization'] || headers['authorization']
+	const headersContainCredentials =
+		headers['X-Credentials'] ||
+		(headers['x-credentials'] &&
+			typeof (headers['X-Credentials'] || headers['x-credentials']) ===
+				'string')
 
 	Logger.debug(
-		`util.guard.checkAccessToken: headers ${
-			headersContainAccessToken
-				? 'contain an access token'
-				: 'do not contain an access token'
+		`util.guard.checkClientIDApiKeyPair: headers ${
+			headersContainCredentials
+				? 'contain a client ID - API key pair'
+				: 'do not contain a client ID - API key pair'
 		}`,
 	)
 
-	if (!headersContainAccessToken) {
-		throw new UnauthorizedError(
-			'Missing access token in `Authorization` header',
+	if (!headersContainCredentials) {
+		throw new MissingCredentialsError(
+			'Missing client ID - API key pair in `X-Credentials` header',
+		)
+	}
+}
+
+// Check if the request headers contain an X-Provider-Credentials header. If not, throw
+// a 403 Unauthorized error
+export function checkProviderCredentials(
+	headers: Record<string, string | number>,
+): void {
+	const headersContainProviderCredentials =
+		headers['X-Provider-Credentials'] ||
+		(headers['x-provider-credentials'] &&
+			typeof (
+				headers['X-Provider-Credentials'] ||
+				headers['x-provider-credentials']
+			) === 'string')
+
+	Logger.debug(
+		`util.guard.checkProviderCredentials: headers ${
+			headersContainProviderCredentials
+				? 'contain a provider auth token'
+				: 'do not contain a provider auth token'
+		}`,
+	)
+
+	if (!headersContainProviderCredentials) {
+		throw new MissingProviderCredentialsError(
+			'Missing provider-specific access token in `X-Provider-Credentials` header',
 		)
 	}
 }
@@ -88,7 +120,7 @@ export function checkProviderId(providerId: string | undefined): void {
 	)
 
 	if (!providerIdIsValid) {
-		throw new InvalidProviderError(
+		throw new InvalidProviderIdError(
 			`Invalid provider ID - ${providerId}`,
 		)
 	}

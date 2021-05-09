@@ -11,7 +11,7 @@ import DataProvider from '../provider'
 // Import errors and utility functions
 import {
 	BadRequestError,
-	InvalidCredentialsError,
+	InvalidProviderCredentialsError,
 	MissingParameterError,
 	NotFoundError,
 	ProviderInteractionError,
@@ -93,17 +93,19 @@ export default class OneDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -143,7 +145,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -218,17 +222,19 @@ export default class OneDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -262,7 +268,9 @@ export default class OneDriveDataProvider implements DataProvider {
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else if (error.response.status === 404) {
 				// If it is a 404, throw a not found error
 				throw new NotFoundError(
@@ -325,18 +333,20 @@ export default class OneDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -384,7 +394,9 @@ export default class OneDriveDataProvider implements DataProvider {
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else {
 				// Return a proper error message
 				const errorMessage =
@@ -432,7 +444,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else {
 					// Return a proper error message
 					const errorMessage =
@@ -479,18 +493,20 @@ export default class OneDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -533,7 +549,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -575,7 +593,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -639,7 +659,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -682,7 +704,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -725,7 +749,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -776,17 +802,19 @@ export default class OneDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://graph.microsoft.com/v1.0/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -808,7 +836,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -848,7 +878,9 @@ export default class OneDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(

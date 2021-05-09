@@ -16,7 +16,7 @@ import DataProvider from '../provider'
 
 // Import errors and utility functions
 import {
-	InvalidCredentialsError,
+	InvalidProviderCredentialsError,
 	MissingParameterError,
 	NotFoundError,
 	NotImplementedError,
@@ -30,6 +30,7 @@ import Logger from '../utils/logger.util'
 // Convert the JSON object returned by the Gmail API to a Dabbu DabbuResource
 async function convertGmailFileToDabbuResource(
 	httpClient: AxiosInstance,
+	clientId: string,
 	threadResult: Record<string, any>,
 	folderPath: string,
 	exportType: string | undefined,
@@ -81,7 +82,11 @@ async function convertGmailFileToDabbuResource(
 		const contentUri =
 			exportType === 'view'
 				? `https://mail.google.com/mail/u/0/#inbox/${threadResult.data.id}`
-				: await createMailDataURI(httpClient, threadResult.data)
+				: await createMailDataURI(
+						httpClient,
+						clientId,
+						threadResult.data,
+				  )
 
 		// Add this to the results
 		return {
@@ -361,6 +366,7 @@ function parseGmailMessage(message: Record<string, any>) {
 // attachments, and send back a download URL
 async function createMailDataURI(
 	httpClient: AxiosInstance,
+	clientId: string,
 	threadData: Record<string, any>,
 ): Promise<string> {
 	// Store the file paths in which the messages have been stored
@@ -382,9 +388,7 @@ async function createMailDataURI(
 
 		// Create the directories which contain the generated and zip files
 		// eslint-disable-next-line no-await-in-loop
-		await Fs.ensureDir(`${cachePath}/_gmail/generated/`)
-		// eslint-disable-next-line no-await-in-loop
-		await Fs.ensureDir(`${cachePath}/_gmail/zips/`)
+		await Fs.ensureDir(`${cachePath}/_gmail/generated/${clientId}/`)
 
 		// Show the attachments and inline stuff in a nice way at the
 		// end of the file
@@ -416,13 +420,13 @@ async function createMailDataURI(
 						// Write the attachment data to a file
 						// eslint-disable-next-line no-await-in-loop
 						await Fs.writeFile(
-							`${cachePath}/_gmail/generated/${messageFileName} - ${attachment.filename}`,
+							`${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${attachment.filename}`,
 							Buffer.from(attachmentResult.data.data, 'base64'),
 						)
 						// Add the file path and name to the array
 						attachmentPaths.push({
 							name: `${messageFileName} - ${attachment.filename}`,
-							path: `${cachePath}/_gmail/generated/${messageFileName} - ${attachment.filename}`,
+							path: `${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${attachment.filename}`,
 						})
 					} else {
 						// No data
@@ -459,7 +463,7 @@ async function createMailDataURI(
 						// Write the attachment data to a file
 						// eslint-disable-next-line no-await-in-loop
 						await Fs.writeFile(
-							`${cachePath}/_gmail/generated/${messageFileName} - ${
+							`${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${
 								i + 1
 							} - ${attachment.filename}`,
 							Buffer.from(attachmentResult.data.data, 'base64'),
@@ -469,7 +473,7 @@ async function createMailDataURI(
 							name: `${messageFileName} - ${i + 1} - ${
 								attachment.filename
 							}`,
-							path: `${cachePath}/_gmail/generated/${messageFileName} - ${
+							path: `${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${
 								i + 1
 							} - ${attachment.filename}`,
 						})
@@ -489,7 +493,9 @@ async function createMailDataURI(
 		// Write the data to the file
 		// eslint-disable-next-line no-await-in-loop
 		await Fs.writeFile(
-			`${cachePath}/_gmail/generated/${messageFileName} - ${i + 1}.md`,
+			`${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${
+				i + 1
+			}.md`,
 			[
 				'---',
 				`subject: ${message.subject}`,
@@ -511,16 +517,18 @@ async function createMailDataURI(
 
 		messagePaths.push({
 			name: `${messageFileName} - ${i + 1}.md`,
-			path: `${cachePath}/_gmail/generated/${messageFileName} - ${
+			path: `${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${
 				i + 1
 			}.md`,
 		})
 	}
 
 	// Pack it all in a zip file
-	await Fs.createFile(`${cachePath}/_gmail/zips/${archiveName}.zip`)
+	await Fs.createFile(
+		`${cachePath}/_cache/${clientId}/${archiveName}.zip`,
+	)
 	const output = Fs.createWriteStream(
-		`${cachePath}/_gmail/zips/${archiveName}.zip`,
+		`${cachePath}/_cache/${clientId}/${archiveName}.zip`,
 	)
 	const archive = Archiver('zip', {
 		zlib: { level: 9 }, // Sets the compression level.
@@ -546,18 +554,11 @@ async function createMailDataURI(
 	}
 
 	return new Promise((resolve, reject) => {
-		// Once the file is written, return
-		output.on('close', () => {
-			resolve(
-				`http://localhost:${process.env
-					.DABBU_FILES_API_SERVER_PORT!}/files-api/v3/internal/cache/${encodeURIComponent(
-					`_gmail/zips/${archiveName}.zip`,
-				)}`,
-			)
-		})
-
 		// Catch errors
 		archive.on('error', (error) => {
+			reject(error)
+		})
+		output.on('error', (error) => {
 			reject(error)
 		})
 
@@ -566,6 +567,16 @@ async function createMailDataURI(
 
 		// Pipe archive data to the file
 		archive.pipe(output)
+
+		// Once the file is written, return
+		output.on('close', () => {
+			resolve(
+				`http://localhost:${process.env
+					.DABBU_FILES_API_SERVER_PORT!}/files-api/v3/internal/cache/${encodeURIComponent(
+					`${archiveName}.zip`,
+				)}`,
+			)
+		})
 	})
 }
 
@@ -576,17 +587,19 @@ export default class GmailDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -602,7 +615,9 @@ export default class GmailDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else {
 					// Return a proper error message
 					const errorMessage =
@@ -702,7 +717,9 @@ export default class GmailDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status == 400) {
 					// If it is a 400, throw a not found for the labels
 					throw new NotFoundError(
@@ -760,7 +777,9 @@ export default class GmailDataProvider implements DataProvider {
 				} catch (error) {
 					if (error.response.status === 401) {
 						// If it is a 401, throw an invalid credentials error
-						throw new InvalidCredentialsError('Invalid access token')
+						throw new InvalidProviderCredentialsError(
+							'Invalid access token',
+						)
 					} else {
 						// Return a proper error message
 						const errorMessage =
@@ -781,6 +800,7 @@ export default class GmailDataProvider implements DataProvider {
 					results.push(
 						await convertGmailFileToDabbuResource(
 							httpClient,
+							creds.id,
 							threadResult,
 							parameters.folderPath,
 							queries.exportType,
@@ -816,17 +836,19 @@ export default class GmailDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -849,7 +871,9 @@ export default class GmailDataProvider implements DataProvider {
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else if (error.response.status === 400) {
 				// If it is a 400 (invalid thread ID), throw a not found error
 				throw new NotFoundError(`The thread ${threadId} does not exist`)
@@ -874,6 +898,7 @@ export default class GmailDataProvider implements DataProvider {
 				code: 200,
 				content: await convertGmailFileToDabbuResource(
 					httpClient,
+					creds.id,
 					threadResult,
 					parameters.folderPath,
 					queries.exportType,
@@ -905,12 +930,13 @@ export default class GmailDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header.
+		// Check that the request has an access token in the X-Provider-Credentials header.
 		// Even though this method is not implemented, only authorized users should
 		// know that
-		Guards.checkAccessToken(headers)
+		Guards.checkProviderCredentials(headers)
 
 		// Start parsing the file path and the option
 		// Else throw an error
@@ -925,12 +951,13 @@ export default class GmailDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header.
+		// Check that the request has an access token in the X-Provider-Credentials header.
 		// Even though this method is not implemented, only authorized users should
 		// know that
-		Guards.checkAccessToken(headers)
+		Guards.checkProviderCredentials(headers)
 
 		// Start parsing the file path and the option
 		// Else throw an error
@@ -945,17 +972,19 @@ export default class GmailDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -977,7 +1006,9 @@ export default class GmailDataProvider implements DataProvider {
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else if (error.response.status === 404) {
 				// If it is a 404, throw a not found error
 				throw new NotFoundError(`The thread ${threadId} does not exist`)

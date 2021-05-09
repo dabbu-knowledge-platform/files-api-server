@@ -11,6 +11,8 @@ import request from 'supertest'
 
 // Import the server
 import app from '../../src/app'
+// Import the function to initialise the client database
+import * as ClientDb from '../../src/utils/auth.util'
 
 // Before running any tests, refresh all access tokens
 beforeAll(async () => {
@@ -35,6 +37,18 @@ beforeAll(async () => {
 	process.env.GOOGLE_ACCESS_TOKEN = `${
 		serverResponse.data.token_type || 'Bearer'
 	} ${serverResponse.data.access_token}`
+
+	// Initialise the client auth database
+	await ClientDb.init(':memory:')
+
+	// Also register a client with the server and store the token as an environment variable
+	const response = await request(app).post('/files-api/v3/clients/')
+
+	// Set the DABBU_TOKEN environment variable. This variable is local, is set
+	// to null once the process ends. NEVER console.log this variable
+	process.env.DABBU_TOKEN = `${Buffer.from(
+		`${response.body.content.id}:${response.body.content.apiKey}`,
+	).toString('base64')}`
 })
 
 describe('test list request', () => {
@@ -42,19 +56,26 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
 			.query({ providerId: 'gmail' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -66,7 +87,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2Fthis-does-not-exist')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
 			console.log(response.body)
@@ -78,7 +100,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -93,7 +116,8 @@ describe('test list request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2FINBOX')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 200) {
 			console.log(response.body)
@@ -110,19 +134,26 @@ describe('test read request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2FINBOX/17901f589bb3c9ea')
 			.query({ providerId: 'gmail' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2FINBOX/17901f589bb3c9ea')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', 'absolutely horrendously invalid token')
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set(
+				'X-Provider-Credentials',
+				'absolutely horrendously invalid token',
+			)
 
 		if (response.status != 401) {
 			console.log(response.body)
@@ -136,7 +167,8 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2FINBOX/17901f589bb3c9ea - Something - blahblahblah',
 			)
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 404) {
 			console.log(response.body)
@@ -150,7 +182,8 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2FINBOX/20210424%20-%2017901f589bb3c9ea%20-%20Re:%20Hi!.zip',
 			)
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'media',
 			})
@@ -174,7 +207,8 @@ describe('test read request', () => {
 				'/files-api/v3/data/%2FINBOX/20210424%20-%2017901f589bb3c9ea%20-%20Re:%20Hi!.zip',
 			)
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 			.query({
 				exportType: 'view',
 			})
@@ -198,19 +232,23 @@ describe('test create request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F/some-thread')
 			.query({ providerId: 'gmail' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - not implemented', async () => {
 		const response = await request(app)
 			.post('/files-api/v3/data/%2F/some-thread')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 501) {
 			console.log(response.body)
@@ -225,19 +263,23 @@ describe('test update request', () => {
 		const response = await request(app)
 			.get('/files-api/v3/data/%2F/some-thread')
 			.query({ providerId: 'gmail' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
 
 		if (response.status != 403) {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(403)
-		expect(response.body.error.reason).toEqual('unauthorized')
+		expect(response.body.error.reason).toEqual(
+			'missingProviderCredentials',
+		)
 	})
 
 	it('fail - not implemented', async () => {
 		const response = await request(app)
 			.patch('/files-api/v3/data/%2F/some-thread')
 			.query({ providerId: 'gmail' })
-			.set('Authorization', process.env.GOOGLE_ACCESS_TOKEN!)
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
 
 		if (response.status != 501) {
 			console.log(response.body)

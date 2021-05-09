@@ -70,7 +70,13 @@ export async function list(
 
 	// Call the list function
 	providerModule
-		.list(request.params, request.query, request.body, request.headers)
+		.list(
+			request.params,
+			request.query,
+			request.body,
+			request.headers,
+			request.creds,
+		)
 		// If the function executes successfully, send the response back
 		.then((result: DabbuResponse) =>
 			response.status(result.code).send(result),
@@ -101,7 +107,13 @@ export async function read(
 
 	// Call the read function
 	providerModule
-		.read(request.params, request.query, request.body, request.headers)
+		.read(
+			request.params,
+			request.query,
+			request.body,
+			request.headers,
+			request.creds,
+		)
 		// If the function executes successfully, send the response back
 		.then((result: DabbuResponse) =>
 			response.status(result.code).send(result),
@@ -137,6 +149,7 @@ export async function create(
 			request.query,
 			request.body,
 			request.headers,
+			request.creds,
 			request.file,
 		)
 		// If the function executes successfully, send the response back
@@ -174,6 +187,7 @@ export async function update(
 			request.query,
 			request.body,
 			request.headers,
+			request.creds,
 			request.file,
 		)
 		// If the function executes successfully, send the response back
@@ -211,6 +225,7 @@ export async function del(
 			request.query,
 			request.body,
 			request.headers,
+			request.creds,
 		)
 		// If the function executes successfully, send the response back
 		.then((result: DabbuResponse) =>

@@ -1,13 +1,13 @@
 // The error handler and all errors thrown intentionally are defined here
 
-// Use express to handle HTTP requests
-import * as Express from 'express'
-
 // Import utility functions
 import { isDabbuError, isAxiosError } from './guards.util'
 import { json } from './general.util'
 // Import the logger
 import Logger from './logger.util'
+
+// Import necessary types
+import { Request, Response, NextFunction } from 'express'
 
 // The superclass for custom errors that Dabbu Files API Server can throw
 export class DabbuError extends Error {
@@ -48,7 +48,7 @@ export class MissingParameterError extends DabbuError {
 		super(400, message, 'missingParam')
 	}
 }
-// Invalid access token in the request header
+// Invalid client ID - API key pair in the request header
 export class InvalidCredentialsError extends DabbuError {
 	constructor(message: string) {
 		// Log it
@@ -58,14 +58,34 @@ export class InvalidCredentialsError extends DabbuError {
 		super(401, message, 'invalidCredentials')
 	}
 }
-// Missing access token in the request header
-export class UnauthorizedError extends DabbuError {
+// Missing client ID - API key pair in the request header
+export class MissingCredentialsError extends DabbuError {
 	constructor(message: string) {
 		// Log it
 		Logger.debug(
-			`objects.dabbu-error: UnauthorizedError thrown: ${message}`,
+			`objects.dabbu-error: MissingCredentialsError thrown: ${message}`,
 		)
-		super(403, message, 'unauthorized')
+		super(403, message, 'missingCredentials')
+	}
+}
+// Invalid provider-specific credential in the request header
+export class InvalidProviderCredentialsError extends DabbuError {
+	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: InvalidProviderCredentialsError thrown: ${message}`,
+		)
+		super(401, message, 'invalidProviderCredentials')
+	}
+}
+// Missing provider-specific credential in the request header
+export class MissingProviderCredentialsError extends DabbuError {
+	constructor(message: string) {
+		// Log it
+		Logger.debug(
+			`objects.dabbu-error: MissingProviderCredentialsError thrown: ${message}`,
+		)
+		super(403, message, 'missingProviderCredentials')
 	}
 }
 // 404 not found
@@ -101,13 +121,13 @@ export class NotImplementedError extends DabbuError {
 	}
 }
 // Service unavailable; used when the provider is invalid or not enabled
-export class InvalidProviderError extends DabbuError {
+export class InvalidProviderIdError extends DabbuError {
 	constructor(message: string) {
 		// Log it
 		Logger.debug(
-			`objects.dabbu-error: InvalidProviderError thrown: ${message}`,
+			`objects.dabbu-error: InvalidProviderIdError thrown: ${message}`,
 		)
-		super(501, message, 'invalidProvider')
+		super(501, message, 'invalidProviderId')
 	}
 }
 // An error occurred while interacting with the respective provider's API
@@ -124,9 +144,9 @@ export class ProviderInteractionError extends DabbuError {
 // The custom error handler we use on the server
 export default function errorHandler(
 	error: Error,
-	request: Express.Request,
-	response: Express.Response,
-	_: Express.NextFunction,
+	request: Request,
+	response: Response,
+	next: NextFunction,
 ): void {
 	// Log it
 	Logger.debug(`middleware.error: error forwarded to handler`)

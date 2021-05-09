@@ -12,7 +12,7 @@ import DataProvider from '../provider'
 import {
 	BadRequestError,
 	FileExistsError,
-	InvalidCredentialsError,
+	InvalidProviderCredentialsError,
 	MissingParameterError,
 	NotFoundError,
 	ProviderInteractionError,
@@ -59,13 +59,18 @@ function convertDriveFileToDabbuResource(
 		// Else:
 		// First check that if it is Google Doc/Sheet/Slide/Drawing/App
 		// Script
-		if (exportType && fileObject.exportLinks[exportType]) {
+		if (
+			exportType &&
+			fileObject.exportLinks &&
+			fileObject.exportLinks[exportType]
+		) {
 			// If the requested export type is in the exportLinks field, return
 			// that link
 			contentUri = fileObject.exportLinks[exportType]
 		} else if (
 			exportType === 'media' &&
 			exportMimeType &&
+			fileObject.exportLinks &&
 			fileObject.exportLinks[exportMimeType]
 		) {
 			// Else return the donwload link for the default export type
@@ -122,7 +127,7 @@ async function getFolderId(
 	} catch (error) {
 		if (error.response.status === 401) {
 			// If it is a 401, throw an invalid credentials error
-			throw new InvalidCredentialsError('Invalid access token')
+			throw new InvalidProviderCredentialsError('Invalid access token')
 		} else {
 			// Return a proper error message
 			const errorMessage =
@@ -156,7 +161,9 @@ async function getFolderId(
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else {
 				// Return a proper error message
 				const errorMessage =
@@ -270,7 +277,7 @@ async function getFileId(
 	} catch (error) {
 		if (error.response.status === 401) {
 			// If it is a 401, throw an invalid credentials error
-			throw new InvalidCredentialsError('Invalid access token')
+			throw new InvalidProviderCredentialsError('Invalid access token')
 		} else {
 			// Return a proper error message
 			const errorMessage =
@@ -427,17 +434,19 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -492,7 +501,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					// If it is a 404, throw a not found error
 					throw new NotFoundError(
@@ -570,17 +581,19 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -637,7 +650,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else if (error.response.status === 404) {
 				// If it is a 404, throw a not found error
 				throw new NotFoundError(
@@ -692,18 +707,20 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -762,7 +779,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		} catch (error) {
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
-				throw new InvalidCredentialsError('Invalid access token')
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
 			} else {
 				// Return a proper error message
 				const errorMessage =
@@ -790,7 +809,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else {
 					const errorMessage =
 						error.response.data &&
@@ -820,7 +841,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					} catch (error) {
 						if (error.response.status === 401) {
 							// If it is a 401, throw an invalid credentials error
-							throw new InvalidCredentialsError('Invalid access token')
+							throw new InvalidProviderCredentialsError(
+								'Invalid access token',
+							)
 						} else {
 							const errorMessage =
 								error.response.data &&
@@ -846,7 +869,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				} catch (error) {
 					if (error.response.status === 401) {
 						// If it is a 401, throw an invalid credentials error
-						throw new InvalidCredentialsError('Invalid access token')
+						throw new InvalidProviderCredentialsError(
+							'Invalid access token',
+						)
 					} else {
 						const errorMessage =
 							error.response.data &&
@@ -899,18 +924,20 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 		fileMetadata: MulterFile,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -958,7 +985,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					throw new NotFoundError(
 						`File ${Utils.diskPath(
@@ -999,7 +1028,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					} catch (error) {
 						if (error.response.status === 401) {
 							// If it is a 401, throw an invalid credentials error
-							throw new InvalidCredentialsError('Invalid access token')
+							throw new InvalidProviderCredentialsError(
+								'Invalid access token',
+							)
 						} else if (error.response.status === 404) {
 							throw new NotFoundError(
 								`File ${Utils.diskPath(
@@ -1038,7 +1069,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					throw new NotFoundError(
 						`File ${Utils.diskPath(
@@ -1083,7 +1116,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					throw new NotFoundError(
 						`File ${Utils.diskPath(
@@ -1121,7 +1156,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					throw new NotFoundError(
 						`File ${Utils.diskPath(
@@ -1173,17 +1210,19 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		queries: Record<string, any>,
 		body: Record<string, any>,
 		headers: Record<string, any>,
+		creds: Client,
 	): Promise<DabbuResponse> {
-		// Check that the request has an access token in the Authorization header
-		Guards.checkAccessToken(headers)
+		// Check that the request has an access token in the X-Provider-Credentials header
+		Guards.checkProviderCredentials(headers)
 
 		// If an access token is present, create an axios httpClient with the access
-		// token in the Authorization header
+		// token in the X-Provider-Credentials header
 		const httpClient = axios.create({
 			baseURL: 'https://www.googleapis.com/',
 			headers: {
 				Authorization:
-					headers['Authorization'] || headers['authorization'],
+					headers['X-Provider-Credentials'] ||
+					headers['x-provider-credentials'],
 			},
 		})
 
@@ -1209,7 +1248,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					throw new NotFoundError(
 						`File ${Utils.diskPath(
@@ -1252,7 +1293,9 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			} catch (error) {
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
-					throw new InvalidCredentialsError('Invalid access token')
+					throw new InvalidProviderCredentialsError(
+						'Invalid access token',
+					)
 				} else if (error.response.status === 404) {
 					throw new NotFoundError(
 						`File ${Utils.diskPath(

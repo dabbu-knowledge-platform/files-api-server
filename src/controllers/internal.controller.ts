@@ -3,7 +3,8 @@ import * as Fs from 'fs-extra'
 
 // Use the env paths library to get the local cache path
 import EnvPaths from 'env-paths'
-const cachePath = EnvPaths('Dabbu Server', { suffix: '' }).cache
+const cachePath = EnvPaths('Dabbu Files API Server', { suffix: '' })
+	.cache
 
 // Import errors and utility functions
 import { checkRelativePath } from '../utils/guards.util'
@@ -29,13 +30,15 @@ export async function cache(
 
 	// Check if the file exists
 	if (
-		!(await Fs.pathExists(`${cachePath}/${request.params.filePath}`))
+		!(await Fs.pathExists(
+			`${cachePath}/_cache/${request.creds.id}/${request.params.filePath}`,
+		))
 	) {
 		// If it doesn't, return a 404
 		const result = {
 			code: 404,
 			error: {
-				message: `File ${`${cachePath}/${request.params.filePath}`} was not found`,
+				message: `File ${request.params.filePath} was not found`,
 				reason: 'notFound',
 			},
 		}
@@ -45,5 +48,7 @@ export async function cache(
 	}
 
 	// Stream the file back
-	response.download(`${cachePath}/${request.params.filePath}`)
+	response.sendFile(
+		`${cachePath}/_cache/${request.creds.id}/${request.params.filePath}`,
+	)
 }

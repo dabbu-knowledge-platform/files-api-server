@@ -4,7 +4,7 @@ import Winston from 'winston'
 import Morgan from 'morgan'
 // Use the env paths library to get the local config path
 import EnvPaths from 'env-paths'
-const logsPath = EnvPaths('Dabbu Files API Server', { suffix: '' })
+const configPath = EnvPaths('Dabbu Files API Server', { suffix: '' })
 	.config
 
 // First define the Winston config
@@ -36,7 +36,7 @@ Winston.addColors(colors)
 const transports = [
 	// Save the logs in a file
 	new Winston.transports.File({
-		filename: `${logsPath}/logs/files-api-server.log`,
+		filename: `${configPath}/logs/files-api-server.log`,
 		format: Winston.format.combine(
 			// Add the message timestamp with the preferred format
 			Winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
@@ -49,7 +49,7 @@ const transports = [
 	}),
 	// Save the logs in a JSON format too
 	new Winston.transports.File({
-		filename: `${logsPath}/logs/files-api-server.json.log`,
+		filename: `${configPath}/logs/files-api-server.json.log`,
 		format: Winston.format.combine(
 			// Add the message timestamp with the preferred format
 			Winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),

@@ -12,6 +12,9 @@ import EnvPaths from 'env-paths'
 // provider module as specified in the request
 import * as DataController from '../controllers/data.controller'
 
+// Import the auth middleware
+import AuthHandler from '../utils/auth.util'
+
 // Define where multer should store the uploaded files
 const multer = Multer({
 	dest: EnvPaths('Dabbu Files API Server', { suffix: '' }).cache,
@@ -22,15 +25,16 @@ const router = Express.Router()
 
 // If the user makes a GET request to /data/:folderPath/, list
 // out all the files/subfolders in the specified folder
-router.get('/:folderPath/', DataController.list)
+router.get('/:folderPath/', AuthHandler, DataController.list)
 // If the user makes a GET request to /data/:folderPath/:fileName,
 // return information about the file at that specified location
-router.get('/:folderPath/:fileName/', DataController.read)
+router.get('/:folderPath/:fileName/', AuthHandler, DataController.read)
 // If the user makes a POST request to /data/:folderPath/:fileName,
 // upload the given file to that specified location
 router.post(
 	'/:folderPath/:fileName/',
 	multer.single('content'),
+	AuthHandler,
 	DataController.create,
 )
 // If the user makes a PATCH request to /data/:folderPath/:fileName,
@@ -38,10 +42,15 @@ router.post(
 router.patch(
 	'/:folderPath/:fileName/',
 	multer.single('content'),
+	AuthHandler,
 	DataController.update,
 )
 // If the user makes a DELETE request to /data/:folderPath/
 // :fileName, delete the file/folder at that specified location
-router.delete('/:folderPath/:fileName?/', DataController.del)
+router.delete(
+	'/:folderPath/:fileName?/',
+	AuthHandler,
+	DataController.del,
+)
 
 export default router
