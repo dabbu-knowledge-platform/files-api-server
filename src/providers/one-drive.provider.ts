@@ -141,6 +141,7 @@ export default class OneDriveDataProvider implements DataProvider {
 			let listResult
 			try {
 				// eslint-disable-next-line no-await-in-loop
+				// eslint-disable-next-line prefer-const
 				listResult = await httpClient.get(nextPageLink)
 			} catch (error) {
 				if (error.response.status === 401) {
@@ -264,6 +265,7 @@ export default class OneDriveDataProvider implements DataProvider {
 		// Fetch the results
 		let fetchResult
 		try {
+			// eslint-disable-next-line prefer-const
 			fetchResult = await httpClient.get(fetchQuery)
 		} catch (error) {
 			if (error.response.status === 401) {

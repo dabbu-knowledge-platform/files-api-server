@@ -57,26 +57,26 @@ async function convertGmailFileToDabbuResource(
 		}
 
 		// The created at time is when the first message was sent
-		let createdAtDate
 		const createdAtDateHeaders = firstHeaders.filter(
 			(header: { name: string; value: string }) =>
 				header.name.toLowerCase() === 'date',
 		)
-		if (createdAtDateHeaders.length > 0) {
-			createdAtDate = createdAtDateHeaders[0].value
-		}
+		const createdAtDate =
+			createdAtDateHeaders.length > 0
+				? createdAtDateHeaders[0].value
+				: undefined
 
 		// The last modified time is when the last message was sent
 		// Note: would be more accurate to use internalDate, but that
 		// is only returned when retrieving a specific message
-		let lastModifiedDate
 		const lastModifiedDateHeaders = lastHeaders.filter(
 			(header: { name: string; value: string }) =>
 				header.name.toLowerCase() === 'date',
 		)
-		if (lastModifiedDateHeaders.length > 0) {
-			lastModifiedDate = lastModifiedDateHeaders[0].value
-		}
+		const lastModifiedDate =
+			lastModifiedDateHeaders.length > 0
+				? lastModifiedDateHeaders[0].value
+				: undefined
 
 		// The content URI to view the thread in Gmail
 		const contentUri =
@@ -177,6 +177,7 @@ async function getLabelsFromName(
 
 	let labelsResult
 	try {
+		// eslint-disable-next-line prefer-const
 		labelsResult = await httpClient.get('/gmail/v1/users/me/labels')
 	} catch (error) {
 		throw new NotFoundError("Error retrieving user's labels")
@@ -611,6 +612,7 @@ export default class GmailDataProvider implements DataProvider {
 			// Return all the labels the user or Gmail has created
 			let labelsResult
 			try {
+				// eslint-disable-next-line prefer-const
 				labelsResult = await httpClient.get('/gmail/v1/users/me/labels')
 			} catch (error) {
 				if (error.response.status === 401) {
@@ -709,6 +711,7 @@ export default class GmailDataProvider implements DataProvider {
 			let listResult
 			try {
 				// eslint-disable-next-line no-await-in-loop
+				// eslint-disable-next-line prefer-const
 				listResult = await httpClient.get(
 					`/gmail/v1/users/me/threads/${labelIdQ}&maxResults=50${
 						nextPageToken ? `&pageToken=${nextPageToken}` : ''
@@ -765,6 +768,7 @@ export default class GmailDataProvider implements DataProvider {
 				let threadResult
 				try {
 					// eslint-disable-next-line no-await-in-loop
+					// eslint-disable-next-line prefer-const
 					threadResult = await httpClient.get(
 						`/gmail/v1/users/me/threads/${thread.id}`,
 						{
@@ -859,6 +863,7 @@ export default class GmailDataProvider implements DataProvider {
 		// Get that particular thread from the Gmail API
 		let threadResult
 		try {
+			// eslint-disable-next-line prefer-const
 			threadResult = await httpClient.get(
 				`/gmail/v1/users/me/threads/${threadId}`,
 				{

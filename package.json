@@ -16,9 +16,7 @@
 		"fix": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts' --fix",
 		"clean": "yarn rimraf dist/ coverage/ execs/",
 		"build": "yarn clean && yarn tsc",
-		"preexecs": "yarn build && yarn global add pkg",
-		"execs": "yarn --prod && pkg --output execs/files-api-server . --targets node14-win-x64,node14-macos-x64,node14-linux-x64,node14-alpine-x64",
-		"postexecs": "yarn",
+		"execs": "yarn build && yarn pkg .",
 		"ci": "yarn lint && yarn test && yarn execs"
 	},
 	"dependencies": {
@@ -87,7 +85,7 @@
 	"eslintConfig": {
 		"parser": "@typescript-eslint/parser",
 		"parserOptions": {
-			"ecmaVersion": 2020,
+			"ecmaVersion": "next",
 			"sourceType": "module"
 		},
 		"extends": [
@@ -107,15 +105,22 @@
 	},
 	"lint-staged": {
 		"*.ts": [
-			"eslint --fix"
+			"yarn eslint 'src/**/*.ts' 'tests/**/*.ts' --fix"
 		]
 	},
 	"pkg": {
+		"outputPath": "execs",
 		"scripts": [
 			"dist/**/*.js"
 		],
 		"assets": [
-			"node_modules/**/*.js"
+			"node_modules/figlet/fonts/Standard.flf"
+		],
+		"targets": [
+			"node14-win-x64",
+			"node14-macos-x64",
+			"node14-linux-x64",
+			"node14-alpine-x64"
 		]
 	}
 }

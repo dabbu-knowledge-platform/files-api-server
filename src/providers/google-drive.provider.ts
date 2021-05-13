@@ -110,6 +110,7 @@ async function getFolderId(
 	// Query the Drive API
 	let result
 	try {
+		// eslint-disable-next-line prefer-const
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
@@ -153,6 +154,7 @@ async function getFolderId(
 		// Insert a folder if the `insertIfNotFound` option is true
 		let newFolderResult
 		try {
+			// eslint-disable-next-line prefer-const
 			newFolderResult = await httpClient.post('/drive/v2/files', {
 				title: folderName,
 				parents: [{ id: parentId }],
@@ -260,6 +262,7 @@ async function getFileId(
 	// Query the Drive API
 	let result
 	try {
+		// eslint-disable-next-line prefer-const
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
@@ -489,6 +492,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			let listResult
 			try {
 				// eslint-disable-next-line no-await-in-loop
+				// eslint-disable-next-line prefer-const
 				listResult = await httpClient.get('/drive/v2/files', {
 					params: {
 						q,
@@ -640,6 +644,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		// searching for a file
 		let listResult
 		try {
+			// eslint-disable-next-line prefer-const
 			listResult = await httpClient.get('/drive/v2/files', {
 				params: {
 					q,
@@ -772,6 +777,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		// the file's contents too
 		let driveMetaResult
 		try {
+			// eslint-disable-next-line prefer-const
 			driveMetaResult = await httpClient.post(
 				'/drive/v2/files?modifiedDateBehavior=fromBody',
 				meta,
