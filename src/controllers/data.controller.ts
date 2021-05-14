@@ -160,7 +160,7 @@ export async function create(
 		.catch((error: Error) => next(error))
 }
 
-// Update function (PATCH)
+// Update function (PUT)
 export async function update(
 	request: Request,
 	response: Response,

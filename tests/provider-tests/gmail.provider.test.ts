@@ -276,7 +276,7 @@ describe('test update request', () => {
 
 	it('fail - not implemented', async () => {
 		const response = await request(app)
-			.patch('/files-api/v3/data/%2F/some-thread')
+			.put('/files-api/v3/data/%2F/some-thread')
 			.query({ providerId: 'gmail' })
 			.set('X-Credentials', process.env.DABBU_TOKEN!)
 			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)

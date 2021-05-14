@@ -455,7 +455,7 @@ describe('test create request', () => {
 describe('test update request', () => {
 	it('fail - no access token', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Testpng',
 			)
 			.query({ providerId: 'googledrive' })
@@ -472,7 +472,7 @@ describe('test update request', () => {
 
 	it('fail - invalid access token', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
@@ -491,7 +491,7 @@ describe('test update request', () => {
 
 	it('fail - relative path', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2F..%2F.%2F/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
@@ -508,7 +508,7 @@ describe('test update request', () => {
 
 	it('fail - no field specified for updating', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
@@ -524,7 +524,7 @@ describe('test update request', () => {
 
 	it('succeed - update file content', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
@@ -550,7 +550,7 @@ describe('test update request', () => {
 
 	it('succeed - update name', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Create%20Image%20Test.png',
 			)
 			.query({ providerId: 'googledrive' })
@@ -573,7 +573,7 @@ describe('test update request', () => {
 
 	it('succeed - update path', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fuploads/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'googledrive' })
@@ -599,7 +599,7 @@ describe('test update request', () => {
 
 	it('succeed - update lastModifiedTime', async () => {
 		const response = await request(app)
-			.patch(
+			.put(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fupdated/Updated%20PDF.pdf',
 			)
 			.query({ providerId: 'googledrive' })

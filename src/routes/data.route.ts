@@ -3,10 +3,12 @@
 
 // Use express to handle HTTP requests
 import * as Express from 'express'
-// Use multer to handle file upload for POST and PATCH requests
+// Use multer to handle file upload for POST and PUT requests
 import Multer from 'multer'
 // Use the env paths library to get the local cache path
 import EnvPaths from 'env-paths'
+const cachePath = EnvPaths('Dabbu Files API Server', { suffix: '' })
+	.cache
 
 // Import the DataController to parse the request and call the appropriate
 // provider module as specified in the request
@@ -17,7 +19,7 @@ import AuthHandler from '../utils/auth.util'
 
 // Define where multer should store the uploaded files
 const multer = Multer({
-	dest: EnvPaths('Dabbu Files API Server', { suffix: '' }).cache,
+	dest: `${cachePath}/uploads/`,
 })
 
 // All the routes for the /data endpoint
@@ -37,9 +39,9 @@ router.post(
 	AuthHandler,
 	DataController.create,
 )
-// If the user makes a PATCH request to /data/:folderPath/:fileName,
+// If the user makes a PUT request to /data/:folderPath/:fileName,
 // update the file at that specified location
-router.patch(
+router.put(
 	'/:folderPath/:fileName/',
 	multer.single('content'),
 	AuthHandler,

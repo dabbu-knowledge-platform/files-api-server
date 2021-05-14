@@ -2,7 +2,7 @@
 
 ### Request
 
-PATCH `/files-api/v3/data/:parentFolderPath/:fileName`
+PUT `/files-api/v3/data/:parentFolderPath/:fileName` (supports PATCH semantics)
 
 Query parameters:
 
