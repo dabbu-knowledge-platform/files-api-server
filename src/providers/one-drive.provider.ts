@@ -144,6 +144,11 @@ export default class OneDriveDataProvider implements DataProvider {
 				// eslint-disable-next-line prefer-const
 				listResult = await httpClient.get(nextPageLink)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.list: error while listing files: folderPath: ${folderPath}; queries: ${queries}; listQuery: ${listQuery}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -268,6 +273,11 @@ export default class OneDriveDataProvider implements DataProvider {
 			// eslint-disable-next-line prefer-const
 			fetchResult = await httpClient.get(fetchQuery)
 		} catch (error) {
+			Logger.error(
+				`provider.onedrive.read: error while fetching file data: folderPath: ${folderPath}; fileName: ${fileName}; fetchQuery: ${fetchQuery}; error: ${Utils.json(
+					error,
+				)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(
@@ -394,6 +404,11 @@ export default class OneDriveDataProvider implements DataProvider {
 				},
 			)
 		} catch (error) {
+			Logger.error(
+				`provider.onedrive.create: error while setting file content: folderPath: ${folderPath}; fileName: ${fileName}; mimeType: ${mimeType}; error: ${Utils.json(
+					error,
+				)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(
@@ -444,6 +459,15 @@ export default class OneDriveDataProvider implements DataProvider {
 					},
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.create: error while setting createdAtTime/lastModifiedTime: meta: ${Utils.json(
+						meta,
+					)}; body: ${Utils.json(
+						body,
+					)}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -549,6 +573,11 @@ export default class OneDriveDataProvider implements DataProvider {
 					},
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.update: error while updating content of file: folderPath: ${folderPath}; fileName: ${fileName}; mimeType: ${mimeType}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -593,6 +622,13 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 				fileName = body.name
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.update: error while renaming file: body: ${Utils.json(
+						body,
+					)}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -659,6 +695,13 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 				folderPath = body.path
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.update: error while moving file: body: ${Utils.json(
+						body,
+					)}; folderPath: ${folderPath}; fileName: ${fileName}; newParentId: ${
+						result.data.id
+					}; error: ${Utils.json(error)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -704,6 +747,11 @@ export default class OneDriveDataProvider implements DataProvider {
 					},
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.update: error while updating lastModifiedTime of file: modifiedDate: ${modifiedDate}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -749,6 +797,11 @@ export default class OneDriveDataProvider implements DataProvider {
 					},
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.update: error while updating createdAtTime of file: createdDate: ${createdDate}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -836,6 +889,11 @@ export default class OneDriveDataProvider implements DataProvider {
 					`/me/drive/root:${Utils.diskPath(folderPath, fileName)}`,
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.delete: error while deleting file: folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -878,6 +936,11 @@ export default class OneDriveDataProvider implements DataProvider {
 					`/me/drive/root:${Utils.diskPath(folderPath)}`,
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.onedrive.delete: error while deleting folder: folderPath: ${folderPath}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(

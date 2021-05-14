@@ -27,7 +27,7 @@ import * as Guards from '../utils/guards.util'
 // Import the logger
 import Logger from '../utils/logger.util'
 
-// Convert the JSON object returned by the Gmail API to a Dabbu DabbuResource
+// Convert the Utils.JSON object returned by the Gmail API to a Dabbu DabbuResource
 async function convertGmailFileToDabbuResource(
 	httpClient: AxiosInstance,
 	clientId: string,
@@ -180,6 +180,11 @@ async function getLabelsFromName(
 		// eslint-disable-next-line prefer-const
 		labelsResult = await httpClient.get('/gmail/v1/users/me/labels')
 	} catch (error) {
+		Logger.error(
+			`provider.gmail.getLabelsFromName: error occcurred while retrieving user's labels: ${Utils.json(
+				error,
+			)}`,
+		)
 		throw new NotFoundError("Error retrieving user's labels")
 	}
 
@@ -434,6 +439,11 @@ async function createMailDataURI(
 						attachmentsText += 'Failed to fetch attachment'
 					}
 				} catch (error) {
+					Logger.error(
+						`provider.gmail.createMailDataUri: error occcurred while retrieving attachment: ${Utils.json(
+							error,
+						)}`,
+					)
 					// Some error occurred, tell the user
 					attachmentsText += `Failed to fetch attachment: ${error.message}\n`
 				}
@@ -483,6 +493,11 @@ async function createMailDataURI(
 						attachmentsText += 'Failed to fetch attachment'
 					}
 				} catch (error) {
+					Logger.error(
+						`provider.gmail.createMailDataUri: error occcurred while retrieving attachment: ${Utils.json(
+							error,
+						)}`,
+					)
 					// Some error occurred, tell the user
 					attachmentsText += `Failed to fetch attachment: ${error.message}\n`
 				}
@@ -615,6 +630,11 @@ export default class GmailDataProvider implements DataProvider {
 				// eslint-disable-next-line prefer-const
 				labelsResult = await httpClient.get('/gmail/v1/users/me/labels')
 			} catch (error) {
+				Logger.error(
+					`provider.gmail.list: error occcurred while retrieving user's labels: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -718,6 +738,11 @@ export default class GmailDataProvider implements DataProvider {
 					}`,
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.gmail.list: error occcurred while retrieving user's threads: labelIdQ = ${labelIdQ}; nextPageToken = ${nextPageToken}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -779,6 +804,11 @@ export default class GmailDataProvider implements DataProvider {
 						},
 					)
 				} catch (error) {
+					Logger.error(
+						`provider.gmail.list: error occcurred while retrieving user's threads: thread ID: ${
+							thread.id
+						}; error: ${Utils.json(error)}`,
+					)
 					if (error.response.status === 401) {
 						// If it is a 401, throw an invalid credentials error
 						throw new InvalidProviderCredentialsError(
@@ -874,6 +904,11 @@ export default class GmailDataProvider implements DataProvider {
 				},
 			)
 		} catch (error) {
+			Logger.error(
+				`provider.gmail.read: error occcurred while retrieving thread ${threadId}: ${Utils.json(
+					error,
+				)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(
@@ -967,7 +1002,7 @@ export default class GmailDataProvider implements DataProvider {
 		// Start parsing the file path and the option
 		// Else throw an error
 		throw new NotImplementedError(
-			'The Gmail provider does not yet support replying to emails (update/PATCH request)',
+			'The Gmail provider does not yet support replying to emails (update/PUT request)',
 		)
 	}
 
@@ -1009,6 +1044,11 @@ export default class GmailDataProvider implements DataProvider {
 				`/gmail/v1/users/me/threads/${threadId}/trash`,
 			)
 		} catch (error) {
+			Logger.error(
+				`provider.gmail.delete: error occcurred while trashing thread ${threadId}: ${Utils.json(
+					error,
+				)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(

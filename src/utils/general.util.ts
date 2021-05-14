@@ -6,10 +6,21 @@ import Path from 'path'
 // Import the logger
 import Logger from './logger.util'
 
-// Return formatted JSON if we are in a dev environment
+// Alias for JSON.stringify with two spaces indents
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function json(object: any): string {
-	return JSON.stringify(object, null, 2)
+export const json = (value: any): string => {
+	// Convert the value to json using the toJSON method on it if it is circular
+	let jsonificableValue = value
+	if (value && value.toJSON) {
+		jsonificableValue = value.toJSON()
+	}
+
+	// Return the formatted json
+	try {
+		return JSON.stringify(jsonificableValue, null, 2)
+	} catch {
+		return '{circularError: true}'
+	}
 }
 
 // Format a date object to RFC3339 format

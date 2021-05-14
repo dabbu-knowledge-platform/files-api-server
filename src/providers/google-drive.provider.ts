@@ -126,6 +126,11 @@ async function getFolderId(
 			},
 		})
 	} catch (error) {
+		Logger.error(
+			`provider.googledrive.getFolderId: error occurred while getting folder ID: name: ${folderName}; parentId: ${parentId}; isShared: ${isShared}; error: ${Utils.json(
+				error,
+			)}`,
+		)
 		if (error.response.status === 401) {
 			// If it is a 401, throw an invalid credentials error
 			throw new InvalidProviderCredentialsError('Invalid access token')
@@ -161,6 +166,11 @@ async function getFolderId(
 				mimeType: 'application/vnd.google-apps.folder',
 			})
 		} catch (error) {
+			Logger.error(
+				`provider.googledrive.getFolderId: error occurred while creating folder ${folderName}: parentId: ${parentId}; error: ${Utils.json(
+					error,
+				)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(
@@ -278,6 +288,11 @@ async function getFileId(
 			},
 		})
 	} catch (error) {
+		Logger.error(
+			`provider.googledrive.getFileId: error occurred while getting file ID: fileName: ${fileName}; parentId: ${parentId}; isShared: ${isShared}; error: ${Utils.json(
+				error,
+			)}`,
+		)
 		if (error.response.status === 401) {
 			// If it is a 401, throw an invalid credentials error
 			throw new InvalidProviderCredentialsError('Invalid access token')
@@ -503,6 +518,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					},
 				})
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.list: error occurred while listing files in folder ${folderId}: q: ${q}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -653,6 +673,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				},
 			})
 		} catch (error) {
+			Logger.error(
+				`provider.googledrive.read: error occurred while getting data for file ${fileName}: q: ${q}; error: ${Utils.json(
+					error,
+				)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(
@@ -783,6 +808,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				meta,
 			)
 		} catch (error) {
+			Logger.error(
+				`provider.googledrive.create: error occurred while posting metadata (step 1 create): meta: ${Utils.json(
+					meta,
+				)}; error: ${Utils.json(error)}`,
+			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
 				throw new InvalidProviderCredentialsError(
@@ -813,6 +843,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					Fs.createReadStream(fileMetadata.path),
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.create: error occurred while posting file contents (step 2 create): fileId: ${
+						file.id
+					}; error: ${Utils.json(error)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -845,6 +880,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 						// The new file object
 						file = result.data
 					} catch (error) {
+						Logger.error(
+							`provider.googledrive.create: error occurred while converting file to google format: importType: ${importType}; original file: ${Utils.json(
+								result.data,
+							)}; error: ${Utils.json(error)}`,
+						)
 						if (error.response.status === 401) {
 							// If it is a 401, throw an invalid credentials error
 							throw new InvalidProviderCredentialsError(
@@ -873,6 +913,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 						},
 					)
 				} catch (error) {
+					Logger.error(
+						`provider.googledrive.create: error occurred while updating lastModifedTime again: meta: ${Utils.json(
+							meta,
+						)}; error: ${Utils.json(error)}`,
+					)
 					if (error.response.status === 401) {
 						// If it is a 401, throw an invalid credentials error
 						throw new InvalidProviderCredentialsError(
@@ -989,6 +1034,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					},
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.update: error occurred while updating file content: fileId: ${fileId}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -1032,6 +1082,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 						// The new file ID
 						fileId = result.data.id
 					} catch (error) {
+						Logger.error(
+							`provider.googledrive.update: error occurred while converting file to google format: importType: ${importType}; original file: ${Utils.json(
+								result.data,
+							)}; error: ${Utils.json(error)}`,
+						)
 						if (error.response.status === 401) {
 							// If it is a 401, throw an invalid credentials error
 							throw new InvalidProviderCredentialsError(
@@ -1073,6 +1128,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				})
 				fileName = body.name
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.update: error occurred while renaming file: fileId: ${fileId}; body: ${Utils.json(
+						body,
+					)}; error: ${Utils.json(error)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -1120,6 +1180,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				})
 				folderPath = body.path
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.update: error occurred while moving file: fileId: ${fileId}; newParentId: ${newFolderId}; body: ${Utils.json(
+						body,
+					)}; error: ${Utils.json(error)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -1160,6 +1225,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					},
 				)
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.: error occurred while setting lastModifiedTime: fileId: ${fileId}; body: ${Utils.json(
+						body,
+					)}; error: ${Utils.json(error)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -1252,6 +1322,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			try {
 				await httpClient.delete(`/drive/v2/files/${fileId}`)
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.delete: error occurred while deleting file ${fileId}; error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
@@ -1297,6 +1372,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			try {
 				await httpClient.delete(`/drive/v2/files/${folderId}`)
 			} catch (error) {
+				Logger.error(
+					`provider.googledrive.: error occurred while deleting folder ${folderId}: error: ${Utils.json(
+						error,
+					)}`,
+				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
 					throw new InvalidProviderCredentialsError(
