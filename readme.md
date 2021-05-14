@@ -1,73 +1,54 @@
 # Dabbu Files API Server
 
-[![NodeJS CI](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml/badge.svg)](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yml) [![Platforms: Alpine Linux MacOS Windows](https://img.shields.io/badge/platforms-alpine%20linux%20macos%20windows-blue)](https://img.shields.io/badge/platforms-windows%20linux%20macos%20alpine-blue) [![Code Style: XO/Prettier](https://img.shields.io/badge/code%20style-xo%2Fprettier-ff69b4)](https://img.shields.io/badge/code%20style-xo%2Fprettier-ff69b4)
+[![NodeJS CI](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yaml/badge.svg)](https://github.com/dabbu-knowledge-platform/files-api-server/actions/workflows/ci.yaml) [![Platforms: Alpine Linux MacOS Windows](https://img.shields.io/badge/platforms-alpine%20linux%20macos%20windows-blue)](https://img.shields.io/badge/platforms-windows%20linux%20macos%20alpine-blue)
 
-An implementation of the Dabbu Files API that enables you to access your files, folders and emails stored with multiple providers as simple files and folders, all in one place!
+With the Dabbu Knowledge Platform, we aim to rethink the way we organize and traverse large amounts of knowledge, no matter where it is stored. 
 
-## Intro
+Dabbu allows you to access any of your personal information (Gmail, Google Drive, OneDrive, your hard drive, ...) as simple files and folders from Dabbu CLI. 
 
-Tired of having your files and folders randomly scattered about online with multiple providers like Google Drive and One Drive? Want to access all your files and folders using a single, unified interface? Dabbu’s APIs (Application Programming Interfaces) allow you to access your files and folders from any provider (Google Drive, Gmail, Microsoft OneDrive, etc) from a single, unified interface. Behind these APIs is a software layer that connects to these providers and returns your files and folders in one unified format. We'll let this GIF do the talking:
+It not only allows you to seamlessly search/traverse your information across these sources (as simple as `cd`, `list`), but also move information around between drives (`copy`) - yes even your Gmail messages in a thread get copied to your hard drive as `.md` files in a zip if you do a `c:/$ cp m:/INBOX/* ./"My Emails"`.
 
-![](./media/DabbuCLI.gif)
+You can also go into the special knowledge drive where you can pivot information by topics/people/places e.g. `k:/$ cd austin` (will return you all your information from Gmail, Google Drive, OneDrive that has a reference to the place Austin). You can further narrow your search by doing `k:/austin$ cd ravi@example.com` (yes it even extracts people and allows you to pivot information by them). This would show you all emails and files that are related to Austin and from/to ravi@example.com. 
 
-<sub>Dabbu CLI retrieving files from Google Drive [Note: this GIF is outdated]</sub>
+All of this has been implemented by abstracting access to providers (you can add more providers as modules) and exposing a unified API for information (no matter where and what form it takes).
 
-What you just saw there was Dabbu CLI in action - a simple program in javascript that leverages the Dabbu API to bring your files and folders at your fingertips from all over the web.
+The only way to use Dabbu (at the moment) is through a command-line interface (CLI). A desktop app is in the works.
 
-**This repo contains the server application that handles API calls from clients. The source for the CLI app demoed in the GIF above can be found [here](https://github.com/dabbu-knowledge-platform/cli).**
+### This is an implementation of the Dabbu Files API. This repository does not house the code for the CLI. Information on the CLI, including installation process and setup, can be found [here](https://github.com/dabbu-knowledge-platform/cli#installation).
 
-## Getting started
+## Using the Files API Server
 
-The installation can be done manually on Linux, Alpine Linux, MacOS, Android (Requires Termux) and Windows (Currently only 64-bit architectures are supported).
+The Files API Server can be used in any application to access the user's files and folders. Some providers require the user to authorize the app using OAuth 2.0. To get started on using the Files API Server in your app, look at the [getting started guide](./docs/getting-started.md).
 
-Follow the instructions [here](https://dabbu-knowledge-platform.github.io/impls/server) to install it on your computer.
+## Providers supported
 
-## Updating the server
-
-To update the server, simply download the new version from the [Releases page](https://github.com/dabbu-knowledge-platform/files-api-server/releases).
-
-## Installing clients to call the Dabbu API
-
-Here is a list of clients that use the Dabbu API to interact with your files and folders:
-
-- [**Dabbu CLI**](https://github.com/dabbu-knowledge-platform/cli) - A CLI that leverages the Dabbu API and neatly retrieves your files and folders scattered online.
-
-## Supported Providers
-
-- **Hard drive**
 - **Google drive**
 - **Gmail**
-- **One drive**
+- **One Drive**
 
 _And more to come...!_
 
-### Creating a new provider
+### Adding support for a new provider
 
-If you want to create a new provider, please file an issue using the `New provider` template [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). This is only to let us know that you want to work on the provider and how you plan to go about it.
+If you want to add support for a new provider, please file an issue using the `New provider` template [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). This is only to let us know that you want to work on the provider and how you plan to go about it.
 
-Please read [contributing](./contributing) for a detailed guide to setting up your environment and making changes to the code.
+Please read [contributing.md](./contributing.md) for a detailed guide to setting up your environment and making changes to the code.
 
-Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/categories/want-to-contribute) Github discussion. We will only be glad to help :)
-
-## Docs
-
-The documentation for the server can be found on the [website](https://dabbu-knowledge-platform.github.io/impls/server). The source can be found [here](https://github.com/dabbu-knowledge-platform/dabbu-knowledge-platform.github.io/blob/main/impls/server.md).
+Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/readegories/want-to-contribute) Github discussion. We will only be glad to help :)
 
 ## Issues and pull requests
 
 You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and spreading the word! If you want to report a bug, create an issue by clicking [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). While creating an issue, try to follow the Bug report or Feature request template.
 
-Please read [contributing](./contributing) for a detailed guide to setting up your environment and making changes to the code.
+Please read [contributing.md](./contributing.md) for a detailed guide to setting up your environment and making changes to the code.
 
 ## Legal stuff
 
 ### License - GNU GPL v3
 
-Dabbu Files API Server - An implementation of the Dabbu Files API that
-enables you to access your files, folders and emails stored with
-multiple providers as simple files and folders, all in one place!
+Dabbu CLI - A CLI that leverages the Dabbu API and neatly retrieves your files and folders sreadtered online.
 
-Copyright (C) 2021 Dabbu Knowledge Platform <dabbuknowledgeplatform@gmail.com>
+Copyright (C) 2021 Dabbu Knowledge Platform \<dabbuknowledgeplatform@gmail.com\>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

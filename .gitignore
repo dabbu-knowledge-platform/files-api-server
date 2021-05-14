@@ -1,6 +1,9 @@
-node_modules/
-creds/
+.vscode/
+*.log
+
+logs/
 dist/
-_dabbu/
-.git/
-.heroku/
+execs/
+ignore/
+coverage/
+node_modules/
