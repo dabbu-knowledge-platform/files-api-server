@@ -44,22 +44,22 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: files-api-server-alpine
-          path: dist/files-api-server-alpine
+          path: execs/files-api-server-alpine
       - name: Saving linux binary
         uses: actions/upload-artifact@v2
         with:
           name: files-api-server-linux
-          path: dist/files-api-server-linux
+          path: execs/files-api-server-linux
       - name: Saving macos binary
         uses: actions/upload-artifact@v2
         with:
           name: files-api-server-macos
-          path: dist/files-api-server-macos
+          path: execs/files-api-server-macos
       - name: Saving windows binary
         uses: actions/upload-artifact@v2
         with:
           name: files-api-server-win.exe
-          path: dist/files-api-server-win.exe
+          path: execs/files-api-server-win.exe
   # Upload the release
   release:
     name: Upload release
