@@ -1,3 +1,5 @@
-## Bug fixes
+## Changes
 
-- fix(gmail): crash when trying to access ALL_MAIL [4f686f9]
+- Typescript rewrite
+- Authentication added (client ID - API key pair)
+- API changes: see the docs/ folder

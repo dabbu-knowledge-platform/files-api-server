@@ -1,12 +1,12 @@
 ## Hosting the Files API Server
 
-### Using the prebuilt executables (recommended)
+### Using the prebuilt binaries (recommended)
 
-Prebuilt executables can be found on the [releases page](https://github.com/dabbu-knowledge-platform/files-api-server/releases) of the Files API Server repository. Please download the appropriate executable to your server and run it. 
+Prebuilt binaries can be found on the [releases page](https://github.com/dabbu-knowledge-platform/files-api-server/releases) of the Files API Server repository. Please download the appropriate binary to your server and run it. 
 
-On Windows, you can run the executable by double clicking on it.
+On Windows, you can run the binary by double clicking on it.
 
-On Linux/MacOS, you may need to mark the file as an executable. Do this by opening the command prompt and typing:
+On Linux/MacOS, you may need to mark the file as an binary. Do this by opening the command prompt and typing:
 
 ```
 chmod +x /path/to/file

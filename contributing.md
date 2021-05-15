@@ -45,7 +45,7 @@ $ git fetch upstream
 
 ### Step 2: Build
 
-All you need to do to build is run `yarn execs`. If the command runs successfully, there should be 4 files (`files-api-server-alpine`, `files-api-server-linux`, `files-api-server-macos` and `files-api-server-win.exe`) in the `execs/` folder. These are the executables that can be run on alpine, linux, macos and windows respectively without installation of external dependencies.
+All you need to do to build is run `yarn execs`. If the command runs successfully, there should be 4 files (`files-api-server-alpine`, `files-api-server-linux`, `files-api-server-macos` and `files-api-server-win.exe`) in the `execs/` folder. These are the binaries that can be run on alpine, linux, macos and windows respectively without installation of external dependencies.
 
 Once you've built the project locally, you're ready to start making changes!
 
@@ -77,7 +77,7 @@ The code is heavily commented to allow you to understand exactly what happens wh
 - `src/providers/*.ts` contain provider-specific code that allows listing files and folders stored with that particular provider and returning it in a unified format.
 - `src/utils/*.ts` contain utility functions regarding different things.
 
-To test a change without building the executables, you can type `yarn start:dev` and it will run the server directly in development mode on port 8000.
+To test a change without building the binaries, you can type `yarn start:dev` and it will run the server directly in development mode on port 8000.
 
 ### Step 5: Document
 
