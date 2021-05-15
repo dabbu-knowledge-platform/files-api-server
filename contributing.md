@@ -77,7 +77,7 @@ The code is heavily commented to allow you to understand exactly what happens wh
 - `src/providers/*.ts` contain provider-specific code that allows listing files and folders stored with that particular provider and returning it in a unified format.
 - `src/utils/*.ts` contain utility functions regarding different things.
 
-To test a change without building the executables, you can type `yarn start` and it will run the server directly in development mode on port 8000.
+To test a change without building the executables, you can type `yarn start:dev` and it will run the server directly in development mode on port 8000.
 
 ### Step 5: Document
 

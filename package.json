@@ -7,7 +7,7 @@
 	"author": "Vedant K (gamemaker1) <gamemaker0042@gmail.com>",
 	"license": "GPL-3.0-or-later",
 	"scripts": {
-		"start": "yarn build && env NODE_ENV=DEV PORT=8000 node dist/server.js",
+		"start": "yarn build && node dist/server.js",
 		"start:dev": "yarn build && env NODE_ENV=DEV PORT=8000 node dist/server.js",
 		"start:prod": "yarn build && env NODE_ENV=PROD PORT=8000 node dist/server.js",
 		"test": "yarn build && yarn jest --test-timeout 50000",
