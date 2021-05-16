@@ -1,23 +1,21 @@
 {
 	"name": "files-api-server",
-	"version": "3.0.0-alpha.0",
-	"main": "dist/app.js",
-	"bin": "dist/server.js",
+	"version": "3.0.0",
+	"main": "dist/compiled/app.js",
+	"bin": "dist/compiled/server.js",
 	"repository": "https://github.com/dabbu-knowledge-platform/files-api-server",
 	"author": "Vedant K (gamemaker1) <gamemaker0042@gmail.com>",
 	"license": "GPL-3.0-or-later",
 	"scripts": {
-		"start": "yarn build && node dist/server.js",
-		"start:dev": "yarn build && env NODE_ENV=DEV PORT=8000 node dist/server.js",
-		"start:prod": "yarn build && env NODE_ENV=PROD PORT=8000 node dist/server.js",
-		"test": "yarn build && yarn jest --test-timeout 50000",
-		"coverage": "yarn build && yarn test --coverage && echo 'View coverage report at http://localhost:23984' && python -m http.server --directory coverage/lcov-report/ 23984",
-		"lint": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts'",
-		"fix": "yarn build && yarn eslint 'src/**/*.ts' 'tests/**/*.ts' --fix",
-		"clean": "yarn rimraf dist/ coverage/ execs/",
-		"build": "yarn clean && yarn tsc",
-		"execs": "yarn build && yarn pkg .",
-		"ci": "yarn lint && yarn test && yarn execs"
+		"start": "./scripts/run",
+		"start:prod": "./scripts/run prod",
+		"test": "./scripts/test",
+		"lint": "./scripts/lint",
+		"fix": "./scripts/fix-lint-errors",
+		"clean": "./scripts/clean",
+		"build": "./scripts/build",
+		"package": "./scripts/package",
+		"ci": "./scripts/ci"
 	},
 	"dependencies": {
 		"archiver": "^5.3.0",
@@ -109,9 +107,9 @@
 		]
 	},
 	"pkg": {
-		"outputPath": "execs",
+		"outputPath": "dist/binaries/",
 		"scripts": [
-			"dist/**/*.js"
+			"dist/compiled/**/*.js"
 		],
 		"assets": [
 			"node_modules/figlet/fonts/Standard.flf"

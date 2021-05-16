@@ -27,7 +27,7 @@ To run the server using the [latest source code from github](https://github.com/
 
 #### NodeJS and Yarn
 
-`nodejs` and `yarn` **must** be installed to run the CLI locally.
+`nodejs` and `yarn` **must** be installed to run the server locally.
 
 - To check if NodeJS and Yarn already installed, type `node --version && yarn --version` in terminal/command prompt. You should see two version numbers displayed after running this command. For developing Dabbu Files API Server, we use the latest version of Typescript, which compiles to CommonJS code.
 - [Here](https://nodejs.org/en/download/package-manager/) are the official instructions to install NodeJS and Yarn for all platforms in case you haven't installed it already.

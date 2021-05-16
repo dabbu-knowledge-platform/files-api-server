@@ -25,7 +25,7 @@ Install `git`, `nodejs` and `yarn`.
 
 #### NodeJS and Yarn
 
-`nodejs` and `yarn` **must** be installed to run the CLI locally.
+`nodejs` and `yarn` **must** be installed to run the server locally.
 
 - To check if NodeJS and Yarn already installed, type `node --version && yarn --version` in terminal/command prompt. You should see two version numbers displayed after running this command. For developing Dabbu Files API Server, we use the latest version of Typescript, which compiles to CommonJS code.
 - [Here](https://nodejs.org/en/download/package-manager/) are the official instructions to install NodeJS and Yarn for all platforms in case you haven't installed it already.
@@ -38,14 +38,14 @@ Run the following in a terminal to clone your fork locally:
 
 ```sh
 $ git clone https://github.com/<your-username>/files-api-server
-$ cd cli
+$ cd files-api-server
 $ git remote add upstream https://github.com/dabbu-knowledge-platform/files-api-server.git
 $ git fetch upstream
 ```
 
 ### Step 2: Build
 
-All you need to do to build is run `yarn execs`. If the command runs successfully, there should be 4 files (`files-api-server-alpine`, `files-api-server-linux`, `files-api-server-macos` and `files-api-server-win.exe`) in the `execs/` folder. These are the binaries that can be run on alpine, linux, macos and windows respectively without installation of external dependencies.
+All you need to do to build is run `yarn package`. If the command runs successfully, there should be 4 files (`files-api-server-alpine`, `files-api-server-linux`, `files-api-server-macos` and `files-api-server-win.exe`) in the `dist/binaries/` folder. These are the binaries that can be run on alpine, linux, macos and windows respectively without installation of external dependencies.
 
 Once you've built the project locally, you're ready to start making changes!
 
