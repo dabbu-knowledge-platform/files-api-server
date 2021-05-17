@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# ci
+# Runs the Typescript Compiler, then the linter, then all tests, and finally builds the packages
+
+# Fail fast
+set -e
+
+# Build the server
+yarn build
+# Run the linter
+yarn lint
+# Run all tests
+yarn test
+# Build packages
+yarn package

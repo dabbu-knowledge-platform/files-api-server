@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# lint
+# Runs ESLint on the code to find errors
+
+# Fail fast
+set -e
+
+# Find errors
+yarn eslint 'src/**/*.ts' 'tests/**/*.ts'

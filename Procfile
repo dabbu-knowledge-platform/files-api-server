@@ -1,1 +1,1 @@
-web: npm start $PORT google-drive one-drive gmail
+web: node dist/compiled/server.js

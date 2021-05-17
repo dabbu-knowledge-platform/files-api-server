@@ -28,9 +28,10 @@ If applicable, add screenshots to help explain your problem.
 
 **Versions (please complete the following information):**
 
-- Dabbu Version: (Current version, seen when server is run) e.g. 1.8.0
+- Dabbu Version: (Current version, seen when server is run) e.g. 3.0.1
 - OS Version: (Platform and Version) e.g. macOS 10.15.7 / Windows 10 (20H2) / Ubuntu 20.04.3 x64 / etc
-- Provider ID: hard-drive / google-drive / one-drive / gmail / etc
+- Provider ID: google-drive / one-drive / gmail / etc
+- Operation: list / read / create / update / delete
 
 **Additional context**
 

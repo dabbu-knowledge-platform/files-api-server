@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# run
+# Runs the Typescript Compiler on the code and output the compiled code
+# to ./dist/compiled/. Then runs the server in development mode on port 8000
+
+# Fail fast
+set -e
+
+# First build it
+yarn build
+
+# Then run it
+if [[ "$1" == "prod" ]]; then
+  env NODE_ENV=production node ./dist/compiled/server.js
+else
+  env PORT=8000 NODE_ENV=development node ./dist/compiled/server.js
+fi
