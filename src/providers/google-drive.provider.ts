@@ -44,7 +44,7 @@ function convertDriveFileToDabbuResource(
 		? Utils.diskPath('/Shared', folderPath, name)
 		: Utils.diskPath(folderPath, name)
 	// Mime type
-	const mimeType = fileObject.mimeType as string
+	const mimeType = getExportTypeForDoc(fileObject.mimeType as string)
 	// Size in bytes, let clients convert to whatever unit they want
 	const size = Number(fileObject.fileSize)
 	// When it was created
