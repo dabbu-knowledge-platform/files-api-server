@@ -414,7 +414,7 @@ describe('test create request', () => {
 		}
 		expect(response.status).toEqual(201)
 		expect((response.body.content as DabbuResource).name).toEqual(
-			'Create And Convert Test',
+			'Create And Convert Test.docx',
 		)
 		expect((response.body.content as DabbuResource).size).toBeFalsy()
 		expect((response.body.content as DabbuResource).mimeType).toEqual(
@@ -438,7 +438,7 @@ describe('test create request', () => {
 		}
 		expect(response.status).toEqual(201)
 		expect((response.body.content as DabbuResource).name).toEqual(
-			'Last Modified Time Upload And Convert Test',
+			'Last Modified Time Upload And Convert Test.docx',
 		)
 		expect((response.body.content as DabbuResource).size).toBeFalsy()
 		expect((response.body.content as DabbuResource).mimeType).toEqual(
