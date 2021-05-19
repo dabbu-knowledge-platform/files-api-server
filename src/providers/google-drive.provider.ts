@@ -30,7 +30,10 @@ function convertDriveFileToDabbuResource(
 	exportType: string | undefined,
 ): DabbuResource {
 	// Name of the file
-	const name = fileObject.title as string
+	const name = getFileNameWithExt(
+		fileObject.title as string,
+		fileObject.mimeType as string,
+	)
 	// File or folder
 	const kind: 'file' | 'folder' =
 		fileObject.mimeType === 'application/vnd.google-apps.folder'
@@ -445,6 +448,43 @@ function getImportTypeForDoc(fileMimeType: string): string | undefined {
 	return
 }
 
+// Append a docx/pptx/xlsx extension based on the file mime type
+function getFileNameWithExt(name: string, mimeType: string): string {
+	// Google Docs ---> Microsoft Word (docx)
+	if (mimeType === 'application/vnd.google-apps.document') {
+		return `${name}.docx`
+	}
+	// Google Sheets ---> Microsoft Excel (xlsx)
+	if (mimeType === 'application/vnd.google-apps.spreadsheet') {
+		return `${name}.xlsx`
+	}
+	// Google Slides ---> Microsoft Power Point (pptx)
+	if (mimeType === 'application/vnd.google-apps.presentation') {
+		return `${name}.pptx`
+	}
+	// Google Drawing ---> PNG Image (png)
+	if (mimeType === 'application/vnd.google-apps.drawing') {
+		return `${name}.png`
+	}
+	// Google App Script ---> GSON (gson)
+	if (mimeType === 'application/vnd.google-apps.script+json') {
+		return `${name}.gson`
+	}
+
+	// Else just return the file name
+	return name
+}
+
+// Remove the docx/pptx/xlsx extension when searching for the file
+function removeAddedExt(name: string): string {
+	return name
+		.replace(/.docx/g, '')
+		.replace(/.pptx/g, '')
+		.replace(/.xlsx/g, '')
+		.replace(/.gson/g, '')
+		.replace(/.png/g, '')
+}
+
 export default class GoogleDriveDataProvider implements DataProvider {
 	// List files and folders at a particular folder path
 	async list(
@@ -647,13 +687,13 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		let q
 		if (Utils.diskPath(parameters.folderPath) === '/Shared') {
 			// If the folder path is /Shared, the file has been shared individually.
-			q = `title = '${fileName.replace(
+			q = `title = '${removeAddedExt(fileName).replace(
 				/'/g,
 				"\\'",
 			)}' and trashed = false and sharedWithMe = true`
 		} else {
 			// Else just do a normal get
-			q = `title = '${fileName.replace(
+			q = `title = '${removeAddedExt(fileName).replace(
 				/'/g,
 				"\\'",
 			)}' and '${folderId}' in parents and trashed = false`
