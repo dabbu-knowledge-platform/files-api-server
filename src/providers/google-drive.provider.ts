@@ -44,7 +44,10 @@ function convertDriveFileToDabbuResource(
 		? Utils.diskPath('/Shared', folderPath, name)
 		: Utils.diskPath(folderPath, name)
 	// Mime type
-	const mimeType = getExportTypeForDoc(fileObject.mimeType as string)
+	const mimeType = getExportTypeForDoc(
+		fileObject.mimeType as string,
+		true,
+	) as string
 	// Size in bytes, let clients convert to whatever unit they want
 	const size = Number(fileObject.fileSize)
 	// When it was created
@@ -395,7 +398,10 @@ async function getFileWithParents(
 
 // Get a valid mime type to export the file to for certain Google Workspace
 // files
-function getExportTypeForDoc(fileMimeType: string): string | undefined {
+function getExportTypeForDoc(
+	fileMimeType: string,
+	returnIfNotFound = false,
+): string | undefined {
 	// Google Docs ---> Microsoft Word (docx)
 	if (fileMimeType === 'application/vnd.google-apps.document') {
 		return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
@@ -418,7 +424,7 @@ function getExportTypeForDoc(fileMimeType: string): string | undefined {
 	}
 	// Google Maps and other types are not yet supported, as they can't
 	// be converted to something else yet
-	return
+	return returnIfNotFound ? fileMimeType : undefined
 }
 
 // Get a valid mime type to import the file to for certain MS Office files
