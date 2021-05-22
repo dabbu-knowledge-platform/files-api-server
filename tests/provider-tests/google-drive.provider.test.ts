@@ -418,7 +418,7 @@ describe('test create request', () => {
 		)
 		expect((response.body.content as DabbuResource).size).toBeFalsy()
 		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/vnd.google-apps.document',
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		)
 	})
 
@@ -442,7 +442,7 @@ describe('test create request', () => {
 		)
 		expect((response.body.content as DabbuResource).size).toBeFalsy()
 		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/vnd.google-apps.document',
+			'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		)
 		expect(
 			(response.body.content as DabbuResource).lastModifiedTime,

@@ -56,24 +56,19 @@ function convertDriveFileToDabbuResource(
 	const lastModifiedTime = new Date(
 		fileObject.modifiedDate,
 	).toISOString()
-	const exportMimeType = getExportTypeForDoc(mimeType)
+
+	// Generate the download link
+	const exportMimeType = getExportTypeForDoc(
+		fileObject.mimeType as string,
+		false,
+	)
 	let contentUri = ''
 	// If the export type is view, return an "Open in Google Editor" link
 	if (exportType === 'view') {
 		contentUri = `https://drive.google.com/open?id=${fileObject.id}`
 	} else {
 		// Else:
-		// First check that if it is Google Doc/Sheet/Slide/Drawing/App
-		// Script
 		if (
-			exportType &&
-			fileObject.exportLinks &&
-			fileObject.exportLinks[exportType]
-		) {
-			// If the requested export type is in the exportLinks field, return
-			// that link
-			contentUri = fileObject.exportLinks[exportType]
-		} else if (
 			exportType === 'media' &&
 			exportMimeType &&
 			fileObject.exportLinks &&
@@ -81,6 +76,14 @@ function convertDriveFileToDabbuResource(
 		) {
 			// Else return the donwload link for the default export type
 			contentUri = fileObject.exportLinks[exportMimeType]
+		} else if (
+			exportType &&
+			fileObject.exportLinks &&
+			fileObject.exportLinks[exportType]
+		) {
+			// If the requested export type is in the exportLinks field, return
+			// that link
+			contentUri = fileObject.exportLinks[exportType]
 		} else {
 			// Else give the googleapis.com link (doesn't work for Google Workspace Files)
 			contentUri = `https://www.googleapis.com/drive/v3/files/${fileObject.id}?alt=media`
