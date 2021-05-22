@@ -123,11 +123,11 @@ async function getFolderId(
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
-					? `title = '${folderName.replace(
+					? `title contains '${folderName.replace(
 							/'/g,
 							"\\'",
 					  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true`
-					: `'${parentId}' in parents and title = '${folderName.replace(
+					: `'${parentId}' in parents and title contains '${folderName.replace(
 							/'/g,
 							"\\'",
 					  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
@@ -285,11 +285,11 @@ async function getFileId(
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
-					? `title = '${fileName.replace(
+					? `title contains '${fileName.replace(
 							/'/g,
 							"\\'",
 					  )}' and sharedWithMe = true and trashed = false`
-					: `'${parentId}' in parents and title = '${fileName.replace(
+					: `'${parentId}' in parents and title contains '${fileName.replace(
 							/'/g,
 							"\\'",
 					  )}' and trashed = false`,
@@ -696,13 +696,13 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		let q
 		if (Utils.diskPath(parameters.folderPath) === '/Shared') {
 			// If the folder path is /Shared, the file has been shared individually.
-			q = `title = '${removeAddedExt(fileName).replace(
+			q = `title contains '${removeAddedExt(fileName).replace(
 				/'/g,
 				"\\'",
 			)}' and trashed = false and sharedWithMe = true`
 		} else {
 			// Else just do a normal get
-			q = `title = '${removeAddedExt(fileName).replace(
+			q = `title contains '${removeAddedExt(fileName).replace(
 				/'/g,
 				"\\'",
 			)}' and '${folderId}' in parents and trashed = false`
@@ -774,8 +774,11 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			}
 		} else {
 			// Throw an error
-			throw new ProviderInteractionError(
-				`Error: received no data about file from Google Drive API`,
+			throw new NotFoundError(
+				`The file ${Utils.diskPath(
+					folderPath,
+					fileName,
+				)} was not found`,
 			)
 		}
 	}
