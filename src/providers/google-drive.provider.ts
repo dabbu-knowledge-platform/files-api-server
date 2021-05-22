@@ -32,7 +32,7 @@ function convertDriveFileToDabbuResource(
 	// Name of the file
 	const name = getFileNameWithExt(
 		fileObject.title as string,
-		fileObject.mimeType as string,
+		fileObject
 	)
 	// File or folder
 	const kind: 'file' | 'folder' =
@@ -44,10 +44,16 @@ function convertDriveFileToDabbuResource(
 		? Utils.diskPath('/Shared', folderPath, name)
 		: Utils.diskPath(folderPath, name)
 	// Mime type
-	const mimeType = getExportTypeForDoc(
-		fileObject.mimeType as string,
-		true,
-	) as string
+	let mimeType = ''
+	if (fileObject.shortcutDetails && exportType !== 'view') {
+		mimeType = fileObject.shortcutDetails.targetMimeType || 'Unknown'
+	} else {
+		mimeType = getExportTypeForDoc(
+			fileObject.mimeType as string,
+			true,
+		) as string
+	}
+
 	// Size in bytes, let clients convert to whatever unit they want
 	const size = Number(fileObject.fileSize)
 	// When it was created
@@ -458,25 +464,29 @@ function getImportTypeForDoc(fileMimeType: string): string | undefined {
 }
 
 // Append a docx/pptx/xlsx extension based on the file mime type
-function getFileNameWithExt(name: string, mimeType: string): string {
+function getFileNameWithExt(name: string, fileObject: Record<string, any>): string {
+	// If it is a shortcut, make sure we check the mime type of the target file
+	if (fileObject.mimeType === 'application/vnd.google-apps.shortcut') {
+		fileObject.mimeType = fileObject.shortcutDetails.targetMimeType
+	}
 	// Google Docs ---> Microsoft Word (docx)
-	if (mimeType === 'application/vnd.google-apps.document') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.document') {
 		return `${name}.docx`
 	}
 	// Google Sheets ---> Microsoft Excel (xlsx)
-	if (mimeType === 'application/vnd.google-apps.spreadsheet') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.spreadsheet') {
 		return `${name}.xlsx`
 	}
 	// Google Slides ---> Microsoft Power Point (pptx)
-	if (mimeType === 'application/vnd.google-apps.presentation') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.presentation') {
 		return `${name}.pptx`
 	}
 	// Google Drawing ---> PNG Image (png)
-	if (mimeType === 'application/vnd.google-apps.drawing') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.drawing') {
 		return `${name}.png`
 	}
 	// Google App Script ---> GSON (gson)
-	if (mimeType === 'application/vnd.google-apps.script+json') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.script+json') {
 		return `${name}.gson`
 	}
 
