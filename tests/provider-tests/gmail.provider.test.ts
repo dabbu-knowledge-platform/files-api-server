@@ -107,9 +107,7 @@ describe('test list request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].mimeType,
-		).toEqual('mail/label')
+		expect(response.body.content[0].mimeType).toEqual('mail/label')
 	})
 
 	it('succeed - fetch inbox', async () => {
@@ -123,9 +121,7 @@ describe('test list request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].mimeType,
-		).toEqual('mail/thread')
+		expect(response.body.content[0].mimeType).toEqual('mail/thread')
 	})
 })
 
@@ -192,13 +188,13 @@ describe('test read request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'20210424 - 17901f589bb3c9ea - Re: Hi!.zip',
 		)
-		expect((response.body.content as DabbuResource).size).toBeFalsy()
-		expect(
-			(response.body.content as DabbuResource).contentUri,
-		).toContain('http://localhost:')
+		expect(response.body.content.size).toBeFalsy()
+		expect(response.body.content.contentUri).toContain(
+			'http://localhost:',
+		)
 	})
 
 	it('succeed - export type view', async () => {
@@ -217,13 +213,13 @@ describe('test read request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'20210424 - 17901f589bb3c9ea - Re: Hi!.zip',
 		)
-		expect((response.body.content as DabbuResource).size).toBeFalsy()
-		expect(
-			(response.body.content as DabbuResource).contentUri,
-		).toContain('https://mail.google.com/mail/u/0/#inbox/')
+		expect(response.body.content.size).toBeFalsy()
+		expect(response.body.content.contentUri).toContain(
+			'https://mail.google.com/mail/u/0/#inbox/',
+		)
 	})
 })
 

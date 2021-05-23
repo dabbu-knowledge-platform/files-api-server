@@ -153,19 +153,11 @@ describe('test list request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect(
-			(response.body.content as Array<DabbuResource>).length,
-		).toEqual(1)
+		expect(response.body.content.length).toEqual(1)
 
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].name,
-		).toEqual('Simple Text')
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].kind,
-		).toEqual('file')
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].size,
-		).toEqual(23)
+		expect(response.body.content[0].name).toEqual('Simple Text')
+		expect(response.body.content[0].kind).toEqual('file')
+		expect(response.body.content[0].size).toEqual(23)
 	})
 })
 
@@ -258,15 +250,9 @@ describe('test read request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Document.docx',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(
-			890403,
-		)
-		expect(
-			(response.body.content as DabbuResource).contentUri,
-		).toContain('1drv.com')
+		expect(response.body.content.name).toEqual('Document.docx')
+		expect(response.body.content.size).toEqual(890403)
+		expect(response.body.content.contentUri).toContain('1drv.com')
 	})
 
 	it('succeed - export type view', async () => {
@@ -288,15 +274,9 @@ describe('test read request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Document.docx',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(
-			890403,
-		)
-		expect(
-			(response.body.content as DabbuResource).contentUri,
-		).toContain('1drv.ms')
+		expect(response.body.content.name).toEqual('Document.docx')
+		expect(response.body.content.size).toEqual(890403)
+		expect(response.body.content.contentUri).toContain('1drv.ms')
 	})
 })
 
@@ -393,13 +373,9 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Create Image Test.png',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(13720)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'image/png',
-		)
+		expect(response.body.content.name).toEqual('Create Image Test.png')
+		expect(response.body.content.size).toEqual(13720)
+		expect(response.body.content.mimeType).toEqual('image/png')
 	})
 
 	it('succeed - upload and set lastModifiedTime', async () => {
@@ -420,16 +396,12 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'Last Modified Time Upload Image Test.png',
 		)
-		expect((response.body.content as DabbuResource).size).toEqual(13720)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'image/png',
-		)
-		expect(
-			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(
+		expect(response.body.content.size).toEqual(13720)
+		expect(response.body.content.mimeType).toEqual('image/png')
+		expect(response.body.content.lastModifiedTime).toEqual(
 			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
 		)
 	})
@@ -452,16 +424,12 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'Created At Time Upload Image Test.png',
 		)
-		expect((response.body.content as DabbuResource).size).toEqual(13720)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'image/png',
-		)
-		expect(
-			(response.body.content as DabbuResource).createdAtTime,
-		).toEqual(
+		expect(response.body.content.size).toEqual(13720)
+		expect(response.body.content.mimeType).toEqual('image/png')
+		expect(response.body.content.createdAtTime).toEqual(
 			new Date('Thu 21 Apr 2021 05:27:05 GMT+0530').toISOString(),
 		)
 	})
@@ -563,13 +531,11 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Create Image Test.png',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
+		expect(response.body.content.name).toEqual('Create Image Test.png')
+		expect(response.body.content.size).toEqual(20125)
 		// TODO: It seems one drive infers mime type from file extension. Find out
 		// exact cause
-		/*expect((response.body.content as DabbuResource).mimeType).toEqual(
+		/*expect((response.body.content).mimeType).toEqual(
       'application/pdf',
     )*/
 	})
@@ -591,13 +557,9 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
 	})
 
 	it('succeed - update path', async () => {
@@ -617,16 +579,12 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).path).toEqual(
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.path).toEqual(
 			'/tests/test-files/updated/Updated PDF.pdf',
 		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
 	})
 
 	it('succeed - update lastModifiedTime', async () => {
@@ -646,16 +604,10 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
-		expect(
-			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
+		expect(response.body.content.lastModifiedTime).toEqual(
 			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
 		)
 	})
@@ -677,16 +629,10 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
-		expect(
-			(response.body.content as DabbuResource).createdAtTime,
-		).toEqual(
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
+		expect(response.body.content.createdAtTime).toEqual(
 			new Date('Thu 21 Apr 2021 05:27:05 GMT+0530').toISOString(),
 		)
 	})
