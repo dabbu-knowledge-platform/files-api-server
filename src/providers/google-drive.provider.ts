@@ -23,14 +23,15 @@ import * as Guards from '../utils/guards.util'
 import Logger from '../utils/logger.util'
 
 // Convert the JSON object returned by the Drive API to a Dabbu DabbuResource
-function convertDriveFileToDabbuResource(
+async function convertDriveFileToDabbuResource(
 	fileObject: Record<string, any>,
 	folderPath: string,
 	isShared: boolean,
 	exportType: string | undefined,
-): DabbuResource {
+	httpClient: AxiosInstance,
+): Promise<DabbuResource> {
 	// Set name and path of file with the download link. This is
-	// becuase we append an extension to the filename based on the export
+	// because we append an extension to the filename based on the export
 	// type
 
 	// File or folder
@@ -61,6 +62,73 @@ function convertDriveFileToDabbuResource(
 	let name = ''
 	// Download link
 	let contentUri = ''
+	// First, check if the file is a shortcut
+	if (fileObject.shortcutDetails && exportType !== 'view') {
+		// If so, then get the real file object
+		// Query the Drive API
+		let getResult
+		try {
+			// eslint-disable-next-line prefer-const
+			getResult = await httpClient.get(
+				`/drive/v2/files/${fileObject.shortcutDetails.targetId}`,
+			)
+		} catch (error) {
+			Logger.error(
+				`provider.googledrive.read: error occurred while getting data for target file of shortcut ${
+					fileObject.title
+				}: id: ${
+					fileObject.shortcutDetails.targetId
+				}; error: ${Utils.json(error)}`,
+			)
+			if (error.response.status === 401) {
+				// If it is a 401, throw an invalid credentials error
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
+			} else if (error.response.status === 404) {
+				// If it is a 404, throw a not found error
+				throw new NotFoundError(
+					`The target file of shortcut ${Utils.diskPath(
+						folderPath,
+						fileObject.title,
+					)} does not exist`,
+				)
+			} else {
+				// Return a proper error message
+				const errorMessage =
+					error.response.data &&
+					error.response.data.error &&
+					error.response.data.error.message
+						? error.response.data.error.message
+						: 'Unknown error'
+				throw new ProviderInteractionError(
+					`Error fetching file ${Utils.diskPath(
+						folderPath,
+						fileObject.title,
+					)}: ${errorMessage}`,
+				)
+			}
+		}
+
+		if (getResult.data) {
+			fileObject = getResult.data
+		} else {
+			throw new ProviderInteractionError(
+				`Received invalid response from Google Drive while fetching target file of shortcut ${Utils.diskPath(
+					folderPath,
+					fileObject.title,
+				)}`,
+			)
+		}
+	}
+	// In case there is no available export link, give return a
+	// www.googleapis.com export link (doesn't work for Google Workspace files)
+	const defaultUri = `https://www.googleapis.com/drive/v3/files/${
+		fileObject.shortcutDetails
+			? fileObject.shortcutDetails.targetId
+			: fileObject.id
+	}?alt=media`
+
 	// If the export type is view, return an "Open in Google Editor" link
 	if (exportType === 'view' || !exportType) {
 		name = getFileNameWithExt(fileObject)
@@ -70,27 +138,23 @@ function convertDriveFileToDabbuResource(
 		if (
 			exportType === 'media' &&
 			exportMimeType &&
-			fileObject.exportLinks &&
-			fileObject.exportLinks[exportMimeType]
+			fileObject.exportLinks
 		) {
 			// Else return the donwload link for the default export type
 			name = getFileNameWithExt(fileObject)
-			contentUri = fileObject.exportLinks[exportMimeType]
-		} else if (
-			exportType &&
-			fileObject.exportLinks &&
-			fileObject.exportLinks[exportType]
-		) {
+			contentUri = fileObject.exportLinks[exportMimeType] || defaultUri
+		} else if (exportType && fileObject.exportLinks) {
 			// If the requested export type is in the exportLinks field, return
 			// that link
 			name = getFileNameWithExt(fileObject, exportType)
-			contentUri = fileObject.exportLinks[exportType]
+			contentUri = fileObject.exportLinks[exportType] || defaultUri
 		} else {
-			// Else give the googleapis.com link (doesn't work for Google Workspace Files)
+			// Else give the default link
 			name = getFileNameWithExt(fileObject)
-			contentUri = `https://www.googleapis.com/drive/v3/files/${fileObject.id}?alt=media`
+			contentUri = defaultUri
 		}
 	}
+
 	// Absolute path to the file
 	const path = isShared
 		? Utils.diskPath('/Shared', folderPath, name)
@@ -484,72 +548,72 @@ function getFileNameWithExt(
 	// If an exportMimeType is specified, then we are converting the file
 	// to the user given mime type. Append the correct extension for that
 	if (exportMimeType === 'text/html' || exportMimeType === 'html') {
-		return `${fileObject.title as string}.html`
+		return `${fileObject.title}.html`
 	}
 	if (
 		exportMimeType === 'application/zip' ||
 		exportMimeType === 'zip'
 	) {
-		return `${fileObject.title as string}.zip`
+		return `${fileObject.title}.zip`
 	}
 	if (exportMimeType === 'text/plain' || exportMimeType === 'txt') {
-		return `${fileObject.title as string}.txt`
+		return `${fileObject.title}.txt`
 	}
 	if (
 		exportMimeType === 'application/rtf' ||
 		exportMimeType === 'rtf'
 	) {
-		return `${fileObject.title as string}.rtf`
+		return `${fileObject.title}.rtf`
 	}
 	if (
 		exportMimeType === 'application/vnd.oasis.opendocument.text' ||
 		exportMimeType === 'odt'
 	) {
-		return `${fileObject.title as string}.odt`
+		return `${fileObject.title}.odt`
 	}
 	if (
 		exportMimeType === 'application/pdf' ||
 		exportMimeType === 'pdf'
 	) {
-		return `${fileObject.title as string}.pdf`
+		return `${fileObject.title}.pdf`
 	}
 	if (
 		exportMimeType === 'application/epub+zip' ||
 		exportMimeType === 'epub'
 	) {
-		return `${fileObject.title as string}.epub`
+		return `${fileObject.title}.epub`
 	}
 	if (
 		exportMimeType ===
 			'application/vnd.oasis.opendocument.spreadsheet' ||
 		exportMimeType === 'ods'
 	) {
-		return `${fileObject.title as string}.ods`
+		return `${fileObject.title}.ods`
 	}
 	if (exportMimeType === 'text/csv' || exportMimeType === 'csv') {
-		return `${fileObject.title as string}.csv`
+		return `${fileObject.title}.csv`
 	}
 	if (
 		exportMimeType === 'text/tab-separated-values' ||
 		exportMimeType === 'tsv'
 	) {
-		return `${fileObject.title as string}.tsv`
+		return `${fileObject.title}.tsv`
 	}
 	if (exportMimeType === 'image/jpeg' || exportMimeType === 'jpeg') {
-		return `${fileObject.title as string}.jpeg`
+		return `${fileObject.title}.jpeg`
 	}
 	if (exportMimeType === 'image/png' || exportMimeType === 'png') {
-		return `${fileObject.title as string}.png`
+		return `${fileObject.title}.png`
 	}
 	if (exportMimeType === 'image/svg+xml' || exportMimeType === 'svg') {
-		return `${fileObject.title as string}.svg`
+		return `${fileObject.title}.svg`
 	}
 	if (
 		exportMimeType ===
 			'application/vnd.oasis.opendocument.presentation' ||
 		exportMimeType === 'odp'
 	) {
-		return `${fileObject.title as string}.odp`
+		return `${fileObject.title}.odp`
 	}
 
 	// If it is a shortcut, make sure we check the mime type of the target file
@@ -559,29 +623,29 @@ function getFileNameWithExt(
 
 	// Google Docs ---> Microsoft Word (docx)
 	if (fileObject.mimeType === 'application/vnd.google-apps.document') {
-		return `${fileObject.title as string}.docx`
+		return `${fileObject.title}.docx`
 	}
 	// Google Sheets ---> Microsoft Excel (xlsx)
 	if (
 		fileObject.mimeType === 'application/vnd.google-apps.spreadsheet'
 	) {
-		return `${fileObject.title as string}.xlsx`
+		return `${fileObject.title}.xlsx`
 	}
 	// Google Slides ---> Microsoft Power Point (pptx)
 	if (
 		fileObject.mimeType === 'application/vnd.google-apps.presentation'
 	) {
-		return `${fileObject.title as string}.pptx`
+		return `${fileObject.title}.pptx`
 	}
 	// Google Drawing ---> PNG Image (png)
 	if (fileObject.mimeType === 'application/vnd.google-apps.drawing') {
-		return `${fileObject.title as string}.png`
+		return `${fileObject.title}.png`
 	}
 	// Google App Script ---> GSON (gson)
 	if (
 		fileObject.mimeType === 'application/vnd.google-apps.script+json'
 	) {
-		return `${fileObject.title as string}.gson`
+		return `${fileObject.title}.gson`
 	}
 
 	// Else just return the file name
@@ -722,11 +786,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 
 				// Append to a final array that will be returned
 				resources.push(
-					convertDriveFileToDabbuResource(
+					await convertDriveFileToDabbuResource(
 						fileObject,
 						folderPath,
 						isShared,
 						queries.exportType,
+						httpClient,
 					),
 				)
 			}
@@ -869,11 +934,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			// Return the file metadata and content
 			return {
 				code: 200,
-				content: convertDriveFileToDabbuResource(
+				content: await convertDriveFileToDabbuResource(
 					fileObject,
 					folderPath,
 					isShared,
 					queries.exportType,
+					httpClient,
 				),
 			}
 		} else {
@@ -1103,11 +1169,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					// Return the file metadata and content
 					return {
 						code: 201,
-						content: convertDriveFileToDabbuResource(
+						content: await convertDriveFileToDabbuResource(
 							fileObject,
 							folderPath,
 							false,
 							body.exportType,
+							httpClient,
 						),
 					}
 				}
@@ -1421,11 +1488,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			// If the creation was successful, return a file object
 			return {
 				code: 200,
-				content: convertDriveFileToDabbuResource(
+				content: await convertDriveFileToDabbuResource(
 					fileObject,
 					folderPath,
 					false,
 					body.exportType,
+					httpClient,
 				),
 			}
 		}
