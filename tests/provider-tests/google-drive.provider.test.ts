@@ -142,19 +142,11 @@ describe('test list request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect(
-			(response.body.content as Array<DabbuResource>).length,
-		).toEqual(1)
+		expect(response.body.content.length).toEqual(1)
 
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].name,
-		).toEqual('Simple Text')
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].kind,
-		).toEqual('file')
-		expect(
-			(response.body.content as Array<DabbuResource>)[0].size,
-		).toEqual(23)
+		expect(response.body.content[0].name).toEqual('Simple Text')
+		expect(response.body.content[0].kind).toEqual('file')
+		expect(response.body.content[0].size).toEqual(23)
 	})
 })
 
@@ -222,7 +214,7 @@ describe('test read request', () => {
 		expect(response.body.error.reason).toEqual('malformedUrl')
 	})
 
-	it('succeed - export type media', async () => {
+	it('succeed - export type media (google doc)', async () => {
 		const response = await request(app)
 			.get(
 				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
@@ -238,15 +230,114 @@ describe('test read request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Document.docx',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(
-			890403,
-		)
-		expect(
-			(response.body.content as DabbuResource).contentUri,
-		).toContain('https://www.googleapis.com/drive/v3/files/')
+		expect(response.body.content.name).toEqual('Document.docx')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain('exportFormat')
+	})
+
+	it('succeed - export mime type specified (google doc)', async () => {
+		const response = await request(app)
+			.get(
+				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Document.docx',
+			)
+			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
+			.query({
+				exportType: 'application/rtf',
+			})
+
+		if (response.status != 200) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(200)
+		expect(response.body.content.name).toEqual('Document.rtf')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain('rtf')
+	})
+
+	it('succeed - export type media (google slide)', async () => {
+		const response = await request(app)
+			.get(
+				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Presentation.pptx',
+			)
+			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
+			.query({
+				exportType: 'media',
+			})
+
+		if (response.status != 200) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(200)
+		expect(response.body.content.name).toEqual('Presentation.pptx')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain('exportFormat')
+	})
+
+	it('succeed - export mime type specified (google slide)', async () => {
+		const response = await request(app)
+			.get(
+				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Presentation.pptx',
+			)
+			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
+			.query({
+				exportType: 'application/vnd.oasis.opendocument.presentation',
+			})
+
+		if (response.status != 200) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(200)
+		expect(response.body.content.name).toEqual('Presentation.odp')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain('odp')
+	})
+
+	it('succeed - export type media (google sheet)', async () => {
+		const response = await request(app)
+			.get(
+				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Spreadsheet.xlsx',
+			)
+			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
+			.query({
+				exportType: 'media',
+			})
+
+		if (response.status != 200) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(200)
+		expect(response.body.content.name).toEqual('Spreadsheet.xlsx')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain('exportFormat')
+	})
+
+	it('succeed - export mime type specified (google sheet)', async () => {
+		const response = await request(app)
+			.get(
+				'/files-api/v3/data/%2Ftests%2Ftest-files%2Fdocuments/Spreadsheet.xlsx',
+			)
+			.query({ providerId: 'googledrive' })
+			.set('X-Credentials', process.env.DABBU_TOKEN!)
+			.set('X-Provider-Credentials', process.env.GOOGLE_ACCESS_TOKEN!)
+			.query({
+				exportType: 'application/vnd.oasis.opendocument.spreadsheet',
+			})
+
+		if (response.status != 200) {
+			console.log(response.body)
+		}
+		expect(response.status).toEqual(200)
+		expect(response.body.content.name).toEqual('Spreadsheet.ods')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain('ods')
 	})
 
 	it('succeed - export type view', async () => {
@@ -265,15 +356,11 @@ describe('test read request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Document.docx',
+		expect(response.body.content.name).toEqual('Document.docx')
+		expect(response.body.content.size).toEqual(null)
+		expect(response.body.content.contentUri).toContain(
+			'https://drive.google.com/open?id=',
 		)
-		expect((response.body.content as DabbuResource).size).toEqual(
-			890403,
-		)
-		expect(
-			(response.body.content as DabbuResource).contentUri,
-		).toContain('https://drive.google.com/open?id=')
 	})
 })
 
@@ -361,13 +448,9 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Create Image Test.png',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(13720)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'image/png',
-		)
+		expect(response.body.content.name).toEqual('Create Image Test.png')
+		expect(response.body.content.size).toEqual(13720)
+		expect(response.body.content.mimeType).toEqual('image/png')
 	})
 
 	it('succeed - upload and set lastModifiedTime', async () => {
@@ -385,16 +468,12 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'Last Modified Time Upload Image Test.png',
 		)
-		expect((response.body.content as DabbuResource).size).toEqual(13720)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'image/png',
-		)
-		expect(
-			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(
+		expect(response.body.content.size).toEqual(13720)
+		expect(response.body.content.mimeType).toEqual('image/png')
+		expect(response.body.content.lastModifiedTime).toEqual(
 			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
 		)
 	})
@@ -413,11 +492,11 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'Create And Convert Test.docx',
 		)
-		expect((response.body.content as DabbuResource).size).toBeFalsy()
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
+		expect(response.body.content.size).toBeFalsy()
+		expect(response.body.content.mimeType).toEqual(
 			'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		)
 	})
@@ -437,16 +516,14 @@ describe('test create request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(201)
-		expect((response.body.content as DabbuResource).name).toEqual(
+		expect(response.body.content.name).toEqual(
 			'Last Modified Time Upload And Convert Test.docx',
 		)
-		expect((response.body.content as DabbuResource).size).toBeFalsy()
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
+		expect(response.body.content.size).toBeFalsy()
+		expect(response.body.content.mimeType).toEqual(
 			'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 		)
-		expect(
-			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(
+		expect(response.body.content.lastModifiedTime).toEqual(
 			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
 		)
 	})
@@ -539,13 +616,9 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Create Image Test.png',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
+		expect(response.body.content.name).toEqual('Create Image Test.png')
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
 	})
 
 	it('succeed - update name', async () => {
@@ -562,13 +635,9 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
 	})
 
 	it('succeed - update path', async () => {
@@ -585,16 +654,12 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).path).toEqual(
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.path).toEqual(
 			'/tests/test-files/updated/Updated PDF.pdf',
 		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
 	})
 
 	it('succeed - update lastModifiedTime', async () => {
@@ -611,16 +676,10 @@ describe('test update request', () => {
 			console.log(response.body)
 		}
 		expect(response.status).toEqual(200)
-		expect((response.body.content as DabbuResource).name).toEqual(
-			'Updated PDF.pdf',
-		)
-		expect((response.body.content as DabbuResource).size).toEqual(20125)
-		expect((response.body.content as DabbuResource).mimeType).toEqual(
-			'application/pdf',
-		)
-		expect(
-			(response.body.content as DabbuResource).lastModifiedTime,
-		).toEqual(
+		expect(response.body.content.name).toEqual('Updated PDF.pdf')
+		expect(response.body.content.size).toEqual(20125)
+		expect(response.body.content.mimeType).toEqual('application/pdf')
+		expect(response.body.content.lastModifiedTime).toEqual(
 			new Date('Thu 22 Apr 2021 06:27:05 GMT+0530').toISOString(),
 		)
 	})
