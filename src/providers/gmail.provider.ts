@@ -622,7 +622,7 @@ export default class GmailDataProvider implements DataProvider {
 		// Start parsing the folder path and the options
 		// If the request is for / (the root folder), then return a list
 		// of all labels. Else return the list of threads with that label
-		let results = []
+		let results: Array<DabbuResource> = []
 		if (parameters.folderPath === '/') {
 			// Return all the labels the user or Gmail has created
 			let labelsResult
@@ -706,7 +706,7 @@ export default class GmailDataProvider implements DataProvider {
 
 			// Sort the results using the sortFile function
 			results = Utils.sortDabbuResources(
-				results as Array<DabbuResource>,
+				results,
 				queries as DabbuListRequestOptions,
 			)
 

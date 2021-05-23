@@ -23,25 +23,30 @@ import * as Guards from '../utils/guards.util'
 import Logger from '../utils/logger.util'
 
 // Convert the JSON object returned by the Drive API to a Dabbu DabbuResource
-function convertDriveFileToDabbuResource(
+async function convertDriveFileToDabbuResource(
 	fileObject: Record<string, any>,
 	folderPath: string,
 	isShared: boolean,
 	exportType: string | undefined,
-): DabbuResource {
-	// Name of the file
-	const name = fileObject.title as string
+	httpClient: AxiosInstance,
+): Promise<DabbuResource> {
+	// Set name and path of file with the download link. This is
+	// because we append an extension to the filename based on the export
+	// type
+
 	// File or folder
 	const kind: 'file' | 'folder' =
 		fileObject.mimeType === 'application/vnd.google-apps.folder'
 			? 'folder'
 			: 'file'
-	// Absolute path to the file
-	const path = isShared
-		? Utils.diskPath('/Shared', folderPath, name)
-		: Utils.diskPath(folderPath, name)
 	// Mime type
-	const mimeType = fileObject.mimeType as string
+	let mimeType = ''
+	if (fileObject.shortcutDetails) {
+		mimeType = fileObject.shortcutDetails.targetMimeType || 'Unknown'
+	} else {
+		mimeType = getExportTypeForDoc(fileObject, true) as string
+	}
+
 	// Size in bytes, let clients convert to whatever unit they want
 	const size = Number(fileObject.fileSize)
 	// When it was created
@@ -50,36 +55,110 @@ function convertDriveFileToDabbuResource(
 	const lastModifiedTime = new Date(
 		fileObject.modifiedDate,
 	).toISOString()
-	const exportMimeType = getExportTypeForDoc(mimeType)
+
+	// Generate the download link and set the name and path
+	const exportMimeType = getExportTypeForDoc(fileObject, false)
+	// Name of the file
+	let name = ''
+	// Download link
 	let contentUri = ''
+	// First, check if the file is a shortcut
+	if (fileObject.shortcutDetails && exportType !== 'view') {
+		// If so, then get the real file object
+		// Query the Drive API
+		let getResult
+		try {
+			// eslint-disable-next-line prefer-const
+			getResult = await httpClient.get(
+				`/drive/v2/files/${fileObject.shortcutDetails.targetId}`,
+			)
+		} catch (error) {
+			Logger.error(
+				`provider.googledrive.read: error occurred while getting data for target file of shortcut ${
+					fileObject.title
+				}: id: ${
+					fileObject.shortcutDetails.targetId
+				}; error: ${Utils.json(error)}`,
+			)
+			if (error.response.status === 401) {
+				// If it is a 401, throw an invalid credentials error
+				throw new InvalidProviderCredentialsError(
+					'Invalid access token',
+				)
+			} else if (error.response.status === 404) {
+				// If it is a 404, throw a not found error
+				throw new NotFoundError(
+					`The target file of shortcut ${Utils.diskPath(
+						folderPath,
+						fileObject.title,
+					)} does not exist`,
+				)
+			} else {
+				// Return a proper error message
+				const errorMessage =
+					error.response.data &&
+					error.response.data.error &&
+					error.response.data.error.message
+						? error.response.data.error.message
+						: 'Unknown error'
+				throw new ProviderInteractionError(
+					`Error fetching file ${Utils.diskPath(
+						folderPath,
+						fileObject.title,
+					)}: ${errorMessage}`,
+				)
+			}
+		}
+
+		if (getResult.data) {
+			fileObject = getResult.data
+		} else {
+			throw new ProviderInteractionError(
+				`Received invalid response from Google Drive while fetching target file of shortcut ${Utils.diskPath(
+					folderPath,
+					fileObject.title,
+				)}`,
+			)
+		}
+	}
+	// In case there is no available export link, give return a
+	// www.googleapis.com export link (doesn't work for Google Workspace files)
+	const defaultUri = `https://www.googleapis.com/drive/v3/files/${
+		fileObject.shortcutDetails
+			? fileObject.shortcutDetails.targetId
+			: fileObject.id
+	}?alt=media`
+
 	// If the export type is view, return an "Open in Google Editor" link
-	if (exportType === 'view') {
+	if (exportType === 'view' || !exportType) {
+		name = getFileNameWithExt(fileObject)
 		contentUri = `https://drive.google.com/open?id=${fileObject.id}`
 	} else {
 		// Else:
-		// First check that if it is Google Doc/Sheet/Slide/Drawing/App
-		// Script
 		if (
-			exportType &&
-			fileObject.exportLinks &&
-			fileObject.exportLinks[exportType]
-		) {
-			// If the requested export type is in the exportLinks field, return
-			// that link
-			contentUri = fileObject.exportLinks[exportType]
-		} else if (
 			exportType === 'media' &&
 			exportMimeType &&
-			fileObject.exportLinks &&
-			fileObject.exportLinks[exportMimeType]
+			fileObject.exportLinks
 		) {
 			// Else return the donwload link for the default export type
-			contentUri = fileObject.exportLinks[exportMimeType]
+			name = getFileNameWithExt(fileObject)
+			contentUri = fileObject.exportLinks[exportMimeType] || defaultUri
+		} else if (exportType && fileObject.exportLinks) {
+			// If the requested export type is in the exportLinks field, return
+			// that link
+			name = getFileNameWithExt(fileObject, exportType)
+			contentUri = fileObject.exportLinks[exportType] || defaultUri
 		} else {
-			// Else give the googleapis.com link (doesn't work for Google Workspace Files)
-			contentUri = `https://www.googleapis.com/drive/v3/files/${fileObject.id}?alt=media`
+			// Else give the default link
+			name = getFileNameWithExt(fileObject)
+			contentUri = defaultUri
 		}
 	}
+
+	// Absolute path to the file
+	const path = isShared
+		? Utils.diskPath('/Shared', folderPath, name)
+		: Utils.diskPath(folderPath, name)
 
 	return {
 		name,
@@ -114,11 +193,11 @@ async function getFolderId(
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
-					? `title = '${folderName.replace(
+					? `title contains '${folderName.replace(
 							/'/g,
 							"\\'",
 					  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true`
-					: `'${parentId}' in parents and title = '${folderName.replace(
+					: `'${parentId}' in parents and title contains '${folderName.replace(
 							/'/g,
 							"\\'",
 					  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
@@ -276,11 +355,11 @@ async function getFileId(
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
-					? `title = '${fileName.replace(
+					? `title contains '${fileName.replace(
 							/'/g,
 							"\\'",
 					  )}' and sharedWithMe = true and trashed = false`
-					: `'${parentId}' in parents and title = '${fileName.replace(
+					: `'${parentId}' in parents and title contains '${fileName.replace(
 							/'/g,
 							"\\'",
 					  )}' and trashed = false`,
@@ -392,30 +471,46 @@ async function getFileWithParents(
 
 // Get a valid mime type to export the file to for certain Google Workspace
 // files
-function getExportTypeForDoc(fileMimeType: string): string | undefined {
+function getExportTypeForDoc(
+	fileObject: Record<string, any>,
+	returnIfNotFound = false,
+): string | undefined {
+	// If it is a shortcut, make sure we check the mime type of the target file
+	if (fileObject.mimeType === 'application/vnd.google-apps.shortcut') {
+		fileObject.mimeType = fileObject.shortcutDetails.targetMimeType
+	}
+
 	// Google Docs ---> Microsoft Word (docx)
-	if (fileMimeType === 'application/vnd.google-apps.document') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.document') {
 		return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 	}
 	// Google Sheets ---> Microsoft Excel (xlsx)
-	if (fileMimeType === 'application/vnd.google-apps.spreadsheet') {
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.spreadsheet'
+	) {
 		return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 	}
 	// Google Slides ---> Microsoft Power Point (pptx)
-	if (fileMimeType === 'application/vnd.google-apps.presentation') {
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.presentation'
+	) {
 		return 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 	}
 	// Google Drawing ---> PNG Image (png)
-	if (fileMimeType === 'application/vnd.google-apps.drawing') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.drawing') {
 		return 'image/png'
 	}
 	// Google App Script ---> JSON (json)
-	if (fileMimeType === 'application/vnd.google-apps.script+json') {
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.script+json'
+	) {
 		return 'application/json'
 	}
 	// Google Maps and other types are not yet supported, as they can't
 	// be converted to something else yet
-	return
+
+	// If the returnIfNotFound param is true, return the mime type as is
+	return returnIfNotFound ? fileObject.mimeType : undefined
 }
 
 // Get a valid mime type to import the file to for certain MS Office files
@@ -443,6 +538,128 @@ function getImportTypeForDoc(fileMimeType: string): string | undefined {
 	}
 	// Else return nothing, we cannot convert the file
 	return
+}
+
+// Append a docx/pptx/xlsx extension based on the file mime type
+function getFileNameWithExt(
+	fileObject: Record<string, any>,
+	exportMimeType: string | undefined = undefined,
+): string {
+	// If an exportMimeType is specified, then we are converting the file
+	// to the user given mime type. Append the correct extension for that
+	if (exportMimeType === 'text/html' || exportMimeType === 'html') {
+		return `${fileObject.title}.html`
+	}
+	if (
+		exportMimeType === 'application/zip' ||
+		exportMimeType === 'zip'
+	) {
+		return `${fileObject.title}.zip`
+	}
+	if (exportMimeType === 'text/plain' || exportMimeType === 'txt') {
+		return `${fileObject.title}.txt`
+	}
+	if (
+		exportMimeType === 'application/rtf' ||
+		exportMimeType === 'rtf'
+	) {
+		return `${fileObject.title}.rtf`
+	}
+	if (
+		exportMimeType === 'application/vnd.oasis.opendocument.text' ||
+		exportMimeType === 'odt'
+	) {
+		return `${fileObject.title}.odt`
+	}
+	if (
+		exportMimeType === 'application/pdf' ||
+		exportMimeType === 'pdf'
+	) {
+		return `${fileObject.title}.pdf`
+	}
+	if (
+		exportMimeType === 'application/epub+zip' ||
+		exportMimeType === 'epub'
+	) {
+		return `${fileObject.title}.epub`
+	}
+	if (
+		exportMimeType ===
+			'application/vnd.oasis.opendocument.spreadsheet' ||
+		exportMimeType === 'ods'
+	) {
+		return `${fileObject.title}.ods`
+	}
+	if (exportMimeType === 'text/csv' || exportMimeType === 'csv') {
+		return `${fileObject.title}.csv`
+	}
+	if (
+		exportMimeType === 'text/tab-separated-values' ||
+		exportMimeType === 'tsv'
+	) {
+		return `${fileObject.title}.tsv`
+	}
+	if (exportMimeType === 'image/jpeg' || exportMimeType === 'jpeg') {
+		return `${fileObject.title}.jpeg`
+	}
+	if (exportMimeType === 'image/png' || exportMimeType === 'png') {
+		return `${fileObject.title}.png`
+	}
+	if (exportMimeType === 'image/svg+xml' || exportMimeType === 'svg') {
+		return `${fileObject.title}.svg`
+	}
+	if (
+		exportMimeType ===
+			'application/vnd.oasis.opendocument.presentation' ||
+		exportMimeType === 'odp'
+	) {
+		return `${fileObject.title}.odp`
+	}
+
+	// If it is a shortcut, make sure we check the mime type of the target file
+	if (fileObject.mimeType === 'application/vnd.google-apps.shortcut') {
+		fileObject.mimeType = fileObject.shortcutDetails.targetMimeType
+	}
+
+	// Google Docs ---> Microsoft Word (docx)
+	if (fileObject.mimeType === 'application/vnd.google-apps.document') {
+		return `${fileObject.title}.docx`
+	}
+	// Google Sheets ---> Microsoft Excel (xlsx)
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.spreadsheet'
+	) {
+		return `${fileObject.title}.xlsx`
+	}
+	// Google Slides ---> Microsoft Power Point (pptx)
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.presentation'
+	) {
+		return `${fileObject.title}.pptx`
+	}
+	// Google Drawing ---> PNG Image (png)
+	if (fileObject.mimeType === 'application/vnd.google-apps.drawing') {
+		return `${fileObject.title}.png`
+	}
+	// Google App Script ---> GSON (gson)
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.script+json'
+	) {
+		return `${fileObject.title}.gson`
+	}
+
+	// Else just return the file name
+	return fileObject.title
+}
+
+// Remove the docx/pptx/xlsx extension when searching for the file
+function removeAddedExt(name: string): string {
+	return name
+		.replace(/.docx/g, '')
+		.replace(/.pptx/g, '')
+		.replace(/.xlsx/g, '')
+		.replace(/.gson/g, '')
+		.replace(/.png/g, '')
 }
 
 export default class GoogleDriveDataProvider implements DataProvider {
@@ -512,7 +729,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					params: {
 						q,
 						fields:
-							'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)',
+							'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks, shortcutDetails)',
 						pageSize: 50, // Get a max of 50 files at a time
 						pageToken: nextPageToken, // Add the page token if there is any
 					},
@@ -569,11 +786,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 
 				// Append to a final array that will be returned
 				resources.push(
-					convertDriveFileToDabbuResource(
+					await convertDriveFileToDabbuResource(
 						fileObject,
 						folderPath,
 						isShared,
 						queries.exportType,
+						httpClient,
 					),
 				)
 			}
@@ -647,13 +865,13 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		let q
 		if (Utils.diskPath(parameters.folderPath) === '/Shared') {
 			// If the folder path is /Shared, the file has been shared individually.
-			q = `title = '${fileName.replace(
+			q = `title contains '${removeAddedExt(fileName).replace(
 				/'/g,
 				"\\'",
 			)}' and trashed = false and sharedWithMe = true`
 		} else {
 			// Else just do a normal get
-			q = `title = '${fileName.replace(
+			q = `title contains '${removeAddedExt(fileName).replace(
 				/'/g,
 				"\\'",
 			)}' and '${folderId}' in parents and trashed = false`
@@ -669,7 +887,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				params: {
 					q,
 					fields:
-						'items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)',
+						'items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks, shortcutDetails)',
 				},
 			})
 		} catch (error) {
@@ -716,17 +934,21 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			// Return the file metadata and content
 			return {
 				code: 200,
-				content: convertDriveFileToDabbuResource(
+				content: await convertDriveFileToDabbuResource(
 					fileObject,
 					folderPath,
 					isShared,
 					queries.exportType,
+					httpClient,
 				),
 			}
 		} else {
 			// Throw an error
-			throw new ProviderInteractionError(
-				`Error: received no data about file from Google Drive API`,
+			throw new NotFoundError(
+				`The file ${Utils.diskPath(
+					folderPath,
+					fileName,
+				)} was not found`,
 			)
 		}
 	}
@@ -947,11 +1169,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					// Return the file metadata and content
 					return {
 						code: 201,
-						content: convertDriveFileToDabbuResource(
+						content: await convertDriveFileToDabbuResource(
 							fileObject,
 							folderPath,
 							false,
 							body.exportType,
+							httpClient,
 						),
 					}
 				}
@@ -1265,11 +1488,12 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			// If the creation was successful, return a file object
 			return {
 				code: 200,
-				content: convertDriveFileToDabbuResource(
+				content: await convertDriveFileToDabbuResource(
 					fileObject,
 					folderPath,
 					false,
 					body.exportType,
+					httpClient,
 				),
 			}
 		}
