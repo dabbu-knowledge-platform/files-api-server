@@ -29,29 +29,21 @@ function convertDriveFileToDabbuResource(
 	isShared: boolean,
 	exportType: string | undefined,
 ): DabbuResource {
-	// Name of the file
-	const name = getFileNameWithExt(
-		fileObject.title as string,
-		fileObject
-	)
+	// Set name and path of file with the download link. This is
+	// becuase we append an extension to the filename based on the export
+	// type
+
 	// File or folder
 	const kind: 'file' | 'folder' =
 		fileObject.mimeType === 'application/vnd.google-apps.folder'
 			? 'folder'
 			: 'file'
-	// Absolute path to the file
-	const path = isShared
-		? Utils.diskPath('/Shared', folderPath, name)
-		: Utils.diskPath(folderPath, name)
 	// Mime type
 	let mimeType = ''
-	if (fileObject.shortcutDetails && exportType !== 'view') {
+	if (fileObject.shortcutDetails) {
 		mimeType = fileObject.shortcutDetails.targetMimeType || 'Unknown'
 	} else {
-		mimeType = getExportTypeForDoc(
-			fileObject.mimeType as string,
-			true,
-		) as string
+		mimeType = getExportTypeForDoc(fileObject, true) as string
 	}
 
 	// Size in bytes, let clients convert to whatever unit they want
@@ -63,14 +55,15 @@ function convertDriveFileToDabbuResource(
 		fileObject.modifiedDate,
 	).toISOString()
 
-	// Generate the download link
-	const exportMimeType = getExportTypeForDoc(
-		fileObject.mimeType as string,
-		false,
-	)
+	// Generate the download link and set the name and path
+	const exportMimeType = getExportTypeForDoc(fileObject, false)
+	// Name of the file
+	let name = ''
+	// Download link
 	let contentUri = ''
 	// If the export type is view, return an "Open in Google Editor" link
-	if (exportType === 'view') {
+	if (exportType === 'view' || !exportType) {
+		name = getFileNameWithExt(fileObject)
 		contentUri = `https://drive.google.com/open?id=${fileObject.id}`
 	} else {
 		// Else:
@@ -81,6 +74,7 @@ function convertDriveFileToDabbuResource(
 			fileObject.exportLinks[exportMimeType]
 		) {
 			// Else return the donwload link for the default export type
+			name = getFileNameWithExt(fileObject)
 			contentUri = fileObject.exportLinks[exportMimeType]
 		} else if (
 			exportType &&
@@ -89,12 +83,18 @@ function convertDriveFileToDabbuResource(
 		) {
 			// If the requested export type is in the exportLinks field, return
 			// that link
+			name = getFileNameWithExt(fileObject, exportType)
 			contentUri = fileObject.exportLinks[exportType]
 		} else {
 			// Else give the googleapis.com link (doesn't work for Google Workspace Files)
+			name = getFileNameWithExt(fileObject)
 			contentUri = `https://www.googleapis.com/drive/v3/files/${fileObject.id}?alt=media`
 		}
 	}
+	// Absolute path to the file
+	const path = isShared
+		? Utils.diskPath('/Shared', folderPath, name)
+		: Utils.diskPath(folderPath, name)
 
 	return {
 		name,
@@ -408,32 +408,45 @@ async function getFileWithParents(
 // Get a valid mime type to export the file to for certain Google Workspace
 // files
 function getExportTypeForDoc(
-	fileMimeType: string,
+	fileObject: Record<string, any>,
 	returnIfNotFound = false,
 ): string | undefined {
+	// If it is a shortcut, make sure we check the mime type of the target file
+	if (fileObject.mimeType === 'application/vnd.google-apps.shortcut') {
+		fileObject.mimeType = fileObject.shortcutDetails.targetMimeType
+	}
+
 	// Google Docs ---> Microsoft Word (docx)
-	if (fileMimeType === 'application/vnd.google-apps.document') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.document') {
 		return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 	}
 	// Google Sheets ---> Microsoft Excel (xlsx)
-	if (fileMimeType === 'application/vnd.google-apps.spreadsheet') {
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.spreadsheet'
+	) {
 		return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 	}
 	// Google Slides ---> Microsoft Power Point (pptx)
-	if (fileMimeType === 'application/vnd.google-apps.presentation') {
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.presentation'
+	) {
 		return 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
 	}
 	// Google Drawing ---> PNG Image (png)
-	if (fileMimeType === 'application/vnd.google-apps.drawing') {
+	if (fileObject.mimeType === 'application/vnd.google-apps.drawing') {
 		return 'image/png'
 	}
 	// Google App Script ---> JSON (json)
-	if (fileMimeType === 'application/vnd.google-apps.script+json') {
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.script+json'
+	) {
 		return 'application/json'
 	}
 	// Google Maps and other types are not yet supported, as they can't
 	// be converted to something else yet
-	return returnIfNotFound ? fileMimeType : undefined
+
+	// If the returnIfNotFound param is true, return the mime type as is
+	return returnIfNotFound ? fileObject.mimeType : undefined
 }
 
 // Get a valid mime type to import the file to for certain MS Office files
@@ -464,34 +477,115 @@ function getImportTypeForDoc(fileMimeType: string): string | undefined {
 }
 
 // Append a docx/pptx/xlsx extension based on the file mime type
-function getFileNameWithExt(name: string, fileObject: Record<string, any>): string {
+function getFileNameWithExt(
+	fileObject: Record<string, any>,
+	exportMimeType: string | undefined = undefined,
+): string {
+	// If an exportMimeType is specified, then we are converting the file
+	// to the user given mime type. Append the correct extension for that
+	if (exportMimeType === 'text/html' || exportMimeType === 'html') {
+		return `${fileObject.title as string}.html`
+	}
+	if (
+		exportMimeType === 'application/zip' ||
+		exportMimeType === 'zip'
+	) {
+		return `${fileObject.title as string}.zip`
+	}
+	if (exportMimeType === 'text/plain' || exportMimeType === 'txt') {
+		return `${fileObject.title as string}.txt`
+	}
+	if (
+		exportMimeType === 'application/rtf' ||
+		exportMimeType === 'rtf'
+	) {
+		return `${fileObject.title as string}.rtf`
+	}
+	if (
+		exportMimeType === 'application/vnd.oasis.opendocument.text' ||
+		exportMimeType === 'odt'
+	) {
+		return `${fileObject.title as string}.odt`
+	}
+	if (
+		exportMimeType === 'application/pdf' ||
+		exportMimeType === 'pdf'
+	) {
+		return `${fileObject.title as string}.pdf`
+	}
+	if (
+		exportMimeType === 'application/epub+zip' ||
+		exportMimeType === 'epub'
+	) {
+		return `${fileObject.title as string}.epub`
+	}
+	if (
+		exportMimeType ===
+			'application/vnd.oasis.opendocument.spreadsheet' ||
+		exportMimeType === 'ods'
+	) {
+		return `${fileObject.title as string}.ods`
+	}
+	if (exportMimeType === 'text/csv' || exportMimeType === 'csv') {
+		return `${fileObject.title as string}.csv`
+	}
+	if (
+		exportMimeType === 'text/tab-separated-values' ||
+		exportMimeType === 'tsv'
+	) {
+		return `${fileObject.title as string}.tsv`
+	}
+	if (exportMimeType === 'image/jpeg' || exportMimeType === 'jpeg') {
+		return `${fileObject.title as string}.jpeg`
+	}
+	if (exportMimeType === 'image/png' || exportMimeType === 'png') {
+		return `${fileObject.title as string}.png`
+	}
+	if (exportMimeType === 'image/svg+xml' || exportMimeType === 'svg') {
+		return `${fileObject.title as string}.svg`
+	}
+	if (
+		exportMimeType ===
+			'application/vnd.oasis.opendocument.presentation' ||
+		exportMimeType === 'odp'
+	) {
+		return `${fileObject.title as string}.odp`
+	}
+
 	// If it is a shortcut, make sure we check the mime type of the target file
 	if (fileObject.mimeType === 'application/vnd.google-apps.shortcut') {
 		fileObject.mimeType = fileObject.shortcutDetails.targetMimeType
 	}
+
 	// Google Docs ---> Microsoft Word (docx)
 	if (fileObject.mimeType === 'application/vnd.google-apps.document') {
-		return `${name}.docx`
+		return `${fileObject.title as string}.docx`
 	}
 	// Google Sheets ---> Microsoft Excel (xlsx)
-	if (fileObject.mimeType === 'application/vnd.google-apps.spreadsheet') {
-		return `${name}.xlsx`
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.spreadsheet'
+	) {
+		return `${fileObject.title as string}.xlsx`
 	}
 	// Google Slides ---> Microsoft Power Point (pptx)
-	if (fileObject.mimeType === 'application/vnd.google-apps.presentation') {
-		return `${name}.pptx`
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.presentation'
+	) {
+		return `${fileObject.title as string}.pptx`
 	}
 	// Google Drawing ---> PNG Image (png)
 	if (fileObject.mimeType === 'application/vnd.google-apps.drawing') {
-		return `${name}.png`
+		return `${fileObject.title as string}.png`
 	}
 	// Google App Script ---> GSON (gson)
-	if (fileObject.mimeType === 'application/vnd.google-apps.script+json') {
-		return `${name}.gson`
+	if (
+		fileObject.mimeType === 'application/vnd.google-apps.script+json'
+	) {
+		return `${fileObject.title as string}.gson`
 	}
 
 	// Else just return the file name
-	return name
+	return fileObject.title
 }
 
 // Remove the docx/pptx/xlsx extension when searching for the file
@@ -571,7 +665,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					params: {
 						q,
 						fields:
-							'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks)',
+							'nextPageToken, items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks, shortcutDetails)',
 						pageSize: 50, // Get a max of 50 files at a time
 						pageToken: nextPageToken, // Add the page token if there is any
 					},
@@ -728,7 +822,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				params: {
 					q,
 					fields:
-						'items(id, title, mimeType, fileSize, createdDate, modifiedDate, defaultOpenWithLink, webContentLink, exportLinks)',
+						'items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks, shortcutDetails)',
 				},
 			})
 		} catch (error) {
