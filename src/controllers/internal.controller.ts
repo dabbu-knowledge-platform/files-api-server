@@ -3,8 +3,9 @@ import * as Fs from 'fs-extra'
 
 // Use the env paths library to get the local cache path
 import EnvPaths from 'env-paths'
-const cachePath = EnvPaths('Dabbu Files API Server', { suffix: '' })
-	.cache
+const cachePath = EnvPaths('Dabbu Files API Server', {
+	suffix: '',
+}).cache
 
 // Import errors and utility functions
 import { checkRelativePath } from '../utils/guards.util'

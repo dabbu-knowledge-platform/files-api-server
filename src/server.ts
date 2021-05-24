@@ -29,7 +29,9 @@ async function main() {
 		Logger.info(`server.meta: ip: ${json(server.address())}`)
 
 		// Set the DABBU_FILES_API_SERVER_PORT environment variable
-		process.env.DABBU_FILES_API_SERVER_PORT = (server.address()! as AddressInfo).port.toString()
+		process.env.DABBU_FILES_API_SERVER_PORT = (
+			server.address()! as AddressInfo
+		).port.toString()
 
 		console.log(
 			`Server running on ${process.env.DABBU_FILES_API_SERVER_PORT}`,

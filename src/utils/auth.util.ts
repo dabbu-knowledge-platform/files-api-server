@@ -4,8 +4,9 @@ import * as Fs from 'fs-extra'
 
 // Use the env paths library to get the local config path
 import EnvPaths from 'env-paths'
-const configPath = EnvPaths('Dabbu Files API Server', { suffix: '' })
-	.config
+const configPath = EnvPaths('Dabbu Files API Server', {
+	suffix: '',
+}).config
 // Use sqlite3 for storing the client IDs and API keys
 import Sql from 'sqlite3'
 
