@@ -77,7 +77,7 @@ The code is heavily commented to allow you to understand exactly what happens wh
 - `src/providers/*.ts` contain provider-specific code that allows listing files and folders stored with that particular provider and returning it in a unified format.
 - `src/utils/*.ts` contain utility functions regarding different things.
 
-To test a change without building the binaries, you can type `yarn start:dev` and it will run the server directly in development mode on port 8000.
+To test a change without building the binaries, you can type `yarn start` and it will run the server directly in development mode on port 8000.
 
 ### Step 5: Document
 
@@ -87,7 +87,7 @@ The documentation for the API endpoints and providers is located in the `/docs/`
 
 ### Step 6: Test
 
-Please ensure that all changes/additions come with tests. All PRs must have unit tests unless the maintainer says the PR is text-exempt. 
+Please ensure that all changes/additions come with tests. All PRs must have unit tests unless the maintainer says the PR is text-exempt.
 
 All provider tests go under the folder `tests/provider-tests/<provider id>.provider.test.ts`. All route tests go under the folder `tests/route-tests/<route name>.route.test.ts`. Tests for controllers go under the folder `tests/controller-tests/<controller name>.controller.test.ts`. All utility tests go under the folder `tests/util-tests/<util file name>.util.ts`.
 
