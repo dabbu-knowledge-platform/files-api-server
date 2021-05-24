@@ -14,33 +14,27 @@ All of this has been implemented by abstracting access to providers (you can add
 
 The only way to use Dabbu (at the moment) is through a command-line interface (CLI). A desktop app is in the works.
 
-### This is an implementation of the Dabbu Files API. This repository does not house the code for the CLI. Information on the CLI, including installation process and setup, can be found [here](https://github.com/dabbu-knowledge-platform/cli#installation).
+### This is an implementation of the Dabbu Files API. This repository does not house the code for the CLI. Information on the CLI, including installation process and setup, can be found [here](https://dabbu-knowledge-platform.github.io/docs/).
 
 ## Using the Files API Server
 
-The Files API Server can be used in any application to access the user's files and folders. Some providers require the user to authorize the app using OAuth 2.0. To get started on using the Files API Server in your app, look at the [getting started guide](./docs/getting-started.md).
+The Files API Server can be used in any application to access the user's files and folders. Some providers require the user to authorize the app using OAuth 2.0. To get started on using the Files API Server in your app, look at the [getting started guide](./docs/getting-started.md) (Work in progress, though [API documentation](./docs/api/) is complete).
 
 ## Providers supported
 
-- **Google drive**
-- **Gmail**
-- **One Drive**
+- [**Google drive**](https://github.com/dabbu-knowledge-platform/files-api-server/blob/develop/docs/providers/googledrive.md)
+- [**Gmail**](https://github.com/dabbu-knowledge-platform/files-api-server/blob/develop/docs/providers/gmail.md)
+- [**One Drive**](https://github.com/dabbu-knowledge-platform/files-api-server/blob/develop/docs/providers/onedrive.md)
 
-_And more to come...!_
-
-### Adding support for a new provider
-
-If you want to add support for a new provider, please file an issue using the `New provider` template [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). This is only to let us know that you want to work on the provider and how you plan to go about it.
-
-Please read [contributing.md](./contributing.md) for a detailed guide to setting up your environment and making changes to the code.
-
-Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/readegories/want-to-contribute) Github discussion. We will only be glad to help :)
+To request a new provider, file an issue [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose).
 
 ## Issues and pull requests
 
 You can contribute to Dabbu by reporting bugs, fixing bugs, adding features, and spreading the word! If you want to report a bug, create an issue by clicking [here](https://github.com/dabbu-knowledge-platform/files-api-server/issues/new/choose). While creating an issue, try to follow the Bug report or Feature request template.
 
 Please read [contributing.md](./contributing.md) for a detailed guide to setting up your environment and making changes to the code.
+
+Also, if you need any help on the code, please do ask on [this](https://github.com/dabbu-knowledge-platform/files-api-server/discussions/readegories/want-to-contribute) Github discussion. We will only be glad to help :)
 
 ## Legal stuff
 
