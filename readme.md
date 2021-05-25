@@ -14,7 +14,7 @@ All of this has been implemented by abstracting access to providers (you can add
 
 The only way to use Dabbu (at the moment) is through a command-line interface (CLI). A desktop app is in the works.
 
-### This is an implementation of the Dabbu Files API. This repository does not house the code for the CLI. Information on the CLI, including installation process and setup, can be found [here](https://dabbu-knowledge-platform.github.io/docs/).
+### This is an implementation of the Dabbu Files API. This repository does not house the code for the CLI. Information on the CLI, including installation process and setup, can be found [here](https://dabbu-knowledge-platform.github.io).
 
 ## Using the Files API Server
 
