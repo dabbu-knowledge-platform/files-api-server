@@ -7,15 +7,16 @@
 	"author": "Vedant K (gamemaker1) <gamemaker0042@gmail.com>",
 	"license": "GPL-3.0-or-later",
 	"scripts": {
-		"start": "./scripts/run",
-		"start:prod": "./scripts/run prod",
-		"test": "./scripts/test",
-		"lint": "./scripts/lint",
-		"fix": "./scripts/fix-lint-errors",
-		"clean": "./scripts/clean",
-		"build": "./scripts/build",
-		"package": "./scripts/package",
-		"ci": "./scripts/ci"
+		"start": "./scripts/run.sh",
+		"start:prod": "./scripts/run.sh prod",
+		"test": "./scripts/test.sh",
+		"lint": "./scripts/lint.sh",
+		"fix": "./scripts/fix-lint-errors.sh",
+		"clean": "./scripts/clean.sh",
+		"build": "./scripts/build.sh",
+		"package": "./scripts/package.sh",
+		"ci": "./scripts/ci.sh",
+		"bump": "./scripts/bump.sh"
 	},
 	"dependencies": {
 		"archiver": "^5.3.0",
