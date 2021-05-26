@@ -34,6 +34,9 @@ async function convertDriveFileToDabbuResource(
 	// because we append an extension to the filename based on the export
 	// type
 
+	// Also replace all forward slashes in the filename with a '|'
+	fileObject.title = fileObject.title.replace(/\//g, '|')
+
 	// File or folder
 	const kind: 'file' | 'folder' =
 		fileObject.mimeType === 'application/vnd.google-apps.folder'
@@ -112,6 +115,7 @@ async function convertDriveFileToDabbuResource(
 
 		if (getResult.data) {
 			fileObject = getResult.data
+			fileObject.title = fileObject.title.replace(/\//g, '|')
 		} else {
 			throw new ProviderInteractionError(
 				`Received invalid response from Google Drive while fetching target file of shortcut ${Utils.diskPath(
@@ -193,14 +197,18 @@ async function getFolderId(
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
-					? `title contains '${folderName.replace(
-							/'/g,
-							"\\'",
-					  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true`
-					: `'${parentId}' in parents and title contains '${folderName.replace(
-							/'/g,
-							"\\'",
-					  )}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+					? `title contains '${folderName
+							.replace(/'/g, "\\'")
+							.replace(
+								/\|/g,
+								'/',
+							)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false and sharedWithMe = true`
+					: `'${parentId}' in parents and title contains '${folderName
+							.replace(/'/g, "\\'")
+							.replace(
+								/\|/g,
+								'/',
+							)}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
 				fields: 'items(id, title)',
 			},
 		})
@@ -348,6 +356,10 @@ async function getFileId(
 	isShared = false,
 	errorOutIfExists = false,
 ): Promise<string | undefined> {
+	// Remove the appended extension to the file (if it is pptx, docx,
+	// or xlsx, as we might have added it to the Google doc)
+	fileName = removeAddedExt(fileName)
+
 	// Query the Drive API
 	let result
 	try {
@@ -355,14 +367,15 @@ async function getFileId(
 		result = await httpClient.get('/drive/v2/files', {
 			params: {
 				q: isShared
-					? `title contains '${fileName.replace(
-							/'/g,
-							"\\'",
-					  )}' and sharedWithMe = true and trashed = false`
-					: `'${parentId}' in parents and title contains '${fileName.replace(
-							/'/g,
-							"\\'",
-					  )}' and trashed = false`,
+					? `title contains '${fileName
+							.replace(/'/g, "\\'")
+							.replace(
+								/\|/g,
+								'/',
+							)}' and sharedWithMe = true and trashed = false`
+					: `'${parentId}' in parents and title contains '${fileName
+							.replace(/'/g, "\\'")
+							.replace(/\|/g, '/')}' and trashed = false`,
 				fields: 'items(id, title)',
 			},
 		})
@@ -854,45 +867,21 @@ export default class GoogleDriveDataProvider implements DataProvider {
 		// Don't allow relative paths, let clients do that
 		Guards.checkRelativePath(parameters.folderPath, parameters.fileName)
 
-		// Get the parent folder ID
-		const folderId = await getFolderWithParents(
+		// Get the file ID
+		const fileId = await getFileWithParents(
 			httpClient,
-			folderPath,
+			Utils.diskPath(folderPath, fileName),
 			isShared,
 		)
 
-		// Construct the query
-		let q
-		if (Utils.diskPath(parameters.folderPath) === '/Shared') {
-			// If the folder path is /Shared, the file has been shared individually.
-			q = `title contains '${removeAddedExt(fileName).replace(
-				/'/g,
-				"\\'",
-			)}' and trashed = false and sharedWithMe = true`
-		} else {
-			// Else just do a normal get
-			q = `title contains '${removeAddedExt(fileName).replace(
-				/'/g,
-				"\\'",
-			)}' and '${folderId}' in parents and trashed = false`
-		}
-
-		// Query the Drive API
-		// No need to do the pagination thing here, our query is specifically
-		// searching for a file
-		let listResult
+		// Query the Drive API for info about that file
+		let fileResult
 		try {
 			// eslint-disable-next-line prefer-const
-			listResult = await httpClient.get('/drive/v2/files', {
-				params: {
-					q,
-					fields:
-						'items(id, title, mimeType, fileSize, createdDate, modifiedDate, webContentLink, exportLinks, shortcutDetails)',
-				},
-			})
+			fileResult = await httpClient.get(`/drive/v2/files/${fileId}`)
 		} catch (error) {
 			Logger.error(
-				`provider.googledrive.read: error occurred while getting data for file ${fileName}: q: ${q}; error: ${Utils.json(
+				`provider.googledrive.read: error occurred while getting data for file ${fileName}: fileId: ${fileId}; error: ${Utils.json(
 					error,
 				)}`,
 			)
@@ -926,10 +915,10 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			}
 		}
 
-		if (listResult.data.items.length > 0) {
+		if (fileResult.data) {
 			// If we get a valid result
 			// Get the file metadata and content
-			const fileObject = listResult.data.items[0] as Record<string, any>
+			const fileObject = fileResult.data as Record<string, any>
 
 			// Return the file metadata and content
 			return {

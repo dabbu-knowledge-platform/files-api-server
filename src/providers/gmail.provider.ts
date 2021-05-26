@@ -93,12 +93,12 @@ async function convertGmailFileToDabbuResource(
 		return {
 			name: `${formatDate(lastModifiedDate)} - ${
 				threadResult.data.id
-			} - ${subject || '(No subject)'}.zip`,
+			} - ${subject || '(No subject)'}.zip`.replace(/\//g, '|'),
 			path: Utils.diskPath(
 				folderPath,
 				`${formatDate(lastModifiedDate)} - ${threadResult.data.id} - ${
 					subject || '(No subject)'
-				}.zip`,
+				}.zip`.replace(/\//g, '|'),
 			),
 			// An entire thread can be viewed at once. Labels are folders, not threads
 			kind: 'file',
@@ -122,10 +122,16 @@ async function convertGmailFileToDabbuResource(
 	} else {
 		// No messages in the thread. I guess this ideally should not happen
 		return {
-			name: `${Number.NaN} - ${threadResult.data.id} - (No subject).zip`,
+			name: `${Number.NaN} - ${threadResult.data.id} - (No subject).zip`.replace(
+				/\//g,
+				'|',
+			),
 			path: Utils.diskPath(
 				folderPath,
-				`${Number.NaN} - ${threadResult.data.id} - No subject.zip`,
+				`${Number.NaN} - ${threadResult.data.id} - (No subject).zip`.replace(
+					/\//g,
+					'|',
+				),
 			),
 			// An entire thread can be viewed at once. Labels are folders, not threads
 			kind: 'file',
@@ -390,7 +396,7 @@ async function createMailDataURI(
 		// Generate the file name based on the parsed message => `YYYYMMDD - {thread ID} - {subject}`
 		const messageFileName = `${formatDate(message.date)} - ${
 			message.threadId
-		} - ${message.subject}`
+		} - ${message.subject}`.replace(/\//g, '|')
 		archiveName = messageFileName
 
 		// Create the directories which contain the generated and zip files
@@ -427,13 +433,22 @@ async function createMailDataURI(
 						// Write the attachment data to a file
 						// eslint-disable-next-line no-await-in-loop
 						await Fs.writeFile(
-							`${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${attachment.filename}`,
+							`${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${attachment.filename.replace(
+								/\//g,
+								'|',
+							)}`,
 							Buffer.from(attachmentResult.data.data, 'base64'),
 						)
 						// Add the file path and name to the array
 						attachmentPaths.push({
-							name: `${messageFileName} - ${attachment.filename}`,
-							path: `${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${attachment.filename}`,
+							name: `${messageFileName} - ${attachment.filename.replace(
+								/\//g,
+								'|',
+							)}`,
+							path: `${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${attachment.filename.replace(
+								/\//g,
+								'|',
+							)}`,
 						})
 					} else {
 						// No data
@@ -477,17 +492,17 @@ async function createMailDataURI(
 						await Fs.writeFile(
 							`${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${
 								i + 1
-							} - ${attachment.filename}`,
+							} - ${attachment.filename.replace(/\//g, '|')}`,
 							Buffer.from(attachmentResult.data.data, 'base64'),
 						)
 						// Add the file path and name to the array
 						attachmentPaths.push({
-							name: `${messageFileName} - ${i + 1} - ${
-								attachment.filename
-							}`,
+							name: `${messageFileName} - ${
+								i + 1
+							} - ${attachment.filename.replace(/\//g, '|')}`,
 							path: `${cachePath}/_gmail/generated/${clientId}/${messageFileName} - ${
 								i + 1
-							} - ${attachment.filename}`,
+							} - ${attachment.filename.replace(/\//g, '|')}`,
 						})
 					} else {
 						// No data
