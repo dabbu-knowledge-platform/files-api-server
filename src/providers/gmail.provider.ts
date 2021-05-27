@@ -647,9 +647,7 @@ export default class GmailDataProvider implements DataProvider {
 				labelsResult = await httpClient.get('/gmail/v1/users/me/labels')
 			} catch (error) {
 				Logger.error(
-					`provider.gmail.list: error occcurred while retrieving user's labels: ${Utils.json(
-						error,
-					)}`,
+					`provider.gmail.list: error occcurred while retrieving user's labels: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -755,9 +753,7 @@ export default class GmailDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.gmail.list: error occcurred while retrieving user's threads: labelIdQ = ${labelIdQ}; nextPageToken = ${nextPageToken}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.gmail.list: error occcurred while retrieving user's threads: labelIdQ = ${labelIdQ}; nextPageToken = ${nextPageToken}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -821,9 +817,7 @@ export default class GmailDataProvider implements DataProvider {
 					)
 				} catch (error) {
 					Logger.error(
-						`provider.gmail.list: error occcurred while retrieving user's threads: thread ID: ${
-							thread.id
-						}; error: ${Utils.json(error)}`,
+						`provider.gmail.list: error occcurred while retrieving user's threads: thread ID: ${thread.id}; error: ${error}`,
 					)
 					if (error.response.status === 401) {
 						// If it is a 401, throw an invalid credentials error

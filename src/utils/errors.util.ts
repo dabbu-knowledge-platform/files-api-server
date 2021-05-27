@@ -201,7 +201,7 @@ export default function errorHandler(
 		})
 	} else {
 		// Log it
-		Logger.error(`middleware.error: server crash - ${json(error)}`)
+		Logger.error(`middleware.error: server crash - ${error}`)
 		// Else the server has crashed, return an internalServerError
 		response.status(500).json({
 			code: 500,

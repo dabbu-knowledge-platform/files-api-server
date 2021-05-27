@@ -77,11 +77,7 @@ async function convertDriveFileToDabbuResource(
 			)
 		} catch (error) {
 			Logger.error(
-				`provider.googledrive.read: error occurred while getting data for target file of shortcut ${
-					fileObject.title
-				}: id: ${
-					fileObject.shortcutDetails.targetId
-				}; error: ${Utils.json(error)}`,
+				`provider.googledrive.read: error occurred while getting data for target file of shortcut ${fileObject.title}: id: ${fileObject.shortcutDetails.targetId}; error: ${error}`,
 			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
@@ -749,9 +745,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				})
 			} catch (error) {
 				Logger.error(
-					`provider.googledrive.list: error occurred while listing files in folder ${folderId}: q: ${q}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.googledrive.list: error occurred while listing files in folder ${folderId}: q: ${q}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1022,7 +1016,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 			Logger.error(
 				`provider.googledrive.create: error occurred while posting metadata (step 1 create): meta: ${Utils.json(
 					meta,
-				)}; error: ${Utils.json(error)}`,
+				)}; error: ${error}`,
 			)
 			if (error.response.status === 401) {
 				// If it is a 401, throw an invalid credentials error
@@ -1055,9 +1049,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.googledrive.create: error occurred while posting file contents (step 2 create): fileId: ${
-						file.id
-					}; error: ${Utils.json(error)}`,
+					`provider.googledrive.create: error occurred while posting file contents (step 2 create): fileId: ${file.id}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1094,7 +1086,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 						Logger.error(
 							`provider.googledrive.create: error occurred while converting file to google format: importType: ${importType}; original file: ${Utils.json(
 								result.data,
-							)}; error: ${Utils.json(error)}`,
+							)}; error: ${error}`,
 						)
 						if (error.response.status === 401) {
 							// If it is a 401, throw an invalid credentials error
@@ -1127,7 +1119,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 					Logger.error(
 						`provider.googledrive.create: error occurred while updating lastModifedTime again: meta: ${Utils.json(
 							meta,
-						)}; error: ${Utils.json(error)}`,
+						)}; error: ${error}`,
 					)
 					if (error.response.status === 401) {
 						// If it is a 401, throw an invalid credentials error
@@ -1247,9 +1239,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.googledrive.update: error occurred while updating file content: fileId: ${fileId}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.googledrive.update: error occurred while updating file content: fileId: ${fileId}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1297,7 +1287,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 						Logger.error(
 							`provider.googledrive.update: error occurred while converting file to google format: importType: ${importType}; original file: ${Utils.json(
 								result.data,
-							)}; error: ${Utils.json(error)}`,
+							)}; error: ${error}`,
 						)
 						if (error.response.status === 401) {
 							// If it is a 401, throw an invalid credentials error
@@ -1343,7 +1333,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				Logger.error(
 					`provider.googledrive.update: error occurred while renaming file: fileId: ${fileId}; body: ${Utils.json(
 						body,
-					)}; error: ${Utils.json(error)}`,
+					)}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1395,7 +1385,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				Logger.error(
 					`provider.googledrive.update: error occurred while moving file: fileId: ${fileId}; newParentId: ${newFolderId}; body: ${Utils.json(
 						body,
-					)}; error: ${Utils.json(error)}`,
+					)}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1440,7 +1430,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				Logger.error(
 					`provider.googledrive.: error occurred while setting lastModifiedTime: fileId: ${fileId}; body: ${Utils.json(
 						body,
-					)}; error: ${Utils.json(error)}`,
+					)}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1536,9 +1526,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				await httpClient.delete(`/drive/v2/files/${fileId}`)
 			} catch (error) {
 				Logger.error(
-					`provider.googledrive.delete: error occurred while deleting file ${fileId}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.googledrive.delete: error occurred while deleting file ${fileId}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -1586,9 +1574,7 @@ export default class GoogleDriveDataProvider implements DataProvider {
 				await httpClient.delete(`/drive/v2/files/${folderId}`)
 			} catch (error) {
 				Logger.error(
-					`provider.googledrive.: error occurred while deleting folder ${folderId}: error: ${Utils.json(
-						error,
-					)}`,
+					`provider.googledrive.: error occurred while deleting folder ${folderId}: error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error

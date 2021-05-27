@@ -145,9 +145,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				listResult = await httpClient.get(nextPageLink)
 			} catch (error) {
 				Logger.error(
-					`provider.onedrive.list: error while listing files: folderPath: ${folderPath}; queries: ${queries}; listQuery: ${listQuery}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.onedrive.list: error while listing files: folderPath: ${folderPath}; queries: ${queries}; listQuery: ${listQuery}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -464,9 +462,7 @@ export default class OneDriveDataProvider implements DataProvider {
 						meta,
 					)}; body: ${Utils.json(
 						body,
-					)}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
-						error,
-					)}`,
+					)}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -574,9 +570,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.onedrive.update: error while updating content of file: folderPath: ${folderPath}; fileName: ${fileName}; mimeType: ${mimeType}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.onedrive.update: error while updating content of file: folderPath: ${folderPath}; fileName: ${fileName}; mimeType: ${mimeType}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -625,9 +619,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				Logger.error(
 					`provider.onedrive.update: error while renaming file: body: ${Utils.json(
 						body,
-					)}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
-						error,
-					)}`,
+					)}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -700,7 +692,7 @@ export default class OneDriveDataProvider implements DataProvider {
 						body,
 					)}; folderPath: ${folderPath}; fileName: ${fileName}; newParentId: ${
 						result.data.id
-					}; error: ${Utils.json(error)}`,
+					}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -748,9 +740,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.onedrive.update: error while updating lastModifiedTime of file: modifiedDate: ${modifiedDate}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.onedrive.update: error while updating lastModifiedTime of file: modifiedDate: ${modifiedDate}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -798,9 +788,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.onedrive.update: error while updating createdAtTime of file: createdDate: ${createdDate}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.onedrive.update: error while updating createdAtTime of file: createdDate: ${createdDate}; folderPath: ${folderPath}; fileName: ${fileName}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -890,9 +878,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.onedrive.delete: error while deleting file: folderPath: ${folderPath}; fileName: ${fileName}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.onedrive.delete: error while deleting file: folderPath: ${folderPath}; fileName: ${fileName}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
@@ -937,9 +923,7 @@ export default class OneDriveDataProvider implements DataProvider {
 				)
 			} catch (error) {
 				Logger.error(
-					`provider.onedrive.delete: error while deleting folder: folderPath: ${folderPath}; error: ${Utils.json(
-						error,
-					)}`,
+					`provider.onedrive.delete: error while deleting folder: folderPath: ${folderPath}; error: ${error}`,
 				)
 				if (error.response.status === 401) {
 					// If it is a 401, throw an invalid credentials error
